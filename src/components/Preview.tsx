@@ -74,7 +74,25 @@ export const Preview = () => {
 
   useEffect(() => {
     if (theme === 'dark') {
-      mermaid.initialize({ theme: 'dark' });
+      mermaid.initialize({ 
+        theme: 'dark',
+        themeVariables: {
+          darkMode: true,
+          background: '#1e293b',
+          primaryColor: '#60a5fa',
+          primaryTextColor: '#e2e8f0',
+          primaryBorderColor: '#3b82f6',
+          lineColor: '#94a3b8',
+          secondaryColor: '#334155',
+          tertiaryColor: '#1e293b',
+          textColor: '#e2e8f0',
+          mainBkg: '#1e293b',
+          nodeBorder: '#64748b',
+          clusterBkg: '#334155',
+          clusterBorder: '#475569',
+          edgeLabelBackground: '#334155',
+        }
+      });
     } else {
       mermaid.initialize({ theme: 'default' });
     }
