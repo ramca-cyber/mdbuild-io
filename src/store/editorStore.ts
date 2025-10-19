@@ -30,6 +30,7 @@ interface EditorState {
   setShowOutline: (show: boolean) => void;
   setLineNumbers: (show: boolean) => void;
   setAutoSave: (enabled: boolean) => void;
+  setCurrentDocId: (id: string | null) => void;
   saveDocument: (name: string) => void;
   loadDocument: (id: string) => void;
   deleteDocument: (id: string) => void;
@@ -123,6 +124,7 @@ export const useEditorStore = create<EditorState>()(
       setShowOutline: (show) => set({ showOutline: show }),
       setLineNumbers: (show) => set({ lineNumbers: show }),
       setAutoSave: (enabled) => set({ autoSave: enabled }),
+      setCurrentDocId: (id) => set({ currentDocId: id }),
       saveDocument: (name) => {
         const state = get();
         const newDoc: SavedDocument = {
@@ -143,10 +145,15 @@ export const useEditorStore = create<EditorState>()(
         }
       },
       deleteDocument: (id) => {
+        const state = get();
+        const wasCurrentDoc = state.currentDocId === id;
         set({
-          savedDocuments: get().savedDocuments.filter((d) => d.id !== id),
-          currentDocId: get().currentDocId === id ? null : get().currentDocId,
+          savedDocuments: state.savedDocuments.filter((d) => d.id !== id),
+          currentDocId: wasCurrentDoc ? null : state.currentDocId,
         });
+        if (wasCurrentDoc) {
+          set({ content: '# New Document\n\nStart writing...' });
+        }
       },
       renameDocument: (id, newName) => {
         set({

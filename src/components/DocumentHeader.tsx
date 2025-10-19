@@ -6,28 +6,62 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown, Edit2, Check, X, Database } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { ChevronDown, Edit2, Check, X, Database, Trash2, FilePlus, Save } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { calculateStorageUsage, formatStorageSize } from '@/lib/storageUtils';
+import { toast } from 'sonner';
 
 export const DocumentHeader = () => {
-  const { savedDocuments, currentDocId, loadDocument, renameDocument } = useEditorStore();
+  const { 
+    savedDocuments, 
+    currentDocId, 
+    loadDocument, 
+    renameDocument, 
+    deleteDocument,
+    setContent,
+    setCurrentDocId,
+    autoSave,
+    setAutoSave,
+  } = useEditorStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [storageInfo, setStorageInfo] = useState(calculateStorageUsage());
   
   const currentDoc = currentDocId 
     ? savedDocuments.find(d => d.id === currentDocId) 
     : null;
   
-  const displayName = currentDoc?.name || 'Untitled Document';
+  const displayName = currentDoc?.name || 'Untitled Project';
   
   useEffect(() => {
     if (currentDoc) {
       setEditName(currentDoc.name);
     }
   }, [currentDoc]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStorageInfo(calculateStorageUsage());
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
   
   const handleStartEdit = () => {
     if (currentDoc) {
@@ -49,8 +83,21 @@ export const DocumentHeader = () => {
       setEditName(currentDoc.name);
     }
   };
+
+  const handleDelete = (docId: string) => {
+    deleteDocument(docId);
+    setDeleteConfirm(null);
+    toast.success('Document deleted');
+  };
+
+  const handleNewDocument = () => {
+    setContent('# New Document\n\nStart writing...');
+    setCurrentDocId(null);
+    toast.success('New document created');
+  };
   
   return (
+    <>
     <div className="flex items-center gap-2 px-4 py-2 bg-muted/30 border-b border-border">
       <div className="flex items-center gap-2 flex-1 min-w-0">
         {isEditing ? (
@@ -94,7 +141,17 @@ export const DocumentHeader = () => {
                   <ChevronDown className="ml-1 h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-64">
+              <DropdownMenuContent align="start" className="w-72 z-50 bg-popover">
+                <DropdownMenuItem
+                  onClick={handleNewDocument}
+                  className="flex items-center gap-2 cursor-pointer font-medium"
+                >
+                  <FilePlus className="h-4 w-4" />
+                  New Document
+                </DropdownMenuItem>
+                
+                {savedDocuments.length > 0 && <DropdownMenuSeparator />}
+                
                 {savedDocuments.length === 0 ? (
                   <div className="px-2 py-3 text-sm text-muted-foreground text-center">
                     No saved documents
@@ -103,16 +160,32 @@ export const DocumentHeader = () => {
                   savedDocuments.map((doc) => (
                     <DropdownMenuItem
                       key={doc.id}
-                      onClick={() => loadDocument(doc.id)}
                       className={cn(
-                        "flex flex-col items-start gap-1 cursor-pointer",
+                        "flex items-center justify-between gap-2 cursor-pointer",
                         currentDocId === doc.id && "bg-accent"
                       )}
+                      onSelect={(e) => e.preventDefault()}
                     >
-                      <div className="font-medium text-sm">{doc.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(doc.timestamp, { addSuffix: true })}
+                      <div 
+                        className="flex flex-col items-start gap-1 flex-1 min-w-0"
+                        onClick={() => loadDocument(doc.id)}
+                      >
+                        <div className="font-medium text-sm truncate w-full">{doc.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(doc.timestamp, { addSuffix: true })}
+                        </div>
                       </div>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteConfirm(doc.id);
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </DropdownMenuItem>
                   ))
                 )}
@@ -134,10 +207,52 @@ export const DocumentHeader = () => {
         )}
       </div>
       
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Database className="h-3 w-3" />
-        <span className="hidden sm:inline">Local Storage</span>
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5">
+          <Label htmlFor="autosave" className="text-xs text-muted-foreground cursor-pointer hidden sm:inline">
+            Auto-save
+          </Label>
+          <Switch
+            id="autosave"
+            checked={autoSave}
+            onCheckedChange={setAutoSave}
+            className="scale-75"
+          />
+        </div>
+        
+        <div 
+          className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-help"
+          title={`Using ${formatStorageSize(storageInfo.bytes)} of 4MB`}
+        >
+          <Database className={cn(
+            "h-3 w-3",
+            storageInfo.isCritical && "text-destructive",
+            storageInfo.isNearLimit && !storageInfo.isCritical && "text-warning"
+          )} />
+          <span className="hidden sm:inline">
+            {storageInfo.mb.toFixed(1)} MB / 4 MB
+          </span>
+          <span className="sm:hidden">{storageInfo.percentage.toFixed(0)}%</span>
+        </div>
       </div>
+
+      <AlertDialog open={deleteConfirm !== null} onOpenChange={() => setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Document?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The document will be permanently deleted from your browser storage.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deleteConfirm && handleDelete(deleteConfirm)}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+    </>
   );
 };
