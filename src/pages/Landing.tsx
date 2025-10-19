@@ -31,6 +31,32 @@ const Landing = () => {
     <div className="min-h-screen">
       <HeroSection onStartWriting={handleStartWriting} onSeeFeatures={handleSeeFeatures} />
       
+      {/* Editor Preview */}
+      <section className="py-12 px-4 bg-muted/50">
+        <div className="container max-w-6xl mx-auto">
+          <div 
+            onClick={handleStartWriting}
+            className="relative group cursor-pointer rounded-xl overflow-hidden border-2 border-border hover:border-primary transition-all duration-300 hover:shadow-2xl"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
+            <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="bg-primary text-primary-foreground px-4 py-2 rounded-lg font-semibold flex items-center gap-2">
+                Click to Try Editor
+                <Edit3 className="h-4 w-4" />
+              </div>
+            </div>
+            <img 
+              src="/editor-preview.png"
+              alt="MDBuild.io Editor Interface - Split view showing markdown editor and live preview"
+              className="w-full h-auto"
+            />
+          </div>
+          <p className="text-center mt-4 text-sm text-muted-foreground">
+            ✨ Click the preview above to start editing
+          </p>
+        </div>
+      </section>
+      
       {/* Feature Showcase */}
       <section id="features" className="py-20 px-4 bg-muted/30">
         <div className="container max-w-6xl mx-auto">
