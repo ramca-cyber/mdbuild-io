@@ -17,12 +17,12 @@ import {
 
 // Wait for all async content to render
 export const waitForContentToRender = async (): Promise<void> => {
-  // Wait for Mermaid diagrams
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  // Wait for Mermaid diagrams (they take time to render)
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   
   // Additional check for any pending renders
   await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
-  await new Promise((resolve) => setTimeout(resolve, 200));
+  await new Promise((resolve) => setTimeout(resolve, 300));
 };
 
 // Convert DOM element to PNG image data
@@ -32,6 +32,7 @@ export const convertElementToImage = async (element: HTMLElement): Promise<strin
       quality: 1,
       pixelRatio: 2,
       backgroundColor: '#ffffff',
+      skipFonts: true, // Skip external fonts to avoid CORS issues
     });
     return dataUrl;
   } catch (error) {
@@ -414,27 +415,27 @@ export const exportToPdfWithRendering = async (
   pdf.save(`${fileName}.pdf`);
 };
 
-// Improved HTML export with inline styles
+// Improved HTML export with inline styles - captures already-rendered preview
 export const exportToHtmlWithInlineStyles = async (
-  content: string,
+  previewElement: HTMLElement,
   fileName: string
 ): Promise<void> => {
-  const { default: ReactMarkdown } = await import('react-markdown');
-  const { default: rehypeHighlight } = await import('rehype-highlight');
-  const { default: remarkGfm } = await import('remark-gfm');
-  const { default: remarkMath } = await import('remark-math');
-  const { default: rehypeKatex } = await import('rehype-katex');
-  const { default: remarkEmoji } = await import('remark-emoji');
-  const { renderToString } = await import('react-dom/server');
+  await waitForContentToRender();
 
-  const renderedContent = renderToString(
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm, remarkMath, remarkEmoji]}
-      rehypePlugins={[rehypeHighlight, rehypeKatex]}
-    >
-      {content}
-    </ReactMarkdown>
-  );
+  // Get the article content that's already rendered (includes Mermaid diagrams)
+  const article = previewElement.querySelector('article');
+  if (!article) {
+    throw new Error('Article element not found');
+  }
+
+  // Clone the article to avoid modifying the original
+  const clonedArticle = article.cloneNode(true) as HTMLElement;
+  
+  // Remove copy buttons from code blocks
+  const copyButtons = clonedArticle.querySelectorAll('.copy-button');
+  copyButtons.forEach(button => button.remove());
+  
+  const renderedContent = clonedArticle.innerHTML;
 
   // Inline CSS styles
   const inlineStyles = `

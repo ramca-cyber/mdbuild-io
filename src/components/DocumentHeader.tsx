@@ -163,9 +163,16 @@ export function DocumentHeader() {
   const handleExportHTML = async () => {
     try {
       const fileName = currentDoc?.name || content.match(/^#\s+(.+)$/m)?.[1] || 'document';
+      const previewElement = document.querySelector('.preview-content')?.parentElement;
+      
+      if (!previewElement) {
+        toast.error('Preview not available');
+        return;
+      }
+
       const { exportToHtmlWithInlineStyles } = await import('@/lib/exportUtils');
       
-      await exportToHtmlWithInlineStyles(content, fileName);
+      await exportToHtmlWithInlineStyles(previewElement as HTMLElement, fileName);
       toast.success('Exported as HTML');
     } catch (error) {
       console.error('HTML export error:', error);
