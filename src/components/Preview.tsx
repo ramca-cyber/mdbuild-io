@@ -110,19 +110,26 @@ export const Preview = () => {
           },
     });
 
-    if (!previewRef.current) return;
-    const diagrams = previewRef.current.querySelectorAll('.mermaid-diagram');
-    diagrams.forEach(async (el, index) => {
-      const code = (el as HTMLElement).getAttribute('data-code');
-      if (!code) return;
-      try {
-        const id = `mermaid-${Date.now()}-${index}`;
-        const { svg } = await mermaid.render(id, code);
-        (el as HTMLElement).innerHTML = svg;
-      } catch (e) {
-        console.error('Mermaid re-render error:', e);
+    const reRenderDiagrams = async () => {
+      if (!previewRef.current) return;
+      const diagrams = previewRef.current.querySelectorAll('.mermaid-diagram');
+
+      for (const [index, el] of Array.from(diagrams).entries()) {
+        const code = (el as HTMLElement).getAttribute('data-code');
+        if (!code) continue;
+        try {
+          const id = `mermaid-theme-${Date.now()}-${index}`;
+          const { svg } = await mermaid.render(id, code);
+          if (el && el.parentNode) {
+            (el as HTMLElement).innerHTML = svg;
+          }
+        } catch (e) {
+          console.error('Mermaid re-render error:', e);
+        }
       }
-    });
+    };
+
+    reRenderDiagrams();
   }, [theme]);
 
   useEffect(() => {
