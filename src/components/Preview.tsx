@@ -35,7 +35,12 @@ export const Preview = () => {
 
   // Unified function to render mermaid diagrams
   const renderMermaidDiagrams = async () => {
-    if (!previewRef.current || renderingRef.current) return;
+    if (!previewRef.current) return;
+    
+    // Wait for any ongoing rendering to complete
+    while (renderingRef.current) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
     
     renderingRef.current = true;
     
@@ -57,10 +62,15 @@ export const Preview = () => {
         try {
           const renderID = `mermaid-${Date.now()}-${index}`;
           const { svg } = await mermaid.render(renderID, code);
-          container.innerHTML = svg;
+          // Only update if container still exists in DOM
+          if (container.parentElement) {
+            container.innerHTML = svg;
+          }
         } catch (error) {
           console.error('Mermaid rendering error:', error);
-          container.innerHTML = `<div class="text-destructive">Error rendering diagram</div>`;
+          if (container.parentElement) {
+            container.innerHTML = `<div class="text-destructive">Error rendering diagram</div>`;
+          }
         }
       }
     } finally {
@@ -151,84 +161,93 @@ export const Preview = () => {
           },
     });
 
-    // Re-render existing diagrams with new theme
-    const timeoutId = setTimeout(() => {
-      const reRenderDiagrams = async () => {
-        if (!previewRef.current || renderingRef.current) return;
+    // Re-render existing diagrams with new theme (with longer debounce)
+    const timeoutId = setTimeout(async () => {
+      if (!previewRef.current) return;
+      
+      // Wait for any ongoing rendering
+      while (renderingRef.current) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      
+      renderingRef.current = true;
+      
+      try {
+        const containers = previewRef.current.querySelectorAll('.mermaid-diagram-container');
         
-        renderingRef.current = true;
-        
-        try {
-          const containers = previewRef.current.querySelectorAll('.mermaid-diagram-container');
+        for (let index = 0; index < containers.length; index++) {
+          const container = containers[index] as HTMLElement;
+          const existingId = container.id || `mermaid-container-${index}`;
+          container.id = existingId;
+          const metadata = diagramsRef.current.get(existingId);
+          const codeFromDom = container.querySelector('.mermaid-code')?.textContent || '';
+          const code = metadata?.code || codeFromDom;
           
-          for (let index = 0; index < containers.length; index++) {
-            const container = containers[index] as HTMLElement;
-            // Try metadata first, then fallback to hidden code element
-            const existingId = container.id || `mermaid-container-${index}`;
-            container.id = existingId;
-            const metadata = diagramsRef.current.get(existingId);
-            const codeFromDom = container.querySelector('.mermaid-code')?.textContent || '';
-            const code = metadata?.code || codeFromDom;
-            
-            if (!code) continue;
-            
-            try {
-              const renderID = `mermaid-theme-${Date.now()}-${index}`;
-              const { svg } = await mermaid.render(renderID, code);
-              if (container && container.parentNode) {
-                container.innerHTML = svg;
-              }
-              // Ensure our map stays up to date
-              diagramsRef.current.set(existingId, { code, containerId: existingId });
-            } catch (e) {
-              console.error('Mermaid re-render error:', e);
+          if (!code) continue;
+          
+          try {
+            const renderID = `mermaid-theme-${Date.now()}-${index}`;
+            const { svg } = await mermaid.render(renderID, code);
+            if (container && container.parentNode) {
+              container.innerHTML = svg;
             }
+            diagramsRef.current.set(existingId, { code, containerId: existingId });
+          } catch (e) {
+            console.error('Mermaid re-render error:', e);
           }
-        } finally {
-          renderingRef.current = false;
         }
-      };
-
-      requestAnimationFrame(() => {
-        reRenderDiagrams();
-      });
-    }, 150);
+      } finally {
+        renderingRef.current = false;
+      }
+    }, 200);
 
     return () => clearTimeout(timeoutId);
   }, [theme]);
 
-  // Listen to editor scroll events
-  useEffect(() => {
-    if (!syncScroll || !previewRef.current) return;
-
-    const handleEditorScroll = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      const scrollPercentage = customEvent.detail;
-      if (previewRef.current) {
-        const maxScroll = previewRef.current.scrollHeight - previewRef.current.clientHeight;
-        previewRef.current.scrollTop = maxScroll * scrollPercentage;
-      }
-    };
-
-    window.addEventListener('editor-scroll', handleEditorScroll);
-    return () => window.removeEventListener('editor-scroll', handleEditorScroll);
-  }, [syncScroll]);
-
-  // Dispatch preview scroll events for bidirectional sync
+  // Synchronized scrolling
   useEffect(() => {
     if (!syncScroll || !previewRef.current) return;
 
     const preview = previewRef.current;
-    const handleScroll = () => {
+    let isScrolling = false;
+    let scrollTimeout: NodeJS.Timeout;
+
+    const handleEditorScroll = (e: Event) => {
+      if (isScrolling) return;
+      
+      const customEvent = e as CustomEvent;
+      const scrollPercentage = customEvent.detail;
+      isScrolling = true;
+      
       const maxScroll = preview.scrollHeight - preview.clientHeight;
-      if (maxScroll > 0) {
-        const scrollPercentage = preview.scrollTop / maxScroll;
-        window.dispatchEvent(new CustomEvent('preview-scroll', { detail: scrollPercentage }));
-      }
+      preview.scrollTop = maxScroll * scrollPercentage;
+      
+      setTimeout(() => {
+        isScrolling = false;
+      }, 50);
     };
 
-    preview.addEventListener('scroll', handleScroll);
-    return () => preview.removeEventListener('scroll', handleScroll);
+    const handlePreviewScroll = () => {
+      if (isScrolling) return;
+      
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const maxScroll = preview.scrollHeight - preview.clientHeight;
+        if (maxScroll > 0) {
+          const scrollPercentage = preview.scrollTop / maxScroll;
+          window.dispatchEvent(new CustomEvent('preview-scroll', { detail: scrollPercentage }));
+        }
+      }, 10);
+    };
+
+    window.addEventListener('editor-scroll', handleEditorScroll);
+    preview.addEventListener('scroll', handlePreviewScroll);
+    
+    return () => {
+      clearTimeout(scrollTimeout);
+      window.removeEventListener('editor-scroll', handleEditorScroll);
+      preview.removeEventListener('scroll', handlePreviewScroll);
+    };
   }, [syncScroll]);
 
   return (

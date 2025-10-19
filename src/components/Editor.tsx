@@ -40,29 +40,40 @@ export const Editor = () => {
     const editorScroll = editorRef.current.querySelector('.cm-scroller');
     if (!editorScroll) return;
 
+    let isScrolling = false;
+    let scrollTimeout: NodeJS.Timeout;
+
     const handleScroll = () => {
-      const scrollPercentage = editorScroll.scrollTop / (editorScroll.scrollHeight - editorScroll.clientHeight);
-      window.dispatchEvent(new CustomEvent('editor-scroll', { detail: scrollPercentage }));
+      if (isScrolling) return;
+      
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const maxScroll = editorScroll.scrollHeight - editorScroll.clientHeight;
+        if (maxScroll > 0) {
+          const scrollPercentage = editorScroll.scrollTop / maxScroll;
+          window.dispatchEvent(new CustomEvent('editor-scroll', { detail: scrollPercentage }));
+        }
+      }, 10);
+    };
+
+    const handlePreviewScroll = (e: CustomEvent) => {
+      isScrolling = true;
+      const scrollPercentage = e.detail;
+      const maxScroll = editorScroll.scrollHeight - editorScroll.clientHeight;
+      editorScroll.scrollTop = scrollPercentage * maxScroll;
+      setTimeout(() => {
+        isScrolling = false;
+      }, 50);
     };
 
     editorScroll.addEventListener('scroll', handleScroll);
-    return () => editorScroll.removeEventListener('scroll', handleScroll);
-  }, [syncScroll]);
-
-  // Listen to preview scroll events for bidirectional sync
-  useEffect(() => {
-    if (!syncScroll || !editorRef.current) return;
-
-    const editorScroll = editorRef.current.querySelector('.cm-scroller');
-    if (!editorScroll) return;
-
-    const handlePreviewScroll = (e: CustomEvent) => {
-      const scrollPercentage = e.detail;
-      editorScroll.scrollTop = scrollPercentage * (editorScroll.scrollHeight - editorScroll.clientHeight);
-    };
-
     window.addEventListener('preview-scroll', handlePreviewScroll as EventListener);
-    return () => window.removeEventListener('preview-scroll', handlePreviewScroll as EventListener);
+    
+    return () => {
+      clearTimeout(scrollTimeout);
+      editorScroll.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('preview-scroll', handlePreviewScroll as EventListener);
+    };
   }, [syncScroll]);
 
   return (

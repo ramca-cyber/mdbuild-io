@@ -56,9 +56,10 @@ const Landing = () => {
               </div>
             </div>
             <img 
-              src="/editor-preview.png"
+              src={`/editor-preview.png?v=${Date.now()}`}
               alt="MDBuild.io Editor Interface - Split view showing markdown editor and live preview"
               className="w-full h-auto"
+              loading="eager"
             />
           </div>
           <p className="text-center mt-4 text-sm text-muted-foreground">
