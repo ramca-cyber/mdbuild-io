@@ -1,3 +1,5 @@
+import { toast } from "@/hooks/use-toast";
+
 export interface StorageInfo {
   bytes: number;
   mb: number;
@@ -17,15 +19,36 @@ export const calculateStorageUsage = (): StorageInfo => {
     const mb = bytes / (1024 * 1024);
     const percentage = (bytes / STORAGE_LIMIT) * 100;
     
-    return {
+    const result = {
       bytes,
       mb,
       percentage,
       isNearLimit: percentage >= WARNING_THRESHOLD * 100,
       isCritical: percentage >= CRITICAL_THRESHOLD * 100,
     };
+    
+    // Show warnings for storage issues
+    if (result.isCritical) {
+      toast({
+        title: "Storage Critical",
+        description: `You're using ${percentage.toFixed(0)}% of available storage. Consider deleting old documents.`,
+        variant: "destructive",
+      });
+    } else if (result.isNearLimit) {
+      toast({
+        title: "Storage Warning",
+        description: `You're using ${percentage.toFixed(0)}% of available storage.`,
+      });
+    }
+    
+    return result;
   } catch (error) {
     console.error('Error calculating storage:', error);
+    toast({
+      title: "Storage Error",
+      description: "Failed to calculate storage usage. Please try again.",
+      variant: "destructive",
+    });
     return {
       bytes: 0,
       mb: 0,

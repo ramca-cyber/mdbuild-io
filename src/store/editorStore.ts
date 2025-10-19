@@ -25,6 +25,7 @@ interface EditorState {
   versions: { content: string; timestamp: number }[];
   lastSavedContent: string;
   hasUnsavedChanges: boolean;
+  autoSaveTimeoutId: NodeJS.Timeout | null;
   setContent: (content: string) => void;
   setTheme: (theme: Theme) => void;
   setFontSize: (size: number) => void;
@@ -277,12 +278,13 @@ export const useEditorStore = create<EditorState>()(
       showOutline: false,
       lineNumbers: true,
       autoSave: true,
-      syncScroll: true,
+      syncScroll: false,
       savedDocuments: [],
       currentDocId: null,
       versions: [],
       lastSavedContent: defaultContent,
       hasUnsavedChanges: false,
+      autoSaveTimeoutId: null,
       setContent: (content) => {
         const state = get();
         const hasChanges = content !== state.lastSavedContent;
@@ -293,11 +295,11 @@ export const useEditorStore = create<EditorState>()(
         });
         
         if (state.autoSave) {
-          if ((window as any).autoSaveTimeout) {
-            clearTimeout((window as any).autoSaveTimeout);
+          if (state.autoSaveTimeoutId) {
+            clearTimeout(state.autoSaveTimeoutId);
           }
           
-          (window as any).autoSaveTimeout = setTimeout(() => {
+          const timeoutId = setTimeout(() => {
             get().saveVersion();
             const currentState = get();
             
@@ -329,7 +331,10 @@ export const useEditorStore = create<EditorState>()(
                 hasUnsavedChanges: false
               });
             }
+            set({ autoSaveTimeoutId: null });
           }, 2000);
+          
+          set({ autoSaveTimeoutId: timeoutId });
         }
       },
       setTheme: (theme) => set({ theme }),
