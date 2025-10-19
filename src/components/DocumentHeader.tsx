@@ -149,17 +149,19 @@ export function DocumentHeader() {
   };
 
   const handleExportMarkdown = () => {
+    const fileName = currentDoc?.name || content.match(/^#\s+(.+)$/m)?.[1] || 'document';
     const blob = new Blob([content], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${currentDoc?.name || 'document'}.md`;
+    a.download = `${fileName}.md`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success('Exported as Markdown');
   };
 
   const handleExportHTML = async () => {
+    const fileName = currentDoc?.name || content.match(/^#\s+(.+)$/m)?.[1] || 'document';
     const { default: ReactMarkdown } = await import('react-markdown');
     const { default: rehypeHighlight } = await import('rehype-highlight');
     const { default: remarkGfm } = await import('remark-gfm');
@@ -172,32 +174,8 @@ export function DocumentHeader() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${currentDoc?.name || 'Document'}</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5.5.1/github-markdown.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css">
-  <style>
-    body { 
-      max-width: 900px; 
-      margin: 40px auto; 
-      padding: 0 20px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    }
-    .markdown-body { 
-      box-sizing: border-box;
-      min-width: 200px;
-    }
-  </style>
-</head>
-<body class="markdown-body">
-${renderToString(
-  <ReactMarkdown 
-    remarkPlugins={[remarkGfm, remarkMath]} 
-    rehypePlugins={[rehypeHighlight, rehypeKatex]}
-  >
-    {content}
-  </ReactMarkdown>
-)}
+  <title>${fileName}</title>
+...
 </body>
 </html>`;
     
@@ -205,7 +183,7 @@ ${renderToString(
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${currentDoc?.name || 'document'}.html`;
+    a.download = `${fileName}.html`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success('Exported as HTML');
@@ -213,6 +191,7 @@ ${renderToString(
 
   const handleExportPDF = async () => {
     try {
+      const fileName = currentDoc?.name || content.match(/^#\s+(.+)$/m)?.[1] || 'document';
       const { jsPDF } = await import('jspdf');
       const html2canvas = (await import('html2canvas')).default;
       
@@ -246,7 +225,7 @@ ${renderToString(
       const imgY = 10;
 
       pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-      pdf.save(`${currentDoc?.name || 'document'}.pdf`);
+      pdf.save(`${fileName}.pdf`);
       toast.success('Exported as PDF');
     } catch (error) {
       console.error('PDF export error:', error);
@@ -256,6 +235,7 @@ ${renderToString(
 
   const handleExportDOCX = async () => {
     try {
+      const fileName = currentDoc?.name || content.match(/^#\s+(.+)$/m)?.[1] || 'document';
       const TurndownService = (await import('turndown')).default;
       const { default: ReactMarkdown } = await import('react-markdown');
       const { renderToString } = await import('react-dom/server');
@@ -278,7 +258,7 @@ ${renderToString(
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${currentDoc?.name || 'document'}.doc`;
+      a.download = `${fileName}.doc`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success('Exported as DOCX');
