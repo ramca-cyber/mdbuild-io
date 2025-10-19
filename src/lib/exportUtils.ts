@@ -1,153 +1,3 @@
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
-import JSZip from 'jszip';
-
-export const exportToMarkdown = (content: string, filename: string) => {
-  const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
-  downloadBlob(blob, `${filename}.md`);
-};
-
-export const exportToHtml = (content: string, filename: string, previewElement?: HTMLElement) => {
-  let htmlContent = '';
-  
-  if (previewElement) {
-    const styles = Array.from(document.styleSheets)
-      .map(sheet => {
-        try {
-          return Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n');
-        } catch {
-          return '';
-        }
-      })
-      .join('\n');
-    
-    htmlContent = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${filename}</title>
-  <style>${styles}</style>
-</head>
-<body>
-  ${previewElement.innerHTML}
-</body>
-</html>`;
-  } else {
-    htmlContent = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${filename}</title>
-</head>
-<body>
-  <pre>${content}</pre>
-</body>
-</html>`;
-  }
-  
-  const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-  downloadBlob(blob, `${filename}.html`);
-};
-
-export const exportToPdf = async (previewElement: HTMLElement, filename: string) => {
-  const canvas = await html2canvas(previewElement, {
-    scale: 2,
-    useCORS: true,
-    logging: false,
-    backgroundColor: '#ffffff',
-  });
-  
-  const imgData = canvas.toDataURL('image/png');
-  const pdf = new jsPDF({
-    orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-    unit: 'px',
-    format: [canvas.width, canvas.height],
-  });
-  
-  pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-  pdf.save(`${filename}.pdf`);
-};
-
-export const exportToImage = async (
-  previewElement: HTMLElement,
-  filename: string,
-  format: 'png' | 'jpeg' = 'png'
-) => {
-  const canvas = await html2canvas(previewElement, {
-    scale: 2,
-    useCORS: true,
-    logging: false,
-    backgroundColor: format === 'jpeg' ? '#ffffff' : null,
-  });
-  
-  canvas.toBlob((blob) => {
-    if (blob) {
-      downloadBlob(blob, `${filename}.${format}`);
-    }
-  }, `image/${format}`, 0.95);
-};
-
-export const exportToDocx = (content: string, filename: string) => {
-  const htmlContent = `
-    <html xmlns:o='urn:schemas-microsoft-com:office:office' 
-          xmlns:w='urn:schemas-microsoft-com:office:word' 
-          xmlns='http://www.w3.org/TR/REC-html40'>
-    <head><meta charset='utf-8'></head>
-    <body>
-      <pre>${content}</pre>
-    </body>
-    </html>
-  `;
-  
-  const blob = new Blob([htmlContent], { 
-    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
-  });
-  downloadBlob(blob, `${filename}.docx`);
-};
-
-export const exportToZip = async (
-  content: string,
-  filename: string,
-  includeHtml: boolean = false,
-  previewElement?: HTMLElement
-) => {
-  const zip = new JSZip();
-  
-  zip.file(`${filename}.md`, content);
-  
-  if (includeHtml && previewElement) {
-    const styles = Array.from(document.styleSheets)
-      .map(sheet => {
-        try {
-          return Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n');
-        } catch {
-          return '';
-        }
-      })
-      .join('\n');
-    
-    const htmlContent = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${filename}</title>
-  <style>${styles}</style>
-</head>
-<body>
-  ${previewElement.innerHTML}
-</body>
-</html>`;
-    
-    zip.file(`${filename}.html`, htmlContent);
-  }
-  
-  const blob = await zip.generateAsync({ type: 'blob' });
-  downloadBlob(blob, `${filename}.zip`);
-};
-
 const downloadBlob = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -157,4 +7,117 @@ const downloadBlob = (blob: Blob, filename: string) => {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+};
+
+export const exportToMarkdown = (content: string, filename: string) => {
+  const blob = new Blob([content], { type: 'text/markdown' });
+  downloadBlob(blob, filename.endsWith('.md') ? filename : `${filename}.md`);
+};
+
+export const exportToHtml = async (content: string, filename: string) => {
+  const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${filename}</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    pre { background: #f4f4f4; padding: 1rem; overflow-x: auto; }
+    code { background: #f4f4f4; padding: 0.2rem 0.4rem; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <pre>${content}</pre>
+</body>
+</html>`;
+  
+  const blob = new Blob([htmlContent], { type: 'text/html' });
+  downloadBlob(blob, filename.endsWith('.html') ? filename : `${filename}.html`);
+};
+
+export const exportToPdf = async (content: string, filename: string) => {
+  const { default: jsPDF } = await import('jspdf');
+  
+  const doc = new jsPDF();
+  const lines = doc.splitTextToSize(content, 180);
+  let y = 20;
+  
+  lines.forEach((line: string) => {
+    if (y > 280) {
+      doc.addPage();
+      y = 20;
+    }
+    doc.text(line, 15, y);
+    y += 7;
+  });
+  
+  doc.save(filename.endsWith('.pdf') ? filename : `${filename}.pdf`);
+};
+
+export const exportToImage = async (content: string, filename: string, format: 'png' | 'jpeg' = 'png') => {
+  const { default: html2canvas } = await import('html2canvas');
+  
+  const container = document.createElement('div');
+  container.style.cssText = `
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    width: 800px;
+    padding: 2rem;
+    background: white;
+    font-family: monospace;
+    white-space: pre-wrap;
+  `;
+  container.textContent = content;
+  document.body.appendChild(container);
+  
+  const canvas = await html2canvas(container);
+  document.body.removeChild(container);
+  
+  canvas.toBlob((blob) => {
+    if (blob) {
+      const ext = format === 'jpeg' ? '.jpg' : '.png';
+      downloadBlob(blob, filename.endsWith(ext) ? filename : `${filename}${ext}`);
+    }
+  }, `image/${format}`);
+};
+
+export const exportToDocx = async (content: string, filename: string) => {
+  const htmlContent = `<!DOCTYPE html>
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>
+<head><meta charset='utf-8'></head>
+<body><pre>${content}</pre></body>
+</html>`;
+  
+  const blob = new Blob([htmlContent], { type: 'application/msword' });
+  downloadBlob(blob, filename.endsWith('.docx') ? filename : `${filename}.docx`);
+};
+
+export const exportToZip = async (content: string, filename: string, includeHtml: boolean = false) => {
+  const JSZip = (await import('jszip')).default;
+  const zip = new JSZip();
+  
+  zip.file(`${filename}.md`, content);
+  
+  if (includeHtml) {
+    const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${filename}</title>
+</head>
+<body><pre>${content}</pre></body>
+</html>`;
+    zip.file(`${filename}.html`, htmlContent);
+  }
+  
+  const blob = await zip.generateAsync({ type: 'blob' });
+  downloadBlob(blob, filename.endsWith('.zip') ? filename : `${filename}.zip`);
 };

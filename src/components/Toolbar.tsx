@@ -36,11 +36,7 @@ import { SavedDocuments } from '@/components/SavedDocuments';
 import { toast } from 'sonner';
 import React from 'react';
 
-interface ToolbarProps {
-  onExport?: () => void;
-}
-
-export const Toolbar = ({ onExport }: ToolbarProps) => {
+export const Toolbar = () => {
   const { 
     theme, 
     setTheme, 
@@ -77,7 +73,7 @@ export const Toolbar = ({ onExport }: ToolbarProps) => {
     a.download = 'document.md';
     a.click();
     URL.revokeObjectURL(url);
-    toast.success('Markdown exported successfully');
+    toast.success('Exported as Markdown');
   };
 
   const handleImport = () => {
@@ -352,7 +348,7 @@ export const Toolbar = ({ onExport }: ToolbarProps) => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={onExport || handleExport}
+          onClick={handleExport}
           title="Export Document"
         >
           <FileDown className="h-4 w-4" />
