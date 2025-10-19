@@ -33,6 +33,7 @@ export const Editor = () => {
     [setContent]
   );
 
+  // Dispatch editor scroll events
   useEffect(() => {
     if (!syncScroll || !editorRef.current) return;
 
@@ -46,6 +47,22 @@ export const Editor = () => {
 
     editorScroll.addEventListener('scroll', handleScroll);
     return () => editorScroll.removeEventListener('scroll', handleScroll);
+  }, [syncScroll]);
+
+  // Listen to preview scroll events for bidirectional sync
+  useEffect(() => {
+    if (!syncScroll || !editorRef.current) return;
+
+    const editorScroll = editorRef.current.querySelector('.cm-scroller');
+    if (!editorScroll) return;
+
+    const handlePreviewScroll = (e: CustomEvent) => {
+      const scrollPercentage = e.detail;
+      editorScroll.scrollTop = scrollPercentage * (editorScroll.scrollHeight - editorScroll.clientHeight);
+    };
+
+    window.addEventListener('preview-scroll', handlePreviewScroll as EventListener);
+    return () => window.removeEventListener('preview-scroll', handlePreviewScroll as EventListener);
   }, [syncScroll]);
 
   return (

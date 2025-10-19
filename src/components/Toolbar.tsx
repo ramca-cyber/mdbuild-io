@@ -19,7 +19,6 @@ import {
   Eye,
   EyeOff,
   SplitSquareHorizontal,
-  Save,
   Settings,
   BookTemplate,
   ListTree,
@@ -46,7 +45,6 @@ export const Toolbar = () => {
     setContent, 
     showOutline,
     setShowOutline,
-    saveDocument,
     syncScroll,
     setSyncScroll,
     setCurrentDocId,
@@ -109,12 +107,6 @@ export const Toolbar = () => {
     setViewMode(modes[nextIndex]);
   };
 
-  const handleSave = () => {
-    const title = content.match(/^#\s+(.+)$/m)?.[1] || 'Untitled';
-    saveDocument(title);
-    toast.success('Document saved successfully');
-  };
-
   const handleNewDocument = () => {
     const defaultContent = `# Welcome to Markdown Editor
 
@@ -145,7 +137,7 @@ Start writing your markdown here...`;
 
   return (
     <div className="flex items-center gap-2 px-2 sm:px-4 py-2 bg-toolbar-bg border-b border-border overflow-x-auto">
-      {/* Save & Documents */}
+      {/* Documents & Templates */}
       <div className="hidden lg:flex items-center gap-1">
         <Button
           variant="ghost"
@@ -163,15 +155,6 @@ Start writing your markdown here...`;
           title="Import File"
         >
           <FileUp className="h-4 w-4" />
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleSave}
-          title="Save Document (Ctrl+S)"
-        >
-          <Save className="h-4 w-4" />
         </Button>
 
         <Drawer>

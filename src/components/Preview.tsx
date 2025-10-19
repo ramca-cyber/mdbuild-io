@@ -138,6 +138,7 @@ export const Preview = () => {
     return () => clearTimeout(timeoutId);
   }, [theme]);
 
+  // Listen to editor scroll events
   useEffect(() => {
     if (!syncScroll || !previewRef.current) return;
 
@@ -152,6 +153,23 @@ export const Preview = () => {
 
     window.addEventListener('editor-scroll', handleEditorScroll);
     return () => window.removeEventListener('editor-scroll', handleEditorScroll);
+  }, [syncScroll]);
+
+  // Dispatch preview scroll events for bidirectional sync
+  useEffect(() => {
+    if (!syncScroll || !previewRef.current) return;
+
+    const preview = previewRef.current;
+    const handleScroll = () => {
+      const maxScroll = preview.scrollHeight - preview.clientHeight;
+      if (maxScroll > 0) {
+        const scrollPercentage = preview.scrollTop / maxScroll;
+        window.dispatchEvent(new CustomEvent('preview-scroll', { detail: scrollPercentage }));
+      }
+    };
+
+    preview.addEventListener('scroll', handleScroll);
+    return () => preview.removeEventListener('scroll', handleScroll);
   }, [syncScroll]);
 
   return (

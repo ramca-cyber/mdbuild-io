@@ -38,6 +38,8 @@ export const DocumentHeader = () => {
     setCurrentDocId,
     autoSave,
     setAutoSave,
+    saveDocument,
+    content,
   } = useEditorStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
@@ -94,6 +96,12 @@ export const DocumentHeader = () => {
     setContent(getDefaultContent());
     setCurrentDocId(null);
     toast.success('New document created');
+  };
+
+  const handleSave = () => {
+    const title = content.match(/^#\s+(.+)$/m)?.[1] || 'Untitled';
+    saveDocument(title);
+    toast.success('Document saved successfully');
   };
   
   return (
@@ -193,15 +201,26 @@ export const DocumentHeader = () => {
             </DropdownMenu>
             
             {currentDoc && (
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={handleStartEdit}
-                className="h-7 w-7"
-                title="Rename document"
-              >
-                <Edit2 className="h-3 w-3" />
-              </Button>
+              <>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={handleStartEdit}
+                  className="h-7 w-7"
+                  title="Rename document"
+                >
+                  <Edit2 className="h-3 w-3" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={handleSave}
+                  className="h-7 w-7"
+                  title="Save document (Ctrl+S)"
+                >
+                  <Save className="h-3 w-3" />
+                </Button>
+              </>
             )}
           </>
         )}
