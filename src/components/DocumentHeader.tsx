@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useEditorStore } from '@/store/editorStore';
+import { useEditorStore, getDefaultContent } from '@/store/editorStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -91,7 +91,7 @@ export const DocumentHeader = () => {
   };
 
   const handleNewDocument = () => {
-    setContent('# New Document\n\nStart writing...');
+    setContent(getDefaultContent());
     setCurrentDocId(null);
     toast.success('New document created');
   };

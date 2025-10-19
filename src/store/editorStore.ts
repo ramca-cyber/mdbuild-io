@@ -41,60 +41,224 @@ interface EditorState {
 
 const defaultContent = `# Welcome to MDBuild.io 🚀
 
-A modern, powerful markdown editor with live preview.
+A modern, powerful markdown editor with live preview and advanced features.
 
-## Features
+## ✨ Features Overview
 
-- **GitHub Flavored Markdown** support
-- **Mermaid diagrams** for visualizations
-- **Math rendering** with KaTeX
-- **Syntax highlighting** for code blocks
-- **Split-pane** editor with live preview
+- **GitHub Flavored Markdown** - Full GFM support with tables, strikethrough, and more
+- **Live Preview** - See changes instantly as you type
+- **Mermaid Diagrams** - Create flowcharts, sequences, and more
+- **Math Equations** - Beautiful math rendering with KaTeX
+- **Syntax Highlighting** - Code blocks with language-specific highlighting
+- **Emoji Support** - :rocket: :sparkles: :heart:
+- **Auto-save** - Never lose your work
+- **Export Options** - Save as Markdown, HTML, PDF, and more
 
-## Try it out
+---
 
+## 📝 Text Formatting
+
+**Bold text** and *italic text* and ***bold italic***
+
+~~Strikethrough text~~
+
+\`inline code\` and keyboard shortcuts like <kbd>Ctrl</kbd> + <kbd>S</kbd>
+
+> Blockquotes for highlighting important information
+> 
+> Can span multiple lines
+
+---
+
+## 📊 Tables
+
+| Feature | Status | Priority |
+|---------|--------|----------|
+| Markdown Support | ✅ Done | High |
+| Live Preview | ✅ Done | High |
+| Export to PDF | ✅ Done | Medium |
+| Cloud Sync | ⏳ Planned | Low |
+
+---
+
+## 💻 Code Blocks
+
+### JavaScript Example
 \`\`\`javascript
+// Function to greet users
 function greet(name) {
   return \`Hello, \${name}! Welcome to MDBuild.io\`;
 }
 
 console.log(greet('World'));
+
+// Async/await example
+async function fetchData() {
+  const response = await fetch('https://api.example.com');
+  return await response.json();
+}
 \`\`\`
 
-## Math Support
+### Python Example
+\`\`\`python
+# List comprehension
+squares = [x**2 for x in range(10)]
 
-Inline math: $E = mc^2$
+# Class definition
+class Developer:
+    def __init__(self, name):
+        self.name = name
+    
+    def code(self):
+        return f"{self.name} is coding!"
+\`\`\`
 
-Block math:
+---
 
+## 🧮 Math Equations
+
+### Inline Math
+The famous equation $E = mc^2$ shows the relationship between energy and mass.
+
+The quadratic formula: $x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$
+
+### Block Math
+
+**Pythagorean Theorem:**
+$$
+a^2 + b^2 = c^2
+$$
+
+**Integral:**
 $$
 \\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}
 $$
 
-## Mermaid Diagrams
+**Matrix:**
+$$
+\\begin{bmatrix}
+a & b \\\\
+c & d
+\\end{bmatrix}
+$$
 
-\`\`\`mermaid
-graph LR
-    A[Start] --> B{Decision}
-    B -->|Yes| C[Action 1]
-    B -->|No| D[Action 2]
-    C --> E[End]
-    D --> E
-\`\`\`
-
-## Task Lists
-
-- [x] Setup editor
-- [x] Add live preview
-- [ ] Export to PDF
-- [ ] Add templates
-
-> **Tip:** Try editing this content to see the live preview in action!
+**Summation:**
+$$
+\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}
+$$
 
 ---
 
-Built with ❤️ for developers and writers.
+## 📈 Mermaid Diagrams
+
+### Flowchart
+\`\`\`mermaid
+graph TD
+    A[Start] --> B{Is it working?}
+    B -->|Yes| C[Awesome!]
+    B -->|No| D[Debug]
+    D --> B
+    C --> E[Ship it!]
+\`\`\`
+
+### Sequence Diagram
+\`\`\`mermaid
+sequenceDiagram
+    participant User
+    participant Browser
+    participant Server
+    User->>Browser: Enter URL
+    Browser->>Server: HTTP Request
+    Server-->>Browser: HTML Response
+    Browser-->>User: Render Page
+\`\`\`
+
+### Pie Chart
+\`\`\`mermaid
+pie title Project Time Distribution
+    "Coding" : 40
+    "Debugging" : 30
+    "Meetings" : 15
+    "Coffee Breaks" : 15
+\`\`\`
+
+---
+
+## ✅ Task Lists
+
+### Today's Tasks
+- [x] Learn markdown basics
+- [x] Try out code blocks
+- [x] Create a mermaid diagram
+- [ ] Write my first document
+- [ ] Share with team
+
+### Project Roadmap
+- [x] Phase 1: Core editor
+- [x] Phase 2: Live preview
+- [ ] Phase 3: Collaboration
+- [ ] Phase 4: Mobile app
+
+---
+
+## 🔗 Links and Images
+
+[Visit MDBuild.io](https://mdbuild.io)
+
+[Link with title](https://example.com "Example Website")
+
+Automatic link: https://www.example.com
+
+---
+
+## 📋 Lists
+
+### Unordered List
+- First item
+- Second item
+  - Nested item
+  - Another nested item
+- Third item
+
+### Ordered List
+1. First step
+2. Second step
+   1. Substep A
+   2. Substep B
+3. Third step
+
+---
+
+## 🎯 Getting Started
+
+1. **Start typing** in the left panel
+2. **See the preview** update in real-time on the right
+3. **Save your work** with the Save button or <kbd>Ctrl</kbd> + <kbd>S</kbd>
+4. **Export** to multiple formats (MD, HTML, PDF, DOCX)
+5. **Use templates** for quick starts
+
+> **Pro Tip:** Toggle between Editor, Preview, and Split views using the view mode button in the toolbar!
+
+---
+
+## 🎨 Emoji Support
+
+Express yourself with emojis! :tada: :rocket: :sparkles:
+
+- :heart: Love it!
+- :fire: Hot feature!
+- :bulb: Great idea!
+- :zap: Fast performance!
+- :star: Favorite!
+
+---
+
+**Happy Writing!** ✨
+
+*Built with ❤️ for developers and writers.*
 `;
+
+export const getDefaultContent = () => defaultContent;
 
 export const useEditorStore = create<EditorState>()(
   persist(
@@ -152,7 +316,7 @@ export const useEditorStore = create<EditorState>()(
           currentDocId: wasCurrentDoc ? null : state.currentDocId,
         });
         if (wasCurrentDoc) {
-          set({ content: '# New Document\n\nStart writing...' });
+          set({ content: defaultContent });
         }
       },
       renameDocument: (id, newName) => {
