@@ -77,7 +77,7 @@ const Index = () => {
           </span>
         </div>
         <div className="flex items-center gap-4">
-          <span className="hidden sm:inline">Lines: {useEditorStore.getState().content.split('\n').length}</span>
+          <span>Lines: {useEditorStore.getState().content.split('\n').length}</span>
           <span>v1.0.0</span>
         </div>
       </footer>

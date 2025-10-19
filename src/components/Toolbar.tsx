@@ -104,6 +104,14 @@ export const Toolbar = () => {
         >
           <Italic className="h-4 w-4" />
         </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => insertText('`', '`', 'code')}
+          title="Code"
+        >
+          <Code className="h-4 w-4" />
+        </Button>
       </div>
 
       <Separator orientation="vertical" className="h-6" />
@@ -112,7 +120,7 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => insertBlock('# Heading 1')}
+          onClick={() => insertText('# ', '', 'Heading 1')}
           title="Heading 1"
         >
           <Heading1 className="h-4 w-4" />
@@ -120,7 +128,7 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => insertBlock('## Heading 2')}
+          onClick={() => insertText('## ', '', 'Heading 2')}
           title="Heading 2"
         >
           <Heading2 className="h-4 w-4" />
@@ -141,7 +149,7 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => insertText('![alt text](', ')', 'image-url')}
+          onClick={() => insertBlock('![Alt text](image-url.jpg)')}
           title="Image"
         >
           <Image className="h-4 w-4" />
@@ -154,7 +162,7 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => insertBlock('- Item 1\n- Item 2\n- Item 3')}
+          onClick={() => insertText('- ', '', 'list item')}
           title="Bullet List"
         >
           <List className="h-4 w-4" />
@@ -162,7 +170,7 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => insertBlock('1. Item 1\n2. Item 2\n3. Item 3')}
+          onClick={() => insertText('1. ', '', 'list item')}
           title="Numbered List"
         >
           <ListOrdered className="h-4 w-4" />
@@ -170,7 +178,7 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => insertBlock('- [ ] Task 1\n- [ ] Task 2\n- [x] Task 3')}
+          onClick={() => insertText('- [ ] ', '', 'task')}
           title="Task List"
         >
           <CheckSquare className="h-4 w-4" />
@@ -183,15 +191,7 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => insertText('`', '`', 'code')}
-          title="Inline Code"
-        >
-          <Code className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => insertBlock('> Quote')}
+          onClick={() => insertText('> ', '', 'quote')}
           title="Quote"
         >
           <Quote className="h-4 w-4" />
@@ -220,18 +220,8 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={cycleViewMode}
-          title={`View: ${viewMode}`}
-        >
-          {viewMode === 'split' && <SplitSquareHorizontal className="h-4 w-4" />}
-          {viewMode === 'editor' && <EyeOff className="h-4 w-4" />}
-          {viewMode === 'preview' && <Eye className="h-4 w-4" />}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
           onClick={handleImport}
-          title="Import"
+          title="Import File"
         >
           <FileUp className="h-4 w-4" />
         </Button>
@@ -239,7 +229,7 @@ export const Toolbar = () => {
           variant="ghost"
           size="icon"
           onClick={handleExport}
-          title="Export"
+          title="Export Markdown"
         >
           <FileDown className="h-4 w-4" />
         </Button>
@@ -250,6 +240,16 @@ export const Toolbar = () => {
           title="Toggle Theme"
         >
           {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={cycleViewMode}
+          title={`View: ${viewMode}`}
+        >
+          {viewMode === 'split' && <SplitSquareHorizontal className="h-4 w-4" />}
+          {viewMode === 'editor' && <Eye className="h-4 w-4" />}
+          {viewMode === 'preview' && <EyeOff className="h-4 w-4" />}
         </Button>
       </div>
     </div>
