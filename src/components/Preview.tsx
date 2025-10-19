@@ -162,17 +162,23 @@ export const Preview = () => {
           
           for (let index = 0; index < containers.length; index++) {
             const container = containers[index] as HTMLElement;
-            const containerId = container.id;
-            const metadata = diagramsRef.current.get(containerId);
+            // Try metadata first, then fallback to hidden code element
+            const existingId = container.id || `mermaid-container-${index}`;
+            container.id = existingId;
+            const metadata = diagramsRef.current.get(existingId);
+            const codeFromDom = container.querySelector('.mermaid-code')?.textContent || '';
+            const code = metadata?.code || codeFromDom;
             
-            if (!metadata || !metadata.code) continue;
+            if (!code) continue;
             
             try {
               const renderID = `mermaid-theme-${Date.now()}-${index}`;
-              const { svg } = await mermaid.render(renderID, metadata.code);
+              const { svg } = await mermaid.render(renderID, code);
               if (container && container.parentNode) {
                 container.innerHTML = svg;
               }
+              // Ensure our map stays up to date
+              diagramsRef.current.set(existingId, { code, containerId: existingId });
             } catch (e) {
               console.error('Mermaid re-render error:', e);
             }
