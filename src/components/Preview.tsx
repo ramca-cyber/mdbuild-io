@@ -26,12 +26,13 @@ interface DiagramMetadata {
 }
 
 export const Preview = () => {
-  const { content, theme, syncScroll } = useEditorStore();
+  const { content, theme, syncScroll, previewRefreshKey } = useEditorStore();
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const diagramsRef = useRef<Map<string, DiagramMetadata>>(new Map());
   const renderingRef = useRef(false);
+  const syncScrollRef = useRef(syncScroll);
 
   // Unified function to render mermaid diagrams
   const renderMermaidDiagrams = async () => {
@@ -109,7 +110,7 @@ export const Preview = () => {
     });
   };
 
-  // Handle content changes
+  // Handle content changes and force refresh
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       requestAnimationFrame(() => {
@@ -119,7 +120,7 @@ export const Preview = () => {
     }, 50);
     
     return () => clearTimeout(timeoutId);
-  }, [content, toast]);
+  }, [content, toast, previewRefreshKey]);
 
   // Handle theme changes
   useEffect(() => {
@@ -204,16 +205,21 @@ export const Preview = () => {
     return () => clearTimeout(timeoutId);
   }, [theme]);
 
-  // Synchronized scrolling
+  // Track syncScroll changes without re-rendering diagrams
   useEffect(() => {
-    if (!syncScroll || !previewRef.current) return;
+    syncScrollRef.current = syncScroll;
+  }, [syncScroll]);
+
+  // Synchronized scrolling - setup once
+  useEffect(() => {
+    if (!previewRef.current) return;
 
     const preview = previewRef.current;
     let isScrolling = false;
     let scrollTimeout: NodeJS.Timeout;
 
     const handleEditorScroll = (e: Event) => {
-      if (isScrolling) return;
+      if (!syncScrollRef.current || isScrolling) return;
       
       const customEvent = e as CustomEvent;
       const scrollPercentage = customEvent.detail;
@@ -228,7 +234,7 @@ export const Preview = () => {
     };
 
     const handlePreviewScroll = () => {
-      if (isScrolling) return;
+      if (!syncScrollRef.current || isScrolling) return;
       
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
@@ -248,7 +254,7 @@ export const Preview = () => {
       window.removeEventListener('editor-scroll', handleEditorScroll);
       preview.removeEventListener('scroll', handlePreviewScroll);
     };
-  }, [syncScroll]);
+  }, []); // Only setup once
 
   return (
     <div 

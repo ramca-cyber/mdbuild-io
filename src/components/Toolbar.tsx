@@ -20,6 +20,7 @@ import {
   Settings,
   ListTree,
   Link,
+  RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
@@ -44,6 +45,7 @@ export const Toolbar = () => {
     setShowOutline,
     syncScroll,
     setSyncScroll,
+    forceRefreshPreview,
   } = useEditorStore();
 
   const insertText = (before: string, after: string = '', placeholder: string = 'text') => {
@@ -226,6 +228,18 @@ export const Toolbar = () => {
 
       {/* View & Settings */}
       <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => {
+            forceRefreshPreview();
+            toast.success('Preview refreshed');
+          }}
+          title="Force Refresh Preview"
+        >
+          <RefreshCw className="h-4 w-4" />
+        </Button>
+        
         <Toggle
           pressed={syncScroll}
           onPressedChange={setSyncScroll}

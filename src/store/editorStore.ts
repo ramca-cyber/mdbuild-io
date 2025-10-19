@@ -26,6 +26,7 @@ interface EditorState {
   lastSavedContent: string;
   hasUnsavedChanges: boolean;
   autoSaveTimeoutId: ReturnType<typeof setTimeout> | null;
+  previewRefreshKey: number;
   setContent: (content: string) => void;
   setTheme: (theme: Theme) => void;
   setFontSize: (size: number) => void;
@@ -36,6 +37,7 @@ interface EditorState {
   setAutoSave: (enabled: boolean) => void;
   setSyncScroll: (enabled: boolean) => void;
   setCurrentDocId: (id: string | null) => void;
+  forceRefreshPreview: () => void;
   saveDocument: (name: string) => void;
   saveDocumentAs: (name: string) => void;
   loadDocument: (id: string) => void;
@@ -285,6 +287,7 @@ export const useEditorStore = create<EditorState>()(
       lastSavedContent: defaultContent,
       hasUnsavedChanges: false,
       autoSaveTimeoutId: null,
+      previewRefreshKey: 0,
       setContent: (content) => {
         const state = get();
         const hasChanges = content !== state.lastSavedContent;
@@ -346,6 +349,7 @@ export const useEditorStore = create<EditorState>()(
       setAutoSave: (enabled) => set({ autoSave: enabled }),
       setSyncScroll: (enabled) => set({ syncScroll: enabled }),
       setCurrentDocId: (id) => set({ currentDocId: id }),
+      forceRefreshPreview: () => set({ previewRefreshKey: get().previewRefreshKey + 1 }),
       saveDocument: (name) => {
         const state = get();
         
