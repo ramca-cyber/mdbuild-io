@@ -19,6 +19,9 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        "editor-bg": "hsl(var(--editor-bg))",
+        "preview-bg": "hsl(var(--preview-bg))",
+        "toolbar-bg": "hsl(var(--toolbar-bg))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -87,5 +90,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 } satisfies Config;
