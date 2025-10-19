@@ -23,8 +23,8 @@ import {
   Settings,
   BookTemplate,
   ListTree,
-  FileText,
   Link,
+  FilePlus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -33,7 +33,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { SettingsSheet } from '@/components/SettingsSheet';
 import { TemplatesDrawer } from '@/components/TemplatesDrawer';
-import { SavedDocuments } from '@/components/SavedDocuments';
 import { toast } from 'sonner';
 import React from 'react';
 
@@ -50,6 +49,7 @@ export const Toolbar = () => {
     saveDocument,
     syncScroll,
     setSyncScroll,
+    setCurrentDocId,
   } = useEditorStore();
 
   const insertText = (before: string, after: string = '', placeholder: string = 'text') => {
@@ -115,6 +115,15 @@ export const Toolbar = () => {
     toast.success('Document saved successfully');
   };
 
+  const handleNewDocument = () => {
+    const defaultContent = `# Welcome to Markdown Editor
+
+Start writing your markdown here...`;
+    setContent(defaultContent);
+    setCurrentDocId(null);
+    toast.success('New document created');
+  };
+
   const handleImageUpload = () => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -141,25 +150,29 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
+          onClick={handleNewDocument}
+          title="New Document"
+        >
+          <FilePlus className="h-4 w-4" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleImport}
+          title="Import File"
+        >
+          <FileUp className="h-4 w-4" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={handleSave}
           title="Save Document (Ctrl+S)"
         >
           <Save className="h-4 w-4" />
         </Button>
-        
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" title="Saved Documents">
-              <FileText className="h-4 w-4" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-80">
-            <SheetHeader>
-              <SheetTitle>Saved Documents</SheetTitle>
-            </SheetHeader>
-            <SavedDocuments />
-          </SheetContent>
-        </Sheet>
 
         <Drawer>
           <DrawerTrigger asChild>
@@ -349,14 +362,6 @@ export const Toolbar = () => {
       </div>
 
       <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleImport}
-          title="Import File"
-        >
-          <FileUp className="h-4 w-4" />
-        </Button>
         <Button
           variant="ghost"
           size="icon"
