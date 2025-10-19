@@ -23,6 +23,8 @@ interface EditorState {
   savedDocuments: SavedDocument[];
   currentDocId: string | null;
   versions: { content: string; timestamp: number }[];
+  lastSavedContent: string;
+  hasUnsavedChanges: boolean;
   setContent: (content: string) => void;
   setTheme: (theme: Theme) => void;
   setFontSize: (size: number) => void;
@@ -40,6 +42,7 @@ interface EditorState {
   renameDocument: (id: string, newName: string) => void;
   saveVersion: () => void;
   restoreVersion: (index: number) => void;
+  createNewDocument: () => void;
 }
 
 const defaultContent = `# Welcome to MDBuild.io 🚀
@@ -278,16 +281,27 @@ export const useEditorStore = create<EditorState>()(
       savedDocuments: [],
       currentDocId: null,
       versions: [],
+      lastSavedContent: defaultContent,
+      hasUnsavedChanges: false,
       setContent: (content) => {
-        set({ content });
         const state = get();
+        const hasChanges = content !== state.lastSavedContent;
+        
+        set({ 
+          content,
+          hasUnsavedChanges: hasChanges
+        });
+        
         if (state.autoSave) {
-          setTimeout(() => {
+          if ((window as any).autoSaveTimeout) {
+            clearTimeout((window as any).autoSaveTimeout);
+          }
+          
+          (window as any).autoSaveTimeout = setTimeout(() => {
             get().saveVersion();
-            // Auto-save the document to saved documents
             const currentState = get();
+            
             if (currentState.currentDocId) {
-              // Update existing document
               const doc = currentState.savedDocuments.find(d => d.id === currentState.currentDocId);
               if (doc) {
                 set({
@@ -296,10 +310,11 @@ export const useEditorStore = create<EditorState>()(
                       ? { ...d, content: currentState.content, timestamp: Date.now() }
                       : d
                   ),
+                  lastSavedContent: currentState.content,
+                  hasUnsavedChanges: false
                 });
               }
             } else {
-              // Auto-save as new document with auto-generated name
               const title = currentState.content.match(/^#\s+(.+)$/m)?.[1] || 'Untitled';
               const newDoc: SavedDocument = {
                 id: Date.now().toString(),
@@ -310,6 +325,8 @@ export const useEditorStore = create<EditorState>()(
               set({
                 savedDocuments: [...currentState.savedDocuments, newDoc],
                 currentDocId: newDoc.id,
+                lastSavedContent: currentState.content,
+                hasUnsavedChanges: false
               });
             }
           }, 2000);
@@ -326,16 +343,40 @@ export const useEditorStore = create<EditorState>()(
       setCurrentDocId: (id) => set({ currentDocId: id }),
       saveDocument: (name) => {
         const state = get();
-        const newDoc: SavedDocument = {
-          id: Date.now().toString(),
-          name,
-          content: state.content,
-          timestamp: Date.now(),
-        };
-        set({
-          savedDocuments: [...state.savedDocuments, newDoc],
-          currentDocId: newDoc.id,
-        });
+        
+        if (state.currentDocId) {
+          const docIndex = state.savedDocuments.findIndex(
+            (d) => d.id === state.currentDocId
+          );
+          
+          if (docIndex !== -1) {
+            const updatedDocs = [...state.savedDocuments];
+            updatedDocs[docIndex] = {
+              ...updatedDocs[docIndex],
+              name,
+              content: state.content,
+              timestamp: Date.now(),
+            };
+            set({ 
+              savedDocuments: updatedDocs,
+              lastSavedContent: state.content,
+              hasUnsavedChanges: false
+            });
+          }
+        } else {
+          const newDoc: SavedDocument = {
+            id: Date.now().toString(),
+            name,
+            content: state.content,
+            timestamp: Date.now(),
+          };
+          set({
+            savedDocuments: [...state.savedDocuments, newDoc],
+            currentDocId: newDoc.id,
+            lastSavedContent: state.content,
+            hasUnsavedChanges: false
+          });
+        }
       },
       saveDocumentAs: (name) => {
         // Save as a new document (creates a copy)
@@ -349,12 +390,19 @@ export const useEditorStore = create<EditorState>()(
         set({
           savedDocuments: [...state.savedDocuments, newDoc],
           currentDocId: newDoc.id,
+          lastSavedContent: state.content,
+          hasUnsavedChanges: false
         });
       },
       loadDocument: (id) => {
         const doc = get().savedDocuments.find((d) => d.id === id);
         if (doc) {
-          set({ content: doc.content, currentDocId: id });
+          set({ 
+            content: doc.content, 
+            currentDocId: id,
+            lastSavedContent: doc.content,
+            hasUnsavedChanges: false
+          });
         }
       },
       deleteDocument: (id) => {
@@ -391,6 +439,14 @@ export const useEditorStore = create<EditorState>()(
         if (version) {
           set({ content: version.content });
         }
+      },
+      createNewDocument: () => {
+        set({ 
+          content: defaultContent, 
+          currentDocId: null,
+          lastSavedContent: defaultContent,
+          hasUnsavedChanges: false
+        });
       },
     }),
     {

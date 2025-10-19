@@ -6,8 +6,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
@@ -21,63 +26,73 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { ChevronDown, Edit2, Check, X, Database, Trash2, FilePlus, Save } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { cn } from '@/lib/utils';
-import { calculateStorageUsage, formatStorageSize } from '@/lib/storageUtils';
+import { FileText, Plus, Save, Trash2, Database, Menu, Clock, FolderOpen, Edit2, X, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { calculateStorageUsage, formatStorageSize } from '@/lib/storageUtils';
+import { SaveAsDialog } from './SaveAsDialog';
+import { OpenDocumentDialog } from './OpenDocumentDialog';
 
-export const DocumentHeader = () => {
-  const { 
-    savedDocuments, 
-    currentDocId, 
-    loadDocument, 
-    renameDocument, 
+export function DocumentHeader() {
+  const {
+    savedDocuments,
+    currentDocId,
+    createNewDocument,
     deleteDocument,
-    setContent,
-    setCurrentDocId,
+    renameDocument,
+    loadDocument,
     autoSave,
     setAutoSave,
     saveDocument,
     saveDocumentAs,
     content,
+    hasUnsavedChanges,
   } = useEditorStore();
+  
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [storageInfo, setStorageInfo] = useState(calculateStorageUsage());
-  
-  const currentDoc = currentDocId 
-    ? savedDocuments.find(d => d.id === currentDocId) 
-    : null;
-  
-  const displayName = currentDoc?.name || 'Untitled Project';
-  
-  useEffect(() => {
-    if (currentDoc) {
-      setEditName(currentDoc.name);
-    }
-  }, [currentDoc]);
+  const [saveAsOpen, setSaveAsOpen] = useState(false);
+  const [openDocOpen, setOpenDocOpen] = useState(false);
+
+  const currentDoc = savedDocuments.find((doc) => doc.id === currentDocId);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setStorageInfo(calculateStorageUsage());
-    }, 2000);
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
-  
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + S - Save
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleQuickSave();
+      }
+      // Ctrl/Cmd + N - New Document
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        handleNewDocument();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentDoc, content]);
+
   const handleStartEdit = () => {
     if (currentDoc) {
       setEditName(currentDoc.name);
-      setIsEditing(true);
     } else {
-      // For untitled documents, suggest a name from content
       const suggestedName = content.match(/^#\s+(.+)$/m)?.[1] || 'Untitled';
       setEditName(suggestedName);
-      setIsEditing(true);
     }
+    setIsEditing(true);
   };
-  
+
   const handleSaveEdit = () => {
     const trimmedName = editName.trim();
     if (!trimmedName) {
@@ -92,215 +107,236 @@ export const DocumentHeader = () => {
     
     if (currentDoc) {
       renameDocument(currentDoc.id, trimmedName);
-      setIsEditing(false);
       toast.success('Document renamed');
     } else {
-      // Save as new document for untitled files
       saveDocument(trimmedName);
-      setIsEditing(false);
       toast.success('Document saved');
     }
-  };
-  
-  const handleCancelEdit = () => {
     setIsEditing(false);
-    if (currentDoc) {
-      setEditName(currentDoc.name);
-    }
   };
 
-  const handleDelete = (docId: string) => {
-    deleteDocument(docId);
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditName('');
+  };
+
+  const handleDelete = (id: string) => {
+    deleteDocument(id);
     setDeleteConfirm(null);
     toast.success('Document deleted');
   };
 
   const handleNewDocument = () => {
-    setContent(getDefaultContent());
-    setCurrentDocId(null);
+    createNewDocument();
     toast.success('New document created');
   };
 
-  const handleSave = () => {
-    const title = content.match(/^#\s+(.+)$/m)?.[1] || 'Untitled';
-    saveDocument(title);
-    toast.success('Document saved successfully');
-  };
-
-  const handleSaveAs = () => {
-    // Create a copy with a new name
-    const title = content.match(/^#\s+(.+)$/m)?.[1] || 'Untitled';
-    const newName = prompt('Enter new document name:', title);
-    if (newName && newName.trim()) {
-      saveDocumentAs(newName.trim());
-      toast.success('Document saved as new file');
+  const handleQuickSave = () => {
+    if (currentDoc) {
+      saveDocument(currentDoc.name);
+      toast.success('Document saved');
+    } else {
+      const title = content.match(/^#\s+(.+)$/m)?.[1] || 'Untitled';
+      saveDocument(title);
+      toast.success('Document saved');
     }
   };
-  
+
+  const handleSaveAs = (name: string) => {
+    saveDocumentAs(name);
+    toast.success('Document saved as new file');
+  };
+
+  const getRecentDocuments = () => {
+    return [...savedDocuments]
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, 5);
+  };
+
   return (
     <>
-    <div className="flex items-center gap-2 px-4 py-2 bg-muted/30 border-b border-border">
-      <div className="flex items-center gap-2 flex-1 min-w-0">
-        {isEditing ? (
-          <div className="flex items-center gap-1 flex-1 max-w-md">
-            <Input
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSaveEdit();
-                if (e.key === 'Escape') handleCancelEdit();
-              }}
-              className="h-7 text-sm"
-              autoFocus
-            />
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={handleSaveEdit}
-              className="h-7 w-7"
-            >
-              <Check className="h-3 w-3" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={handleCancelEdit}
-              className="h-7 w-7"
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          </div>
-        ) : (
-          <>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="h-7 px-2 text-sm font-medium hover:bg-accent max-w-xs"
-                >
-                  <span className="truncate">{displayName}</span>
-                  <ChevronDown className="ml-1 h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-72 z-50 bg-popover">
-                <DropdownMenuItem
-                  onClick={handleNewDocument}
-                  className="flex items-center gap-2 cursor-pointer font-medium"
-                >
-                  <FilePlus className="h-4 w-4" />
-                  New Document
+      <div className="h-12 border-b bg-background flex items-center justify-between px-4 gap-4">
+        {/* LEFT: File Menu */}
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-2">
+                <Menu className="h-4 w-4" />
+                File
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuLabel>File Operations</DropdownMenuLabel>
+              
+              <DropdownMenuItem onClick={handleNewDocument} className="cursor-pointer">
+                <Plus className="h-4 w-4 mr-2" />
+                New Document
+                <DropdownMenuShortcut>Ctrl+N</DropdownMenuShortcut>
+              </DropdownMenuItem>
+              
+              <DropdownMenuItem 
+                onClick={handleQuickSave} 
+                className="cursor-pointer"
+                disabled={!hasUnsavedChanges && !!currentDoc}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save
+                {hasUnsavedChanges && <span className="ml-1 text-primary">•</span>}
+                <DropdownMenuShortcut>Ctrl+S</DropdownMenuShortcut>
+              </DropdownMenuItem>
+              
+              {currentDoc && (
+                <DropdownMenuItem onClick={() => setSaveAsOpen(true)} className="cursor-pointer">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Save As...
                 </DropdownMenuItem>
-                
-                {currentDoc && (
-                  <DropdownMenuItem
-                    onClick={handleSaveAs}
-                    className="flex items-center gap-2 cursor-pointer font-medium"
-                  >
-                    <Save className="h-4 w-4" />
-                    Save As...
+              )}
+              
+              <DropdownMenuSeparator />
+              
+              {savedDocuments.length > 0 && (
+                <>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      <Clock className="h-4 w-4 mr-2" />
+                      Recent Documents
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent className="w-56">
+                      {getRecentDocuments().map((doc) => (
+                        <DropdownMenuItem
+                          key={doc.id}
+                          onClick={() => {
+                            loadDocument(doc.id);
+                            toast.success(`Opened "${doc.name}"`);
+                          }}
+                          className={`cursor-pointer ${doc.id === currentDocId ? 'bg-accent' : ''}`}
+                        >
+                          <FileText className="h-4 w-4 mr-2" />
+                          <span className="truncate">{doc.name}</span>
+                          {doc.id === currentDocId && <span className="ml-auto text-primary">✓</span>}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                  
+                  <DropdownMenuItem onClick={() => setOpenDocOpen(true)} className="cursor-pointer">
+                    <FolderOpen className="h-4 w-4 mr-2" />
+                    Open Document...
                   </DropdownMenuItem>
-                )}
-                
-                {savedDocuments.length > 0 && <DropdownMenuSeparator />}
-                
-                {savedDocuments.length === 0 ? (
-                  <div className="px-2 py-3 text-sm text-muted-foreground text-center">
-                    No saved documents
-                  </div>
-                ) : (
-                  savedDocuments.map((doc) => (
-                    <DropdownMenuItem
-                      key={doc.id}
-                      className={cn(
-                        "flex items-center justify-between gap-2 cursor-pointer",
-                        currentDocId === doc.id && "bg-accent"
-                      )}
-                      onSelect={(e) => e.preventDefault()}
-                    >
-                      <div 
-                        className="flex flex-col items-start gap-1 flex-1 min-w-0"
-                        onClick={() => loadDocument(doc.id)}
-                      >
-                        <div className="font-medium text-sm truncate w-full">{doc.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(doc.timestamp, { addSuffix: true })}
-                        </div>
-                      </div>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteConfirm(doc.id);
-                        }}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </DropdownMenuItem>
-                  ))
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            <Button
-              size="icon"
-              variant="ghost"
+                  
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              
+              {currentDoc && (
+                <DropdownMenuItem
+                  onClick={() => setDeleteConfirm(currentDoc.id)}
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Current Document
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* CENTER: Document Name (inline editable) */}
+        <div className="flex-1 flex items-center justify-center gap-2">
+          {isEditing ? (
+            <div className="flex items-center gap-2 max-w-md w-full">
+              <Input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSaveEdit();
+                  if (e.key === 'Escape') handleCancelEdit();
+                }}
+                className="h-8 text-sm"
+                autoFocus
+              />
+              <Button size="icon" variant="ghost" onClick={handleSaveEdit} className="h-7 w-7">
+                <Check className="h-4 w-4" />
+              </Button>
+              <Button size="icon" variant="ghost" onClick={handleCancelEdit} className="h-7 w-7">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <button
               onClick={handleStartEdit}
-              className="h-7 w-7"
-              title={currentDoc ? "Rename document" : "Name and save document"}
+              className="flex items-center gap-2 px-3 py-1 rounded hover:bg-accent transition-colors group max-w-md"
+              title="Click to rename"
             >
-              <Edit2 className="h-3 w-3" />
-            </Button>
-            
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={handleSave}
-              className="h-7 w-7"
-              title="Save document (Ctrl+S)"
-            >
-              <Save className="h-3 w-3" />
-            </Button>
-          </>
-        )}
-        
-        <div className="flex items-center gap-2 ml-2">
-          <div className="flex items-center gap-1.5">
-            <Label htmlFor="autosave" className="text-xs text-muted-foreground cursor-pointer hidden sm:inline">
-              Auto-save
-            </Label>
+              <span className="font-medium truncate">
+                {currentDoc ? currentDoc.name : 'Untitled'}
+                {hasUnsavedChanges && <span className="text-primary ml-1">•</span>}
+              </span>
+              <Edit2 className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
+            </button>
+          )}
+        </div>
+
+        {/* RIGHT: Settings & Info */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <Switch
-              id="autosave"
+              id="auto-save"
               checked={autoSave}
               onCheckedChange={setAutoSave}
-              className="scale-75"
             />
+            <Label htmlFor="auto-save" className="text-sm cursor-pointer">
+              Auto-save
+            </Label>
           </div>
-          
-          <div 
-            className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-help"
-            title={`Using ${formatStorageSize(storageInfo.bytes)} of 4MB`}
+
+          <div
+            className={`flex items-center gap-2 text-xs ${
+              storageInfo.isCritical
+                ? 'text-destructive'
+                : storageInfo.isNearLimit
+                ? 'text-yellow-600 dark:text-yellow-500'
+                : 'text-muted-foreground'
+            }`}
+            title={`Storage: ${formatStorageSize(storageInfo.bytes)} / 4MB`}
           >
-            <Database className={cn(
-              "h-3 w-3",
-              storageInfo.isCritical && "text-destructive",
-              storageInfo.isNearLimit && !storageInfo.isCritical && "text-warning"
-            )} />
-            <span className="hidden sm:inline">
-              {storageInfo.mb.toFixed(1)} MB / 4 MB
-            </span>
-            <span className="sm:hidden">{storageInfo.percentage.toFixed(0)}%</span>
+            <Database className="h-4 w-4" />
+            <span>{storageInfo.percentage.toFixed(0)}%</span>
           </div>
         </div>
       </div>
 
-      <AlertDialog open={deleteConfirm !== null} onOpenChange={() => setDeleteConfirm(null)}>
+      {/* Dialogs */}
+      <SaveAsDialog
+        open={saveAsOpen}
+        onOpenChange={setSaveAsOpen}
+        currentContent={content}
+        onSave={handleSaveAs}
+      />
+
+      <OpenDocumentDialog
+        open={openDocOpen}
+        onOpenChange={setOpenDocOpen}
+        documents={savedDocuments}
+        currentDocId={currentDocId}
+        onLoad={(id) => {
+          loadDocument(id);
+          const doc = savedDocuments.find(d => d.id === id);
+          if (doc) toast.success(`Opened "${doc.name}"`);
+        }}
+        onDelete={(id) => {
+          setDeleteConfirm(id);
+        }}
+      />
+
+      <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Document?</AlertDialogTitle>
+            <AlertDialogTitle>Delete Document</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. The document will be permanently deleted from your browser storage.
+              Are you sure you want to delete "
+              {savedDocuments.find((d) => d.id === deleteConfirm)?.name}"? This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -311,7 +347,6 @@ export const DocumentHeader = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
     </>
   );
-};
+}
