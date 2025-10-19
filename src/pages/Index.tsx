@@ -3,6 +3,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { Editor } from '@/components/Editor';
 import { Preview } from '@/components/Preview';
 import { Toolbar } from '@/components/Toolbar';
+import { DocumentHeader } from '@/components/DocumentHeader';
 import { OutlinePanel } from '@/components/OutlinePanel';
 import { TemplatesDrawer } from '@/components/TemplatesDrawer';
 import { SettingsSheet } from '@/components/SettingsSheet';
@@ -11,10 +12,12 @@ import { useEditorStore } from '@/store/editorStore';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Menu, FileText, Settings, BookTemplate, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ExportDialog } from '@/components/ExportDialog';
 
 const Index = () => {
   const { theme, viewMode, content, showOutline } = useEditorStore();
   const [mobilePanel, setMobilePanel] = useState<'documents' | 'templates' | 'settings' | 'outline' | null>(null);
+  const [showExportDialog, setShowExportDialog] = useState(false);
   
   // Calculate stats
   const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
@@ -70,8 +73,11 @@ const Index = () => {
         </div>
       </header>
 
+      {/* Document Header */}
+      <DocumentHeader />
+      
       {/* Toolbar */}
-      <Toolbar />
+      <Toolbar onExport={() => setShowExportDialog(true)} />
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
@@ -163,6 +169,8 @@ const Index = () => {
           <SettingsSheet />
         </SheetContent>
       </Sheet>
+      
+      <ExportDialog open={showExportDialog} onOpenChange={setShowExportDialog} />
     </div>
   );
 };

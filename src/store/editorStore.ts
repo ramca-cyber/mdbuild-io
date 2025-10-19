@@ -33,6 +33,7 @@ interface EditorState {
   saveDocument: (name: string) => void;
   loadDocument: (id: string) => void;
   deleteDocument: (id: string) => void;
+  renameDocument: (id: string, newName: string) => void;
   saveVersion: () => void;
   restoreVersion: (index: number) => void;
 }
@@ -145,6 +146,13 @@ export const useEditorStore = create<EditorState>()(
         set({
           savedDocuments: get().savedDocuments.filter((d) => d.id !== id),
           currentDocId: get().currentDocId === id ? null : get().currentDocId,
+        });
+      },
+      renameDocument: (id, newName) => {
+        set({
+          savedDocuments: get().savedDocuments.map((d) =>
+            d.id === id ? { ...d, name: newName } : d
+          ),
         });
       },
       saveVersion: () => {

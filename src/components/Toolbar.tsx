@@ -34,8 +34,13 @@ import { SettingsSheet } from '@/components/SettingsSheet';
 import { TemplatesDrawer } from '@/components/TemplatesDrawer';
 import { SavedDocuments } from '@/components/SavedDocuments';
 import { toast } from 'sonner';
+import React from 'react';
 
-export const Toolbar = () => {
+interface ToolbarProps {
+  onExport?: () => void;
+}
+
+export const Toolbar = ({ onExport }: ToolbarProps) => {
   const { 
     theme, 
     setTheme, 
@@ -347,8 +352,8 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={handleExport}
-          title="Export Markdown"
+          onClick={onExport || handleExport}
+          title="Export Document"
         >
           <FileDown className="h-4 w-4" />
         </Button>

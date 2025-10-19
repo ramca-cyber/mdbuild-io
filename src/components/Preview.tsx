@@ -83,9 +83,9 @@ export const Preview = () => {
   return (
     <div 
       ref={previewRef}
-      className="h-full w-full overflow-auto bg-preview-bg p-8 preview-content"
+      className="h-full w-full overflow-auto bg-preview-bg p-8"
     >
-      <article className="prose prose-slate dark:prose-invert max-w-none">
+      <article className="prose prose-slate dark:prose-invert max-w-none preview-content">
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkMath, remarkEmoji, remarkFrontmatter]}
           rehypePlugins={[rehypeKatex, rehypeHighlight]}
