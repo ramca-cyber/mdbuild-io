@@ -201,27 +201,26 @@ export const DocumentHeader = () => {
             </DropdownMenu>
             
             {currentDoc && (
-              <>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={handleStartEdit}
-                  className="h-7 w-7"
-                  title="Rename document"
-                >
-                  <Edit2 className="h-3 w-3" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={handleSave}
-                  className="h-7 w-7"
-                  title="Save document (Ctrl+S)"
-                >
-                  <Save className="h-3 w-3" />
-                </Button>
-              </>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={handleStartEdit}
+                className="h-7 w-7"
+                title="Rename document"
+              >
+                <Edit2 className="h-3 w-3" />
+              </Button>
             )}
+            
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={handleSave}
+              className="h-7 w-7"
+              title="Save document (Ctrl+S)"
+            >
+              <Save className="h-3 w-3" />
+            </Button>
           </>
         )}
         
