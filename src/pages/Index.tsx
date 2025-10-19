@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
+import { Link } from 'react-router-dom';
 import { Editor } from '@/components/Editor';
 import { Preview } from '@/components/Preview';
 import { Toolbar } from '@/components/Toolbar';
@@ -10,7 +11,7 @@ import { SettingsSheet } from '@/components/SettingsSheet';
 import { SavedDocuments } from '@/components/SavedDocuments';
 import { useEditorStore } from '@/store/editorStore';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Menu, FileText, Settings, BookTemplate, List } from 'lucide-react';
+import { Menu, FileText, Settings, BookTemplate, List, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Index = () => {
@@ -56,6 +57,11 @@ const Index = () => {
 
         {/* Mobile menu */}
         <div className="lg:hidden flex items-center gap-1">
+          <Button variant="ghost" size="icon" asChild>
+            <Link to="/landing">
+              <Home className="h-4 w-4" />
+            </Link>
+          </Button>
           <Button variant="ghost" size="icon" onClick={() => setMobilePanel('documents')}>
             <FileText className="h-4 w-4" />
           </Button>
@@ -67,6 +73,16 @@ const Index = () => {
           </Button>
           <Button variant="ghost" size="icon" onClick={() => setMobilePanel('settings')}>
             <Settings className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Desktop menu */}
+        <div className="hidden lg:flex items-center gap-2">
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/landing" className="flex items-center gap-2">
+              <Home className="h-4 w-4" />
+              <span>Home</span>
+            </Link>
           </Button>
         </div>
       </header>
