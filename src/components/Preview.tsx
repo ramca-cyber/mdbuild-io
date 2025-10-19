@@ -39,21 +39,19 @@ export const Preview = () => {
     renderingRef.current = true;
     
     try {
-      const mermaidElements = previewRef.current.querySelectorAll('.language-mermaid');
+      const containers = previewRef.current.querySelectorAll('.mermaid-diagram-container');
       
-      for (let index = 0; index < mermaidElements.length; index++) {
-        const element = mermaidElements[index] as HTMLElement;
-        const code = element.textContent || '';
-        const containerId = `mermaid-container-${index}`;
+      for (let index = 0; index < containers.length; index++) {
+        const container = containers[index] as HTMLElement;
+        const codeElement = container.querySelector('.mermaid-code');
+        if (!codeElement) continue;
+        
+        const code = codeElement.textContent || '';
+        const containerId = container.id || `mermaid-container-${index}`;
+        container.id = containerId;
         
         // Store metadata
         diagramsRef.current.set(containerId, { code, containerId });
-        
-        // Wrap in a container with stable ID
-        const container = document.createElement('div');
-        container.id = containerId;
-        container.className = 'mermaid-diagram-container';
-        element.parentNode?.replaceChild(container, element);
         
         try {
           const renderID = `mermaid-${Date.now()}-${index}`;
@@ -242,8 +240,10 @@ export const Preview = () => {
               
               if (!isInline && match?.[1] === 'mermaid') {
                 return (
-                  <div className="language-mermaid">
-                    <code>{children}</code>
+                  <div className="mermaid-diagram-container">
+                    <code className="mermaid-code" style={{ display: 'none' }}>
+                      {children}
+                    </code>
                   </div>
                 );
               }
