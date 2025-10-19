@@ -98,4 +98,38 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+  
+  pre {
+    @apply relative;
+  }
+  
+  .copy-button {
+    @apply absolute top-2 right-2 p-2 bg-muted hover:bg-accent rounded opacity-0 transition-opacity;
+    @apply text-muted-foreground hover:text-foreground;
+  }
+  
+  pre:hover .copy-button {
+    @apply opacity-100;
+  }
+  
+  .mermaid-diagram {
+    @apply flex justify-center my-6;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
+  
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
