@@ -161,41 +161,23 @@ export function DocumentHeader() {
   };
 
   const handleExportHTML = async () => {
-    const fileName = currentDoc?.name || content.match(/^#\s+(.+)$/m)?.[1] || 'document';
-    const { default: ReactMarkdown } = await import('react-markdown');
-    const { default: rehypeHighlight } = await import('rehype-highlight');
-    const { default: remarkGfm } = await import('remark-gfm');
-    const { default: remarkMath } = await import('remark-math');
-    const { default: rehypeKatex } = await import('rehype-katex');
-    const { renderToString } = await import('react-dom/server');
-    
-    const htmlContent = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${fileName}</title>
-...
-</body>
-</html>`;
-    
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${fileName}.html`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success('Exported as HTML');
+    try {
+      const fileName = currentDoc?.name || content.match(/^#\s+(.+)$/m)?.[1] || 'document';
+      const { exportToHtmlWithInlineStyles } = await import('@/lib/exportUtils');
+      
+      await exportToHtmlWithInlineStyles(content, fileName);
+      toast.success('Exported as HTML');
+    } catch (error) {
+      console.error('HTML export error:', error);
+      toast.error('Failed to export HTML');
+    }
   };
 
   const handleExportPDF = async () => {
     try {
       const fileName = currentDoc?.name || content.match(/^#\s+(.+)$/m)?.[1] || 'document';
-      const { jsPDF } = await import('jspdf');
-      const html2canvas = (await import('html2canvas')).default;
+      const previewElement = document.querySelector('.preview-content')?.parentElement;
       
-      const previewElement = document.querySelector('.preview-content');
       if (!previewElement) {
         toast.error('Preview not available');
         return;
@@ -203,29 +185,9 @@ export function DocumentHeader() {
 
       toast.info('Generating PDF...');
       
-      const canvas = await html2canvas(previewElement as HTMLElement, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 10;
-
-      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-      pdf.save(`${fileName}.pdf`);
+      const { exportToPdfWithRendering } = await import('@/lib/exportUtils');
+      await exportToPdfWithRendering(previewElement as HTMLElement, fileName);
+      
       toast.success('Exported as PDF');
     } catch (error) {
       console.error('PDF export error:', error);
@@ -236,31 +198,25 @@ export function DocumentHeader() {
   const handleExportDOCX = async () => {
     try {
       const fileName = currentDoc?.name || content.match(/^#\s+(.+)$/m)?.[1] || 'document';
-      const TurndownService = (await import('turndown')).default;
-      const { default: ReactMarkdown } = await import('react-markdown');
-      const { renderToString } = await import('react-dom/server');
+      const previewElement = document.querySelector('.preview-content')?.parentElement;
       
-      // Convert markdown to HTML first
-      const htmlContent = renderToString(<ReactMarkdown>{content}</ReactMarkdown>);
+      if (!previewElement) {
+        toast.error('Preview not available');
+        return;
+      }
+
+      toast.info('Preparing DOCX export...');
       
-      // Create a simple DOCX-compatible HTML structure
-      const docxHtml = `
-        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>
-          <head><meta charset='utf-8'></head>
-          <body>${htmlContent}</body>
-        </html>
-      `;
-      
-      const blob = new Blob(['\ufeff', docxHtml], {
-        type: 'application/msword'
-      });
+      const { createDocxFromPreview } = await import('@/lib/exportUtils');
+      const blob = await createDocxFromPreview(previewElement as HTMLElement, fileName);
       
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${fileName}.doc`;
+      a.download = `${fileName}.docx`;
       a.click();
       URL.revokeObjectURL(url);
+      
       toast.success('Exported as DOCX');
     } catch (error) {
       console.error('DOCX export error:', error);
