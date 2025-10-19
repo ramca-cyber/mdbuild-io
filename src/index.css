@@ -112,17 +112,17 @@ All colors MUST be HSL.
     @apply opacity-100;
   }
   
-  .mermaid-diagram {
+  .mermaid-diagram-container {
     @apply flex justify-center my-6;
   }
   
-  .mermaid-diagram svg {
+  .mermaid-diagram-container svg {
     max-width: 100%;
     height: auto;
   }
   
   /* Mermaid diagram styling - theme-aware background */
-  .mermaid-diagram svg {
+  .mermaid-diagram-container svg {
     background: hsl(var(--card));
     border-radius: 0.5rem;
     padding: 1rem;

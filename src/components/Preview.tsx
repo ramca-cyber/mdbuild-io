@@ -19,62 +19,104 @@ mermaid.initialize({
   securityLevel: 'loose',
 });
 
+interface DiagramMetadata {
+  code: string;
+  containerId: string;
+}
+
 export const Preview = () => {
   const { content, theme, syncScroll } = useEditorStore();
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const diagramsRef = useRef<Map<string, DiagramMetadata>>(new Map());
+  const renderingRef = useRef(false);
 
-  useEffect(() => {
-    if (previewRef.current) {
+  // Unified function to render mermaid diagrams
+  const renderMermaidDiagrams = async () => {
+    if (!previewRef.current || renderingRef.current) return;
+    
+    renderingRef.current = true;
+    
+    try {
       const mermaidElements = previewRef.current.querySelectorAll('.language-mermaid');
-      mermaidElements.forEach(async (element, index) => {
+      
+      for (let index = 0; index < mermaidElements.length; index++) {
+        const element = mermaidElements[index] as HTMLElement;
         const code = element.textContent || '';
-        const id = `mermaid-${Date.now()}-${index}`;
+        const containerId = `mermaid-container-${index}`;
+        
+        // Store metadata
+        diagramsRef.current.set(containerId, { code, containerId });
+        
+        // Wrap in a container with stable ID
+        const container = document.createElement('div');
+        container.id = containerId;
+        container.className = 'mermaid-diagram-container';
+        element.parentNode?.replaceChild(container, element);
         
         try {
-          const { svg } = await mermaid.render(id, code);
-          (element as HTMLElement).setAttribute('data-code', code);
-          element.innerHTML = svg;
-          element.classList.remove('language-mermaid');
-          element.classList.add('mermaid-diagram');
+          const renderID = `mermaid-${Date.now()}-${index}`;
+          const { svg } = await mermaid.render(renderID, code);
+          container.innerHTML = svg;
         } catch (error) {
           console.error('Mermaid rendering error:', error);
-          element.innerHTML = `<div class="text-destructive">Error rendering diagram</div>`;
+          container.innerHTML = `<div class="text-destructive">Error rendering diagram</div>`;
         }
-      });
-
-      // Add copy buttons to code blocks
-      const codeBlocks = previewRef.current.querySelectorAll('pre');
-      codeBlocks.forEach((pre) => {
-        if (pre.querySelector('.copy-button')) return;
-        
-        const code = pre.querySelector('code');
-        if (code && !code.classList.contains('mermaid-diagram')) {
-          const button = document.createElement('button');
-          button.className = 'copy-button';
-          button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
-          button.onclick = () => {
-            const text = code.textContent || '';
-            navigator.clipboard.writeText(text);
-            toast({
-              title: 'Copied!',
-              description: 'Code copied to clipboard',
-            });
-            button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-            setTimeout(() => {
-              button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
-            }, 2000);
-          };
-          pre.style.position = 'relative';
-          pre.appendChild(button);
-        }
-      });
+      }
+    } finally {
+      renderingRef.current = false;
     }
+  };
+
+  // Add copy buttons to code blocks
+  const addCopyButtons = () => {
+    if (!previewRef.current) return;
+    
+    const codeBlocks = previewRef.current.querySelectorAll('pre');
+    codeBlocks.forEach((pre) => {
+      if (pre.querySelector('.copy-button')) return;
+      
+      const code = pre.querySelector('code');
+      if (code && !code.classList.contains('mermaid-diagram-container')) {
+        const button = document.createElement('button');
+        button.className = 'copy-button';
+        button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
+        button.onclick = () => {
+          const text = code.textContent || '';
+          navigator.clipboard.writeText(text);
+          toast({
+            title: 'Copied!',
+            description: 'Code copied to clipboard',
+          });
+          button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+          setTimeout(() => {
+            button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
+          }, 2000);
+        };
+        pre.style.position = 'relative';
+        pre.appendChild(button);
+      }
+    });
+  };
+
+  // Handle content changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      requestAnimationFrame(() => {
+        renderMermaidDiagrams();
+        addCopyButtons();
+      });
+    }, 50);
+    
+    return () => clearTimeout(timeoutId);
   }, [content, toast]);
 
+  // Handle theme changes
   useEffect(() => {
     const isDark = theme === 'dark';
+    
+    // Update mermaid configuration
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: 'loose',
@@ -110,30 +152,42 @@ export const Preview = () => {
           },
     });
 
-    // Add a small delay to ensure mermaid initialization completes
-    // and DOM is stable before re-rendering
+    // Re-render existing diagrams with new theme
     const timeoutId = setTimeout(() => {
       const reRenderDiagrams = async () => {
-        if (!previewRef.current) return;
-        const diagrams = previewRef.current.querySelectorAll('.mermaid-diagram');
-
-        for (const [index, el] of Array.from(diagrams).entries()) {
-          const code = (el as HTMLElement).getAttribute('data-code');
-          if (!code) continue;
-          try {
-            const id = `mermaid-theme-${Date.now()}-${index}`;
-            const { svg } = await mermaid.render(id, code);
-            if (el && el.parentNode) {
-              (el as HTMLElement).innerHTML = svg;
+        if (!previewRef.current || renderingRef.current) return;
+        
+        renderingRef.current = true;
+        
+        try {
+          const containers = previewRef.current.querySelectorAll('.mermaid-diagram-container');
+          
+          for (let index = 0; index < containers.length; index++) {
+            const container = containers[index] as HTMLElement;
+            const containerId = container.id;
+            const metadata = diagramsRef.current.get(containerId);
+            
+            if (!metadata || !metadata.code) continue;
+            
+            try {
+              const renderID = `mermaid-theme-${Date.now()}-${index}`;
+              const { svg } = await mermaid.render(renderID, metadata.code);
+              if (container && container.parentNode) {
+                container.innerHTML = svg;
+              }
+            } catch (e) {
+              console.error('Mermaid re-render error:', e);
             }
-          } catch (e) {
-            console.error('Mermaid re-render error:', e);
           }
+        } finally {
+          renderingRef.current = false;
         }
       };
 
-      reRenderDiagrams();
-    }, 100);
+      requestAnimationFrame(() => {
+        reRenderDiagrams();
+      });
+    }, 150);
 
     return () => clearTimeout(timeoutId);
   }, [theme]);
