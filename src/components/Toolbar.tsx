@@ -12,8 +12,6 @@ import {
   Quote,
   Table,
   Minus,
-  FileDown,
-  FileUp,
   Moon,
   Sun,
   Eye,
@@ -23,7 +21,6 @@ import {
   BookTemplate,
   ListTree,
   Link,
-  FilePlus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -47,7 +44,6 @@ export const Toolbar = () => {
     setShowOutline,
     syncScroll,
     setSyncScroll,
-    setCurrentDocId,
   } = useEditorStore();
 
   const insertText = (before: string, after: string = '', placeholder: string = 'text') => {
@@ -66,36 +62,6 @@ export const Toolbar = () => {
     setContent(content + '\n\n' + text + '\n\n');
   };
 
-  const handleExport = () => {
-    const blob = new Blob([content], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'document.md';
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success('Exported as Markdown');
-  };
-
-  const handleImport = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.md,.txt';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const text = e.target?.result as string;
-          setContent(text);
-          toast.success('File imported successfully');
-        };
-        reader.readAsText(file);
-      }
-    };
-    input.click();
-  };
-
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light');
   };
@@ -105,15 +71,6 @@ export const Toolbar = () => {
     const currentIndex = modes.indexOf(viewMode);
     const nextIndex = (currentIndex + 1) % modes.length;
     setViewMode(modes[nextIndex]);
-  };
-
-  const handleNewDocument = () => {
-    const defaultContent = `# Welcome to Markdown Editor
-
-Start writing your markdown here...`;
-    setContent(defaultContent);
-    setCurrentDocId(null);
-    toast.success('New document created');
   };
 
   const handleImageUpload = () => {
@@ -137,26 +94,8 @@ Start writing your markdown here...`;
 
   return (
     <div className="flex items-center gap-2 px-2 sm:px-4 py-2 bg-toolbar-bg border-b border-border overflow-x-auto">
-      {/* Documents & Templates */}
+      {/* Templates */}
       <div className="hidden lg:flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleNewDocument}
-          title="New Document"
-        >
-          <FilePlus className="h-4 w-4" />
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleImport}
-          title="Import File"
-        >
-          <FileUp className="h-4 w-4" />
-        </Button>
-
         <Drawer>
           <DrawerTrigger asChild>
             <Button variant="ghost" size="icon" title="Templates">
@@ -342,17 +281,7 @@ Start writing your markdown here...`;
         </Sheet>
 
         <Separator orientation="vertical" className="h-6" />
-      </div>
 
-      <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleExport}
-          title="Export Document"
-        >
-          <FileDown className="h-4 w-4" />
-        </Button>
         <Button
           variant="ghost"
           size="icon"

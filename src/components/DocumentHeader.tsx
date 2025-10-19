@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { FileText, Plus, Save, Trash2, Database, Menu, Clock, FolderOpen, Edit2, X, Check } from 'lucide-react';
+import { FileText, Plus, Save, Trash2, Database, Menu, Clock, FolderOpen, Edit2, X, Check, FileUp, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { calculateStorageUsage, formatStorageSize } from '@/lib/storageUtils';
 import { SaveAsDialog } from './SaveAsDialog';
@@ -147,6 +147,40 @@ export function DocumentHeader() {
     toast.success('Document saved as new file');
   };
 
+  const handleExport = () => {
+    const blob = new Blob([content], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${currentDoc?.name || 'document'}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Exported as Markdown');
+  };
+
+  const handleImport = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.md,.txt';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const text = e.target?.result as string;
+          createNewDocument();
+          // Use setTimeout to ensure new document is created first
+          setTimeout(() => {
+            useEditorStore.getState().setContent(text);
+            toast.success('File imported successfully');
+          }, 0);
+        };
+        reader.readAsText(file);
+      }
+    };
+    input.click();
+  };
+
   const getRecentDocuments = () => {
     return [...savedDocuments]
       .sort((a, b) => b.timestamp - a.timestamp)
@@ -191,6 +225,18 @@ export function DocumentHeader() {
                   Save As...
                 </DropdownMenuItem>
               )}
+              
+              <DropdownMenuSeparator />
+              
+              <DropdownMenuItem onClick={handleImport} className="cursor-pointer">
+                <FileUp className="h-4 w-4 mr-2" />
+                Import File...
+              </DropdownMenuItem>
+              
+              <DropdownMenuItem onClick={handleExport} className="cursor-pointer">
+                <FileDown className="h-4 w-4 mr-2" />
+                Export as Markdown
+              </DropdownMenuItem>
               
               <DropdownMenuSeparator />
               
