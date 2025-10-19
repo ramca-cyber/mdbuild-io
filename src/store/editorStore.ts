@@ -278,7 +278,7 @@ export const useEditorStore = create<EditorState>()(
       showOutline: false,
       lineNumbers: true,
       autoSave: true,
-      syncScroll: false,
+      syncScroll: true,
       savedDocuments: [],
       currentDocId: null,
       versions: [],

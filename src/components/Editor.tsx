@@ -37,42 +37,58 @@ export const Editor = () => {
   useEffect(() => {
     if (!syncScroll || !editorRef.current) return;
 
-    const editorScroll = editorRef.current.querySelector('.cm-scroller');
-    if (!editorScroll) return;
+    // Wait for CodeMirror to fully render
+    const setupScrollSync = () => {
+      const editorScroll = editorRef.current?.querySelector('.cm-scroller');
+      if (!editorScroll) {
+        // Retry if not ready
+        requestAnimationFrame(setupScrollSync);
+        return;
+      }
 
-    let isScrolling = false;
-    let scrollTimeout: NodeJS.Timeout;
+      let isScrolling = false;
+      let scrollTimeout: NodeJS.Timeout;
 
-    const handleScroll = () => {
-      if (isScrolling) return;
-      
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
+      const handleScroll = () => {
+        if (isScrolling) return;
+        
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+          const maxScroll = editorScroll.scrollHeight - editorScroll.clientHeight;
+          if (maxScroll > 0) {
+            const scrollPercentage = editorScroll.scrollTop / maxScroll;
+            window.dispatchEvent(new CustomEvent('editor-scroll', { detail: scrollPercentage }));
+          }
+        }, 10);
+      };
+
+      const handlePreviewScroll = (e: Event) => {
+        if (isScrolling) return;
+        
+        const customEvent = e as CustomEvent;
+        const scrollPercentage = customEvent.detail;
+        isScrolling = true;
         const maxScroll = editorScroll.scrollHeight - editorScroll.clientHeight;
-        if (maxScroll > 0) {
-          const scrollPercentage = editorScroll.scrollTop / maxScroll;
-          window.dispatchEvent(new CustomEvent('editor-scroll', { detail: scrollPercentage }));
-        }
-      }, 10);
+        editorScroll.scrollTop = scrollPercentage * maxScroll;
+        setTimeout(() => {
+          isScrolling = false;
+        }, 50);
+      };
+
+      editorScroll.addEventListener('scroll', handleScroll);
+      window.addEventListener('preview-scroll', handlePreviewScroll);
+      
+      // Cleanup function
+      return () => {
+        clearTimeout(scrollTimeout);
+        editorScroll.removeEventListener('scroll', handleScroll);
+        window.removeEventListener('preview-scroll', handlePreviewScroll);
+      };
     };
 
-    const handlePreviewScroll = (e: CustomEvent) => {
-      isScrolling = true;
-      const scrollPercentage = e.detail;
-      const maxScroll = editorScroll.scrollHeight - editorScroll.clientHeight;
-      editorScroll.scrollTop = scrollPercentage * maxScroll;
-      setTimeout(() => {
-        isScrolling = false;
-      }, 50);
-    };
-
-    editorScroll.addEventListener('scroll', handleScroll);
-    window.addEventListener('preview-scroll', handlePreviewScroll as EventListener);
-    
+    const cleanup = setupScrollSync();
     return () => {
-      clearTimeout(scrollTimeout);
-      editorScroll.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('preview-scroll', handlePreviewScroll as EventListener);
+      if (cleanup) cleanup();
     };
   }, [syncScroll]);
 
