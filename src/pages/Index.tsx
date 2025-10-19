@@ -18,6 +18,10 @@ const Index = () => {
   const { theme, viewMode, content, showOutline } = useEditorStore();
   const [mobilePanel, setMobilePanel] = useState<'documents' | 'templates' | 'settings' | 'outline' | null>(null);
   
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   // Calculate stats
   const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
   const charCount = content.length;

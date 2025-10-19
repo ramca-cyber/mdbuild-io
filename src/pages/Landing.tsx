@@ -14,17 +14,27 @@ import {
   Share2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const Landing = () => {
   const navigate = useNavigate();
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const handleStartWriting = () => {
     localStorage.setItem('mdbuild-firstVisit', 'false');
+    window.scrollTo(0, 0);
     navigate('/editor');
   };
 
   const handleSeeFeatures = () => {
-    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+    const featuresSection = document.getElementById('features');
+    if (featuresSection) {
+      const offsetTop = featuresSection.offsetTop - 80; // Account for header height
+      window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+    }
   };
 
   return (
