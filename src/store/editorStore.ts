@@ -281,7 +281,37 @@ export const useEditorStore = create<EditorState>()(
         set({ content });
         const state = get();
         if (state.autoSave) {
-          setTimeout(() => get().saveVersion(), 1000);
+          setTimeout(() => {
+            get().saveVersion();
+            // Auto-save the document to saved documents
+            const currentState = get();
+            if (currentState.currentDocId) {
+              // Update existing document
+              const doc = currentState.savedDocuments.find(d => d.id === currentState.currentDocId);
+              if (doc) {
+                set({
+                  savedDocuments: currentState.savedDocuments.map((d) =>
+                    d.id === currentState.currentDocId
+                      ? { ...d, content: currentState.content, timestamp: Date.now() }
+                      : d
+                  ),
+                });
+              }
+            } else {
+              // Auto-save as new document with auto-generated name
+              const title = currentState.content.match(/^#\s+(.+)$/m)?.[1] || 'Untitled';
+              const newDoc: SavedDocument = {
+                id: Date.now().toString(),
+                name: title,
+                content: currentState.content,
+                timestamp: Date.now(),
+              };
+              set({
+                savedDocuments: [...currentState.savedDocuments, newDoc],
+                currentDocId: newDoc.id,
+              });
+            }
+          }, 2000);
         }
       },
       setTheme: (theme) => set({ theme }),
