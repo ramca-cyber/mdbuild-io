@@ -13,7 +13,7 @@ import {
   Eye,
   Share2
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useEffect } from "react";
 
 const Landing = () => {
@@ -216,8 +216,63 @@ const Landing = () => {
 
       {/* Footer */}
       <footer className="py-8 px-4 border-t bg-muted/30">
-        <div className="container max-w-6xl mx-auto text-center text-sm text-muted-foreground">
-          <p>MDBuild.io - Modern Markdown Editor • Built with React & TypeScript</p>
+        <div className="container max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <h3 className="font-semibold mb-4">MDBuild.io</h3>
+              <p className="text-sm text-muted-foreground">
+                Modern Markdown Editor with live preview, diagrams, and math support.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Product</h3>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Button variant="link" asChild className="h-auto p-0">
+                    <a href="#features">Features</a>
+                  </Button>
+                </li>
+                <li>
+                  <Button variant="link" asChild className="h-auto p-0">
+                    <Link to="/editor">Start Writing</Link>
+                  </Button>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Company</h3>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Button variant="link" asChild className="h-auto p-0">
+                    <Link to="/about">About</Link>
+                  </Button>
+                </li>
+                <li>
+                  <Button variant="link" asChild className="h-auto p-0">
+                    <Link to="/contact">Contact</Link>
+                  </Button>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Legal</h3>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Button variant="link" asChild className="h-auto p-0">
+                    <Link to="/privacy">Privacy Policy</Link>
+                  </Button>
+                </li>
+                <li>
+                  <Button variant="link" asChild className="h-auto p-0">
+                    <Link to="/terms">Terms of Service</Link>
+                  </Button>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="pt-8 border-t text-center text-sm text-muted-foreground">
+            <p>© {new Date().getFullYear()} MDBuild.io - Modern Markdown Editor • Built with React & TypeScript</p>
+          </div>
         </div>
       </footer>
     </div>
