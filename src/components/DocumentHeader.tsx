@@ -26,11 +26,12 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { FileText, Plus, Save, Trash2, Database, Menu, Clock, FolderOpen, Edit2, X, Check, FileUp, FileDown } from 'lucide-react';
+import { FileText, Plus, Save, Trash2, Database, Menu, Clock, FolderOpen, Edit2, X, Check, FileUp, FileDown, FileType, Code, Image as ImageIcon, BookTemplate } from 'lucide-react';
 import { toast } from 'sonner';
 import { calculateStorageUsage, formatStorageSize } from '@/lib/storageUtils';
 import { SaveAsDialog } from './SaveAsDialog';
 import { OpenDocumentDialog } from './OpenDocumentDialog';
+import { templates } from '@/lib/templates';
 
 export function DocumentHeader() {
   const {
@@ -147,7 +148,7 @@ export function DocumentHeader() {
     toast.success('Document saved as new file');
   };
 
-  const handleExport = () => {
+  const handleExportMarkdown = () => {
     const blob = new Blob([content], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -156,6 +157,135 @@ export function DocumentHeader() {
     a.click();
     URL.revokeObjectURL(url);
     toast.success('Exported as Markdown');
+  };
+
+  const handleExportHTML = async () => {
+    const { default: ReactMarkdown } = await import('react-markdown');
+    const { default: rehypeHighlight } = await import('rehype-highlight');
+    const { default: remarkGfm } = await import('remark-gfm');
+    const { default: remarkMath } = await import('remark-math');
+    const { default: rehypeKatex } = await import('rehype-katex');
+    const { renderToString } = await import('react-dom/server');
+    
+    const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${currentDoc?.name || 'Document'}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5.5.1/github-markdown.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css">
+  <style>
+    body { 
+      max-width: 900px; 
+      margin: 40px auto; 
+      padding: 0 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+    .markdown-body { 
+      box-sizing: border-box;
+      min-width: 200px;
+    }
+  </style>
+</head>
+<body class="markdown-body">
+${renderToString(
+  <ReactMarkdown 
+    remarkPlugins={[remarkGfm, remarkMath]} 
+    rehypePlugins={[rehypeHighlight, rehypeKatex]}
+  >
+    {content}
+  </ReactMarkdown>
+)}
+</body>
+</html>`;
+    
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${currentDoc?.name || 'document'}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Exported as HTML');
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      const { jsPDF } = await import('jspdf');
+      const html2canvas = (await import('html2canvas')).default;
+      
+      const previewElement = document.querySelector('.preview-content');
+      if (!previewElement) {
+        toast.error('Preview not available');
+        return;
+      }
+
+      toast.info('Generating PDF...');
+      
+      const canvas = await html2canvas(previewElement as HTMLElement, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 10;
+
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      pdf.save(`${currentDoc?.name || 'document'}.pdf`);
+      toast.success('Exported as PDF');
+    } catch (error) {
+      console.error('PDF export error:', error);
+      toast.error('Failed to export PDF');
+    }
+  };
+
+  const handleExportDOCX = async () => {
+    try {
+      const TurndownService = (await import('turndown')).default;
+      const { default: ReactMarkdown } = await import('react-markdown');
+      const { renderToString } = await import('react-dom/server');
+      
+      // Convert markdown to HTML first
+      const htmlContent = renderToString(<ReactMarkdown>{content}</ReactMarkdown>);
+      
+      // Create a simple DOCX-compatible HTML structure
+      const docxHtml = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>
+          <head><meta charset='utf-8'></head>
+          <body>${htmlContent}</body>
+        </html>
+      `;
+      
+      const blob = new Blob(['\ufeff', docxHtml], {
+        type: 'application/msword'
+      });
+      
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentDoc?.name || 'document'}.doc`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('Exported as DOCX');
+    } catch (error) {
+      console.error('DOCX export error:', error);
+      toast.error('Failed to export DOCX');
+    }
   };
 
   const handleImport = () => {
@@ -233,10 +363,54 @@ export function DocumentHeader() {
                 Import File...
               </DropdownMenuItem>
               
-              <DropdownMenuItem onClick={handleExport} className="cursor-pointer">
-                <FileDown className="h-4 w-4 mr-2" />
-                Export as Markdown
-              </DropdownMenuItem>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <FileDown className="h-4 w-4 mr-2" />
+                  Export As
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent className="w-48">
+                  <DropdownMenuItem onClick={handleExportMarkdown} className="cursor-pointer">
+                    <Code className="h-4 w-4 mr-2" />
+                    Markdown (.md)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportHTML} className="cursor-pointer">
+                    <FileType className="h-4 w-4 mr-2" />
+                    HTML (.html)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportPDF} className="cursor-pointer">
+                    <FileText className="h-4 w-4 mr-2" />
+                    PDF (.pdf)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportDOCX} className="cursor-pointer">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Word (.doc)
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+              
+              <DropdownMenuSeparator />
+              
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <BookTemplate className="h-4 w-4 mr-2" />
+                  Templates
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent className="w-56">
+                  {templates.map((template) => (
+                    <DropdownMenuItem
+                      key={template.name}
+                      onClick={() => {
+                        useEditorStore.getState().setContent(template.content);
+                        toast.success(`Applied ${template.name} template`);
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <template.icon className="h-4 w-4 mr-2" />
+                      {template.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
               
               <DropdownMenuSeparator />
               

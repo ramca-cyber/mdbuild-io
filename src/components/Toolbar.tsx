@@ -18,7 +18,6 @@ import {
   EyeOff,
   SplitSquareHorizontal,
   Settings,
-  BookTemplate,
   ListTree,
   Link,
 } from 'lucide-react';
@@ -94,27 +93,6 @@ export const Toolbar = () => {
 
   return (
     <div className="flex items-center gap-2 px-2 sm:px-4 py-2 bg-toolbar-bg border-b border-border overflow-x-auto">
-      {/* Templates */}
-      <div className="hidden lg:flex items-center gap-1">
-        <Drawer>
-          <DrawerTrigger asChild>
-            <Button variant="ghost" size="icon" title="Templates">
-              <BookTemplate className="h-4 w-4" />
-            </Button>
-          </DrawerTrigger>
-          <DrawerContent>
-            <DrawerHeader>
-              <DrawerTitle>Templates</DrawerTitle>
-            </DrawerHeader>
-            <div className="max-h-[60vh]">
-              <TemplatesDrawer />
-            </div>
-          </DrawerContent>
-        </Drawer>
-      </div>
-
-      <Separator orientation="vertical" className="h-6 hidden lg:block" />
-
       {/* Formatting */}
       <div className="flex items-center gap-1">
         <Button
