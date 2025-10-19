@@ -74,31 +74,42 @@ export const Preview = () => {
   }, [content, toast]);
 
   useEffect(() => {
-    if (theme === 'dark') {
-      mermaid.initialize({ 
-        theme: 'dark',
-        themeVariables: {
-          background: '#ffffff',
-          mainBkg: '#ffffff',
-          primaryColor: '#f1f5f9',
-          primaryBorderColor: '#334155',
-          lineColor: '#334155',
-          textColor: '#0f172a',
-          primaryTextColor: '#0f172a',
-          secondaryColor: '#e2e8f0',
-          tertiaryColor: '#f8fafc',
-          edgeLabelBackground: '#f8fafc',
-          nodeBorder: '#334155',
-          clusterBkg: '#f8fafc',
-          clusterBorder: '#cbd5e1',
-        }
-      });
-    } else {
-      mermaid.initialize({ theme: 'default' });
-    }
-  }, [theme]);
+    const isDark = theme === 'dark';
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: 'loose',
+      theme: isDark ? 'dark' : 'default',
+      themeVariables: isDark
+        ? {
+            background: 'transparent',
+            mainBkg: '#111827',
+            primaryColor: '#1f2937',
+            secondaryColor: '#111827',
+            tertiaryColor: '#0b1220',
+            textColor: '#e5e7eb',
+            primaryTextColor: '#e5e7eb',
+            lineColor: '#94a3b8',
+            nodeBorder: '#94a3b8',
+            clusterBkg: '#111827',
+            clusterBorder: '#94a3b8',
+            edgeLabelBackground: '#111827',
+          }
+        : {
+            background: 'transparent',
+            mainBkg: '#ffffff',
+            primaryColor: '#f8fafc',
+            secondaryColor: '#f1f5f9',
+            tertiaryColor: '#e2e8f0',
+            textColor: '#0f172a',
+            primaryTextColor: '#0f172a',
+            lineColor: '#334155',
+            nodeBorder: '#94a3b8',
+            clusterBkg: '#f8fafc',
+            clusterBorder: '#cbd5e1',
+            edgeLabelBackground: '#f8fafc',
+          },
+    });
 
-  useEffect(() => {
     if (!previewRef.current) return;
     const diagrams = previewRef.current.querySelectorAll('.mermaid-diagram');
     diagrams.forEach(async (el, index) => {

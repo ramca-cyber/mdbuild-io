@@ -121,48 +121,9 @@ All colors MUST be HSL.
     height: auto;
   }
   
-  /* Remove default code block styling around mermaid diagrams */
-  .prose pre.mermaid-diagram,
-  .dark .prose pre.mermaid-diagram {
-    background: transparent !important;
-    box-shadow: none !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-}
-
-/* Mermaid dark-mode readability overrides */
-.dark .mermaid-diagram :is(.node rect, .node polygon, .node circle) {
-  fill: hsl(0 0% 100%) !important; /* white nodes */
-  stroke: hsl(215 28% 17%) !important; /* slate-700 border */
-}
-.dark .mermaid-diagram .cluster rect {
-  fill: hsl(210 40% 98%) !important; /* slate-50 cluster */
-  stroke: hsl(215 20% 65%) !important; /* slate-400 border */
-}
-.dark .mermaid-diagram :is(text, .label) {
-  fill: hsl(222 47% 11%) !important; /* near-black text */
-}
-.dark .mermaid-diagram :is(.edgePath path, line, path) {
-  stroke: hsl(215 28% 17%) !important; /* visible edges */
-}
-
-/* Ensure the SVG itself is light in dark mode */
-.dark .mermaid-diagram svg {
-  background: hsl(0 0% 100%) !important;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  box-shadow: var(--shadow-md);
-}
-.dark .mermaid-diagram svg :is(text, tspan, .label) {
-  fill: hsl(222 47% 11%) !important;
-}
-.dark .mermaid-diagram svg :is(.edgePath path, line, path) {
-  stroke: hsl(215 28% 17%) !important;
-}
-
-  .dark .mermaid-diagram {
-    background: hsl(0 0% 100%);
+  /* Mermaid diagram styling - theme-aware background */
+  .mermaid-diagram svg {
+    background: hsl(var(--card));
     border-radius: 0.5rem;
     padding: 1rem;
     box-shadow: var(--shadow-md);
