@@ -59,6 +59,44 @@ const getBase64FromDataUrl = (dataUrl: string): Uint8Array => {
   return bytes;
 };
 
+// Helper to get rendered dimensions
+const getRect = (el: HTMLElement) => {
+  const r = el.getBoundingClientRect();
+  let width = Math.round(r.width);
+  let height = Math.round(r.height);
+  
+  // Fallback to clientWidth/Height if getBoundingClientRect returns 0
+  if (width === 0 || height === 0) {
+    width = el.clientWidth || width;
+    height = el.clientHeight || height;
+  }
+  
+  // Last resort: if it's an SVG, try viewBox
+  if ((width === 0 || height === 0) && el.tagName === 'svg') {
+    const svg = el as unknown as SVGElement;
+    const viewBox = svg.getAttribute('viewBox');
+    if (viewBox) {
+      const parts = viewBox.split(/\s+/);
+      if (parts.length === 4) {
+        width = parseFloat(parts[2]) || width;
+        height = parseFloat(parts[3]) || height;
+      }
+    }
+  }
+  
+  return { width: Math.max(1, width), height: Math.max(1, height) };
+};
+
+// Helper to convert element to image bytes
+const imageBytesFromEl = async (el: HTMLElement): Promise<Uint8Array> => {
+  const dataUrl = await convertElementToImage(el);
+  return getBase64FromDataUrl(dataUrl);
+};
+
+// Constants for DOCX sizing
+const DOCX_MAX_WIDTH_PX = 620; // ~6.46in at 96dpi, good content width
+const INLINE_MATH_MAX_HEIGHT_PX = 22; // ~12pt baseline height for inline equations
+
 // Parse markdown content into structured sections
 interface ContentSection {
   type: 'heading' | 'paragraph' | 'image' | 'table' | 'code' | 'list';
@@ -84,22 +122,23 @@ export const createDocxFromPreview = async (
     // If this element itself is a mermaid container, export it as an image
     if ((element as HTMLElement).classList?.contains('mermaid-diagram-container')) {
       try {
-        const svgElement = element.querySelector('svg');
         const target = (element as HTMLElement);
-        const imageData = await convertElementToImage(target);
-        const imageBytes = getBase64FromDataUrl(imageData);
+        const svgElement = target.querySelector('svg');
+        const baseEl = (svgElement as unknown as HTMLElement) || target;
+        
+        const { width, height } = getRect(baseEl);
+        const ratio = Math.min(1, DOCX_MAX_WIDTH_PX / width);
+        const targetW = Math.round(width * ratio);
+        const targetH = Math.round(height * ratio);
 
-        const width = (svgElement as SVGElement | null)?.clientWidth || target.clientWidth || 600;
-        const height = (svgElement as SVGElement | null)?.clientHeight || target.clientHeight || 400;
-        const maxWidth = 600;
-        const ratio = Math.min(1, maxWidth / width);
+        const imageBytes = await imageBytesFromEl(target);
 
         elements.push(
           new Paragraph({
             children: [
               new ImageRun({
                 data: imageBytes,
-                transformation: { width: Math.round(width * ratio), height: Math.round(height * ratio) },
+                transformation: { width: targetW, height: targetH },
                 type: 'png',
               }),
             ],
@@ -131,24 +170,23 @@ export const createDocxFromPreview = async (
       return elements;
     }
 
-    // Math equations (KaTeX) — handle both inline and display, anywhere in the tree
-    if ((element as HTMLElement).classList?.contains('katex-display') || (element as HTMLElement).classList?.contains('katex')) {
+    // Display math equations (KaTeX) — block-level only
+    if ((element as HTMLElement).classList?.contains('katex-display')) {
       try {
         const target = element as HTMLElement;
-        const imageData = await convertElementToImage(target);
-        const imageBytes = getBase64FromDataUrl(imageData);
+        const { width, height } = getRect(target);
+        const ratio = Math.min(1, DOCX_MAX_WIDTH_PX / width);
+        const targetW = Math.round(width * ratio);
+        const targetH = Math.round(height * ratio);
 
-        const width = target.clientWidth || 400;
-        const height = target.clientHeight || 50;
-        const maxWidth = 500;
-        const ratio = Math.min(1, maxWidth / width);
+        const imageBytes = await imageBytesFromEl(target);
 
         elements.push(
           new Paragraph({
             children: [
               new ImageRun({
                 data: imageBytes,
-                transformation: { width: Math.round(width * ratio), height: Math.round(height * ratio) },
+                transformation: { width: targetW, height: targetH },
                 type: 'png',
               }),
             ],
@@ -217,20 +255,19 @@ export const createDocxFromPreview = async (
       if (codeElement) {
         try {
           const target = element as HTMLElement;
-          const imageData = await convertElementToImage(target);
-          const imageBytes = getBase64FromDataUrl(imageData);
+          const { width, height } = getRect(target);
+          const ratio = Math.min(1, DOCX_MAX_WIDTH_PX / width);
+          const targetW = Math.round(width * ratio);
+          const targetH = Math.round(height * ratio);
 
-          const width = target.clientWidth || 600;
-          const height = target.clientHeight || 100;
-          const maxWidth = 600;
-          const ratio = Math.min(1, maxWidth / width);
+          const imageBytes = await imageBytesFromEl(target);
 
           elements.push(
             new Paragraph({
               children: [
                 new ImageRun({
                   data: imageBytes,
-                  transformation: { width: Math.round(width * ratio), height: Math.round(height * ratio) },
+                  transformation: { width: targetW, height: targetH },
                   type: 'png',
                 }),
               ],
@@ -245,28 +282,69 @@ export const createDocxFromPreview = async (
       return elements;
     }
 
-    // Paragraphs
+    // Paragraphs (with inline math support)
     if (tagName === 'p') {
       const textContent = element.textContent?.trim() || '';
       if (textContent) {
-        const children: TextRun[] = [];
-        const processNode = (node: Node) => {
+        const runs: (TextRun | ImageRun)[] = [];
+        
+        const processNode = async (node: Node): Promise<void> => {
           if (node.nodeType === Node.TEXT_NODE) {
             const text = node.textContent || '';
-            if (text.trim()) children.push(new TextRun(text));
+            if (text.trim()) runs.push(new TextRun(text));
           } else if (node.nodeType === Node.ELEMENT_NODE) {
             const el = node as HTMLElement;
             const text = el.textContent || '';
-            if (el.tagName === 'STRONG' || el.tagName === 'B') children.push(new TextRun({ text, bold: true }));
-            else if (el.tagName === 'EM' || el.tagName === 'I') children.push(new TextRun({ text, italics: true }));
-            else if (el.tagName === 'CODE') children.push(new TextRun({ text, font: 'Courier New' }));
-            else el.childNodes.forEach(processNode);
+            
+            // Handle inline KaTeX (not display mode)
+            if (el.classList.contains('katex') && !el.classList.contains('katex-display')) {
+              try {
+                const { width, height } = getRect(el);
+                const ratio = height > INLINE_MATH_MAX_HEIGHT_PX ? INLINE_MATH_MAX_HEIGHT_PX / height : 1;
+                const targetW = Math.round(width * ratio);
+                const targetH = Math.round(height * ratio);
+                
+                const imageBytes = await imageBytesFromEl(el);
+                runs.push(new ImageRun({
+                  data: imageBytes,
+                  transformation: { width: targetW, height: targetH },
+                  type: 'png',
+                }));
+              } catch (error) {
+                console.error('Error converting inline equation:', error);
+                runs.push(new TextRun(text));
+              }
+              return;
+            }
+            
+            // Handle formatting
+            if (el.tagName === 'STRONG' || el.tagName === 'B') {
+              runs.push(new TextRun({ text, bold: true }));
+            } else if (el.tagName === 'EM' || el.tagName === 'I') {
+              runs.push(new TextRun({ text, italics: true }));
+            } else if (el.tagName === 'CODE') {
+              runs.push(new TextRun({ text, font: 'Courier New' }));
+            } else {
+              // Recurse into children
+              for (const child of Array.from(el.childNodes)) {
+                await processNode(child);
+              }
+            }
           }
         };
-        element.childNodes.forEach(processNode);
-        if (children.length > 0) elements.push(new Paragraph({ children, spacing: { before: 120, after: 120 } }));
+        
+        // Process all child nodes
+        for (const child of Array.from(element.childNodes)) {
+          await processNode(child);
+        }
+        
+        if (runs.length > 0) {
+          elements.push(new Paragraph({ children: runs, spacing: { before: 120, after: 120 } }));
+        }
       }
-      // Continue and also check for nested diagrams/equations within paragraphs
+      
+      // Return early to prevent duplicate processing
+      return elements;
     }
 
     // Lists
