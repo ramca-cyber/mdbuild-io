@@ -6,6 +6,7 @@ import remarkEmoji from 'remark-emoji';
 import remarkFrontmatter from 'remark-frontmatter';
 import rehypeKatex from 'rehype-katex';
 import rehypeHighlight from 'rehype-highlight';
+import rehypeRaw from 'rehype-raw';
 import { useEditorStore } from '@/store/editorStore';
 import mermaid from 'mermaid';
 import { Copy, Check } from 'lucide-react';
@@ -238,7 +239,7 @@ export const Preview = () => {
       <article className="prose prose-slate dark:prose-invert max-w-none preview-content">
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkMath, remarkEmoji, remarkFrontmatter]}
-          rehypePlugins={[rehypeKatex, rehypeHighlight]}
+          rehypePlugins={[rehypeRaw, rehypeKatex, rehypeHighlight]}
           components={{
           code({ className, children, ...props }: any) {
               const match = /language-(\w+)/.exec(className || '');
