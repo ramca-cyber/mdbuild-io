@@ -23,6 +23,7 @@ import {
   Share2,
   FileText,
   History,
+  Download,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -31,15 +32,33 @@ import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ShareDialog } from './ShareDialog';
-import { useState } from 'react';
-import jsPDF from 'jspdf';
+import { ExportModal } from './ExportModal';
+import { ImportDialog } from './ImportDialog';
+import { useState, useEffect } from 'react';
 
 export const EnhancedToolbar = () => {
   const { theme, setTheme, viewMode, setViewMode, content, setContent, saveDocument } = useEditorStore();
   const { toast } = useToast();
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [documentName, setDocumentName] = useState('');
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+
+  // Keyboard shortcut for export (Ctrl/Cmd + E)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const modifier = isMac ? e.metaKey : e.ctrlKey;
+
+      if (modifier && e.key === 'e') {
+        e.preventDefault();
+        setExportModalOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const insertText = (before: string, after: string = '', placeholder: string = 'text') => {
     const textarea = document.querySelector('.cm-content') as HTMLElement;
@@ -54,93 +73,6 @@ export const EnhancedToolbar = () => {
 
   const insertBlock = (text: string) => {
     setContent(content + '\n\n' + text + '\n\n');
-  };
-
-  const handleExportMarkdown = () => {
-    const blob = new Blob([content], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'document.md';
-    a.click();
-    URL.revokeObjectURL(url);
-    toast({
-      title: 'Exported!',
-      description: 'Markdown file downloaded',
-    });
-  };
-
-  const handleExportHTML = () => {
-    const html = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Exported Document</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
-  <style>
-    body { max-width: 800px; margin: 40px auto; padding: 20px; font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; }
-    code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; }
-    pre { background: #f4f4f4; padding: 16px; border-radius: 6px; overflow-x: auto; }
-  </style>
-</head>
-<body>
-  ${document.querySelector('.preview-content')?.innerHTML || ''}
-</body>
-</html>`;
-
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'document.html';
-    a.click();
-    URL.revokeObjectURL(url);
-    toast({
-      title: 'Exported!',
-      description: 'HTML file downloaded',
-    });
-  };
-
-  const handleExportPDF = () => {
-    try {
-      const doc = new jsPDF();
-      const text = content.replace(/[#*`_\[\]]/g, '');
-      const lines = doc.splitTextToSize(text, 180);
-      doc.text(lines, 15, 15);
-      doc.save('document.pdf');
-      toast({
-        title: 'Exported!',
-        description: 'PDF file downloaded',
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to export PDF',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleImport = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.md,.txt';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const text = e.target?.result as string;
-          setContent(text);
-          toast({
-            title: 'Imported!',
-            description: 'File loaded successfully',
-          });
-        };
-        reader.readAsText(file);
-      }
-    };
-    input.click();
   };
 
   const handleImageUpload = () => {
@@ -365,37 +297,20 @@ export const EnhancedToolbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={handleImport}
+          onClick={() => setImportDialogOpen(true)}
           title="Import File"
         >
           <FileUp className="h-4 w-4" />
         </Button>
 
-        <div className="relative group">
-          <Button variant="ghost" size="icon" title="Export">
-            <FileDown className="h-4 w-4" />
-          </Button>
-          <div className="absolute right-0 top-full mt-1 bg-popover border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 min-w-[120px]">
-            <button
-              onClick={handleExportMarkdown}
-              className="w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors"
-            >
-              Markdown
-            </button>
-            <button
-              onClick={handleExportHTML}
-              className="w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors"
-            >
-              HTML
-            </button>
-            <button
-              onClick={handleExportPDF}
-              className="w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors"
-            >
-              PDF
-            </button>
-          </div>
-        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setExportModalOpen(true)}
+          title="Export (Ctrl+E)"
+        >
+          <Download className="h-4 w-4" />
+        </Button>
 
         <Button
           variant="ghost"
@@ -417,6 +332,9 @@ export const EnhancedToolbar = () => {
           {viewMode === 'preview' && <Eye className="h-4 w-4" />}
         </Button>
       </div>
+
+      <ExportModal open={exportModalOpen} onOpenChange={setExportModalOpen} />
+      <ImportDialog open={importDialogOpen} onOpenChange={setImportDialogOpen} />
     </div>
   );
 };
