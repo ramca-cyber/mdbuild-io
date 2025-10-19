@@ -22,6 +22,7 @@ import {
   Link,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Toggle } from '@/components/ui/toggle';
 import { Separator } from '@/components/ui/separator';
 import { useEditorStore } from '@/store/editorStore';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -225,24 +226,26 @@ export const Toolbar = () => {
 
       {/* View & Settings */}
       <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setSyncScroll(!syncScroll)}
+        <Toggle
+          pressed={syncScroll}
+          onPressedChange={setSyncScroll}
+          aria-label="Toggle Synced Scrolling"
           title="Toggle Synced Scrolling"
+          size="sm"
         >
-          <Link className={`h-4 w-4 ${syncScroll ? 'text-primary' : ''}`} />
-        </Button>
+          <Link className="h-4 w-4" />
+        </Toggle>
         
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setShowOutline(!showOutline)}
+        <Toggle
+          pressed={showOutline}
+          onPressedChange={setShowOutline}
+          aria-label="Toggle Outline"
           title="Toggle Outline"
           className="hidden lg:flex"
+          size="sm"
         >
-          <ListTree className={`h-4 w-4 ${showOutline ? 'text-primary' : ''}`} />
-        </Button>
+          <ListTree className="h-4 w-4" />
+        </Toggle>
 
         <Sheet>
           <SheetTrigger asChild>
