@@ -17,12 +17,19 @@ import {
 
 // Wait for all async content to render
 export const waitForContentToRender = async (): Promise<void> => {
-  // Wait for Mermaid diagrams (they take time to render)
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  
-  // Additional check for any pending renders
+  // Wait until Mermaid diagrams are rendered (presence of SVGs) with a max timeout
+  const start = Date.now();
+  const maxWait = 2500; // 2.5s cap
+  while (Date.now() - start < maxWait) {
+    const containers = Array.from(document.querySelectorAll('.mermaid-diagram-container'));
+    const pending = containers.some((c) => !c.querySelector('svg'));
+    if (!pending) break;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
+  // A couple of extra frames for safety
   await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
-  await new Promise((resolve) => setTimeout(resolve, 300));
+  await new Promise((resolve) => setTimeout(resolve, 150));
 };
 
 // Convert DOM element to PNG image data
@@ -74,6 +81,39 @@ export const createDocxFromPreview = async (
     const elements: any[] = [];
     const tagName = element.tagName.toLowerCase();
 
+    // If this element itself is a mermaid container, export it as an image
+    if ((element as HTMLElement).classList?.contains('mermaid-diagram-container')) {
+      try {
+        const svgElement = element.querySelector('svg');
+        const target = (element as HTMLElement);
+        const imageData = await convertElementToImage(target);
+        const imageBytes = getBase64FromDataUrl(imageData);
+
+        const width = (svgElement as SVGElement | null)?.clientWidth || target.clientWidth || 600;
+        const height = (svgElement as SVGElement | null)?.clientHeight || target.clientHeight || 400;
+        const maxWidth = 600;
+        const ratio = Math.min(1, maxWidth / width);
+
+        elements.push(
+          new Paragraph({
+            children: [
+              new ImageRun({
+                data: imageBytes,
+                transformation: { width: Math.round(width * ratio), height: Math.round(height * ratio) },
+                type: 'png',
+              }),
+            ],
+            spacing: { before: 120, after: 120 },
+          })
+        );
+        return elements;
+      } catch (error) {
+        console.error('Error converting diagram to image:', error);
+        elements.push(new Paragraph({ text: '[Diagram could not be exported]', spacing: { before: 120, after: 120 } }));
+        return elements;
+      }
+    }
+
     // Headings
     if (/^h[1-6]$/.test(tagName)) {
       const level = parseInt(tagName[1]);
@@ -85,119 +125,64 @@ export const createDocxFromPreview = async (
         5: HeadingLevel.HEADING_5,
         6: HeadingLevel.HEADING_6,
       };
-      
       elements.push(
-        new Paragraph({
-          text: element.textContent || '',
-          heading: headingLevels[level] || HeadingLevel.HEADING_1,
-          spacing: { before: 240, after: 120 },
-        })
+        new Paragraph({ text: element.textContent || '', heading: headingLevels[level] || HeadingLevel.HEADING_1, spacing: { before: 240, after: 120 } })
       );
+      return elements;
     }
-    // Mermaid Diagrams
-    else if (element.classList.contains('mermaid-diagram-container')) {
+
+    // Math equations (KaTeX) — handle both inline and display, anywhere in the tree
+    if ((element as HTMLElement).classList?.contains('katex-display') || (element as HTMLElement).classList?.contains('katex')) {
       try {
-        const svgElement = element.querySelector('svg');
-        if (svgElement) {
-          const imageData = await convertElementToImage(element as HTMLElement);
-          const imageBytes = getBase64FromDataUrl(imageData);
-          
-          // Get dimensions
-          const width = svgElement.clientWidth || 600;
-          const height = svgElement.clientHeight || 400;
-          const maxWidth = 600;
-          const ratio = Math.min(1, maxWidth / width);
-          
-          elements.push(
-            new Paragraph({
-              children: [
-                new ImageRun({
-                  data: imageBytes,
-                  transformation: {
-                    width: Math.round(width * ratio),
-                    height: Math.round(height * ratio),
-                  },
-                  type: 'png',
-                }),
-              ],
-              spacing: { before: 120, after: 120 },
-            })
-          );
-        }
-      } catch (error) {
-        console.error('Error converting diagram to image:', error);
-        elements.push(
-          new Paragraph({
-            text: '[Diagram could not be exported]',
-            spacing: { before: 120, after: 120 },
-          })
-        );
-      }
-    }
-    // Math equations (KaTeX)
-    else if (element.classList.contains('katex-display') || element.classList.contains('katex')) {
-      try {
-        const imageData = await convertElementToImage(element as HTMLElement);
+        const target = element as HTMLElement;
+        const imageData = await convertElementToImage(target);
         const imageBytes = getBase64FromDataUrl(imageData);
-        
-        const width = (element as HTMLElement).clientWidth || 400;
-        const height = (element as HTMLElement).clientHeight || 50;
+
+        const width = target.clientWidth || 400;
+        const height = target.clientHeight || 50;
         const maxWidth = 500;
         const ratio = Math.min(1, maxWidth / width);
-        
+
         elements.push(
           new Paragraph({
             children: [
               new ImageRun({
                 data: imageBytes,
-                transformation: {
-                  width: Math.round(width * ratio),
-                  height: Math.round(height * ratio),
-                },
+                transformation: { width: Math.round(width * ratio), height: Math.round(height * ratio) },
                 type: 'png',
               }),
             ],
             spacing: { before: 120, after: 120 },
           })
         );
+        return elements;
       } catch (error) {
         console.error('Error converting equation to image:', error);
       }
     }
+
     // Tables
-    else if (tagName === 'table') {
+    if (tagName === 'table') {
       const rows: TableRow[] = [];
       const tableRows = element.querySelectorAll('tr');
-      
+
       tableRows.forEach((tr) => {
         const cells: TableCell[] = [];
         const tableCells = tr.querySelectorAll('td, th');
-        
+
         tableCells.forEach((cell) => {
           cells.push(
             new TableCell({
-              children: [
-                new Paragraph({
-                  text: cell.textContent || '',
-                  alignment: AlignmentType.LEFT,
-                }),
-              ],
+              children: [new Paragraph({ text: cell.textContent || '', alignment: AlignmentType.LEFT })],
               verticalAlign: VerticalAlign.CENTER,
-              margins: {
-                top: 100,
-                bottom: 100,
-                left: 100,
-                right: 100,
-              },
+              margins: { top: 100, bottom: 100, left: 100, right: 100 },
             })
           );
         });
-        
-        if (cells.length > 0) {
-          rows.push(new TableRow({ children: cells }));
-        }
+
+        if (cells.length > 0) rows.push(new TableRow({ children: cells }));
       });
-      
+
       if (rows.length > 0) {
         elements.push(
           new Table({
@@ -213,32 +198,39 @@ export const createDocxFromPreview = async (
             },
           })
         );
-        elements.push(new Paragraph({ text: '' })); // Add spacing
+        elements.push(new Paragraph({ text: '' }));
       }
+      return elements;
     }
-    // Code blocks
-    else if (tagName === 'pre') {
+
+    // Code blocks and Mermaid nested in <pre>
+    if (tagName === 'pre') {
+      const mermaidContainer = element.querySelector('.mermaid-diagram-container') as HTMLElement | null;
+      if (mermaidContainer) {
+        // Export the diagram instead of the pre wrapper
+        const diag = await processElement(mermaidContainer);
+        elements.push(...diag);
+        return elements;
+      }
+
       const codeElement = element.querySelector('code');
-      if (codeElement && !codeElement.classList.contains('mermaid-diagram-container')) {
+      if (codeElement) {
         try {
-          // Convert code block to image to preserve syntax highlighting
-          const imageData = await convertElementToImage(element as HTMLElement);
+          const target = element as HTMLElement;
+          const imageData = await convertElementToImage(target);
           const imageBytes = getBase64FromDataUrl(imageData);
-          
-          const width = (element as HTMLElement).clientWidth || 600;
-          const height = (element as HTMLElement).clientHeight || 100;
+
+          const width = target.clientWidth || 600;
+          const height = target.clientHeight || 100;
           const maxWidth = 600;
           const ratio = Math.min(1, maxWidth / width);
-          
+
           elements.push(
             new Paragraph({
               children: [
                 new ImageRun({
                   data: imageBytes,
-                  transformation: {
-                    width: Math.round(width * ratio),
-                    height: Math.round(height * ratio),
-                  },
+                  transformation: { width: Math.round(width * ratio), height: Math.round(height * ratio) },
                   type: 'png',
                 }),
               ],
@@ -247,71 +239,51 @@ export const createDocxFromPreview = async (
           );
         } catch (error) {
           console.error('Error converting code block to image:', error);
-          // Fallback to plain text
-          elements.push(
-            new Paragraph({
-              text: codeElement.textContent || '',
-              spacing: { before: 120, after: 120 },
-            })
-          );
+          elements.push(new Paragraph({ text: codeElement.textContent || '', spacing: { before: 120, after: 120 } }));
         }
       }
+      return elements;
     }
-    // Paragraphs and other text elements
-    else if (tagName === 'p') {
+
+    // Paragraphs
+    if (tagName === 'p') {
       const textContent = element.textContent?.trim() || '';
       if (textContent) {
         const children: TextRun[] = [];
-        
-        // Process text with formatting
         const processNode = (node: Node) => {
           if (node.nodeType === Node.TEXT_NODE) {
             const text = node.textContent || '';
-            if (text.trim()) {
-              children.push(new TextRun(text));
-            }
+            if (text.trim()) children.push(new TextRun(text));
           } else if (node.nodeType === Node.ELEMENT_NODE) {
             const el = node as HTMLElement;
             const text = el.textContent || '';
-            
-            if (el.tagName === 'STRONG' || el.tagName === 'B') {
-              children.push(new TextRun({ text, bold: true }));
-            } else if (el.tagName === 'EM' || el.tagName === 'I') {
-              children.push(new TextRun({ text, italics: true }));
-            } else if (el.tagName === 'CODE') {
-              children.push(new TextRun({ text, font: 'Courier New' }));
-            } else {
-              // Recursively process child nodes
-              el.childNodes.forEach(processNode);
-            }
+            if (el.tagName === 'STRONG' || el.tagName === 'B') children.push(new TextRun({ text, bold: true }));
+            else if (el.tagName === 'EM' || el.tagName === 'I') children.push(new TextRun({ text, italics: true }));
+            else if (el.tagName === 'CODE') children.push(new TextRun({ text, font: 'Courier New' }));
+            else el.childNodes.forEach(processNode);
           }
         };
-        
         element.childNodes.forEach(processNode);
-        
-        if (children.length > 0) {
-          elements.push(
-            new Paragraph({
-              children,
-              spacing: { before: 120, after: 120 },
-            })
-          );
-        }
+        if (children.length > 0) elements.push(new Paragraph({ children, spacing: { before: 120, after: 120 } }));
       }
+      // Continue and also check for nested diagrams/equations within paragraphs
     }
+
     // Lists
-    else if (tagName === 'ul' || tagName === 'ol') {
+    if (tagName === 'ul' || tagName === 'ol') {
       const listItems = element.querySelectorAll('li');
       listItems.forEach((li, index) => {
         const bullet = tagName === 'ul' ? '•' : `${index + 1}.`;
-        elements.push(
-          new Paragraph({
-            text: `${bullet} ${li.textContent || ''}`,
-            spacing: { before: 60, after: 60 },
-            indent: { left: 720 },
-          })
-        );
+        elements.push(new Paragraph({ text: `${bullet} ${li.textContent || ''}`, spacing: { before: 60, after: 60 }, indent: { left: 720 } }));
       });
+      return elements;
+    }
+
+    // Recurse into children to catch nested diagrams/equations/etc.
+    const children = Array.from(element.children);
+    for (const child of children) {
+      const processed = await processElement(child);
+      elements.push(...processed);
     }
 
     return elements;

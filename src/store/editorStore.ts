@@ -25,7 +25,7 @@ interface EditorState {
   versions: { content: string; timestamp: number }[];
   lastSavedContent: string;
   hasUnsavedChanges: boolean;
-  autoSaveTimeoutId: NodeJS.Timeout | null;
+  autoSaveTimeoutId: ReturnType<typeof setTimeout> | null;
   setContent: (content: string) => void;
   setTheme: (theme: Theme) => void;
   setFontSize: (size: number) => void;
