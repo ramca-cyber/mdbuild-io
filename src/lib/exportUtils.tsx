@@ -410,6 +410,29 @@ export const exportToHtmlWithInlineStyles = async (
   // Remove copy buttons from code blocks
   const copyButtons = clonedArticle.querySelectorAll('.copy-button');
   copyButtons.forEach(button => button.remove());
+
+  // Rasterize complex elements to embedded images for robust formatting
+  const rasterizeToImg = async (selector: string, altFactory: (el: Element) => string) => {
+    const nodes = Array.from(clonedArticle.querySelectorAll(selector));
+    for (const node of nodes) {
+      try {
+        const dataUrl = await convertElementToImage(node as HTMLElement);
+        const img = document.createElement('img');
+        img.src = dataUrl;
+        img.alt = altFactory(node);
+        img.loading = 'lazy';
+        img.style.maxWidth = '100%';
+        img.style.height = 'auto';
+        node.replaceWith(img);
+      } catch (e) {
+        console.error('Rasterize error:', e);
+      }
+    }
+  };
+
+  // Mermaid and KaTeX tend to shift styles across environments – turn them into PNGs
+  await rasterizeToImg('.mermaid-diagram-container', () => 'Mermaid diagram');
+  await rasterizeToImg('.katex-display, .katex', () => 'Mathematical equation');
   
   const renderedContent = clonedArticle.innerHTML;
 
