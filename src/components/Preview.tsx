@@ -34,6 +34,7 @@ export const Preview = () => {
         
         try {
           const { svg } = await mermaid.render(id, code);
+          (element as HTMLElement).setAttribute('data-code', code);
           element.innerHTML = svg;
           element.classList.remove('language-mermaid');
           element.classList.add('mermaid-diagram');
@@ -77,25 +78,40 @@ export const Preview = () => {
       mermaid.initialize({ 
         theme: 'dark',
         themeVariables: {
-          darkMode: true,
-          background: '#1e293b',
-          primaryColor: '#60a5fa',
-          primaryTextColor: '#e2e8f0',
-          primaryBorderColor: '#3b82f6',
-          lineColor: '#94a3b8',
-          secondaryColor: '#334155',
-          tertiaryColor: '#1e293b',
-          textColor: '#e2e8f0',
-          mainBkg: '#1e293b',
-          nodeBorder: '#64748b',
-          clusterBkg: '#334155',
-          clusterBorder: '#475569',
-          edgeLabelBackground: '#334155',
+          background: '#ffffff',
+          mainBkg: '#ffffff',
+          primaryColor: '#f1f5f9',
+          primaryBorderColor: '#334155',
+          lineColor: '#334155',
+          textColor: '#0f172a',
+          primaryTextColor: '#0f172a',
+          secondaryColor: '#e2e8f0',
+          tertiaryColor: '#f8fafc',
+          edgeLabelBackground: '#f8fafc',
+          nodeBorder: '#334155',
+          clusterBkg: '#f8fafc',
+          clusterBorder: '#cbd5e1',
         }
       });
     } else {
       mermaid.initialize({ theme: 'default' });
     }
+  }, [theme]);
+
+  useEffect(() => {
+    if (!previewRef.current) return;
+    const diagrams = previewRef.current.querySelectorAll('.mermaid-diagram');
+    diagrams.forEach(async (el, index) => {
+      const code = (el as HTMLElement).getAttribute('data-code');
+      if (!code) return;
+      try {
+        const id = `mermaid-${Date.now()}-${index}`;
+        const { svg } = await mermaid.render(id, code);
+        (el as HTMLElement).innerHTML = svg;
+      } catch (e) {
+        console.error('Mermaid re-render error:', e);
+      }
+    });
   }, [theme]);
 
   useEffect(() => {
@@ -130,9 +146,9 @@ export const Preview = () => {
               
               if (!isInline && match?.[1] === 'mermaid') {
                 return (
-                  <pre className="language-mermaid">
+                  <div className="language-mermaid">
                     <code>{children}</code>
-                  </pre>
+                  </div>
                 );
               }
 
