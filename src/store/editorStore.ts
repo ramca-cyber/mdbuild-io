@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 
 export type Theme = 'light' | 'dark';
 
-interface SavedDocument {
+export interface SavedDocument {
   id: string;
   name: string;
   content: string;
@@ -34,6 +34,7 @@ interface EditorState {
   setSyncScroll: (enabled: boolean) => void;
   setCurrentDocId: (id: string | null) => void;
   saveDocument: (name: string) => void;
+  saveDocumentAs: (name: string) => void;
   loadDocument: (id: string) => void;
   deleteDocument: (id: string) => void;
   renameDocument: (id: string, newName: string) => void;
@@ -324,6 +325,20 @@ export const useEditorStore = create<EditorState>()(
       setSyncScroll: (enabled) => set({ syncScroll: enabled }),
       setCurrentDocId: (id) => set({ currentDocId: id }),
       saveDocument: (name) => {
+        const state = get();
+        const newDoc: SavedDocument = {
+          id: Date.now().toString(),
+          name,
+          content: state.content,
+          timestamp: Date.now(),
+        };
+        set({
+          savedDocuments: [...state.savedDocuments, newDoc],
+          currentDocId: newDoc.id,
+        });
+      },
+      saveDocumentAs: (name) => {
+        // Save as a new document (creates a copy)
         const state = get();
         const newDoc: SavedDocument = {
           id: Date.now().toString(),

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useEditorStore, getDefaultContent } from '@/store/editorStore';
+import { useEditorStore, getDefaultContent, SavedDocument } from '@/store/editorStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -39,6 +39,7 @@ export const DocumentHeader = () => {
     autoSave,
     setAutoSave,
     saveDocument,
+    saveDocumentAs,
     content,
   } = useEditorStore();
   const [isEditing, setIsEditing] = useState(false);
@@ -69,13 +70,35 @@ export const DocumentHeader = () => {
     if (currentDoc) {
       setEditName(currentDoc.name);
       setIsEditing(true);
+    } else {
+      // For untitled documents, suggest a name from content
+      const suggestedName = content.match(/^#\s+(.+)$/m)?.[1] || 'Untitled';
+      setEditName(suggestedName);
+      setIsEditing(true);
     }
   };
   
   const handleSaveEdit = () => {
-    if (currentDoc && editName.trim()) {
-      renameDocument(currentDoc.id, editName.trim());
+    const trimmedName = editName.trim();
+    if (!trimmedName) {
+      toast.error('Document name cannot be empty');
+      return;
+    }
+    
+    if (trimmedName.length > 100) {
+      toast.error('Document name must be less than 100 characters');
+      return;
+    }
+    
+    if (currentDoc) {
+      renameDocument(currentDoc.id, trimmedName);
       setIsEditing(false);
+      toast.success('Document renamed');
+    } else {
+      // Save as new document for untitled files
+      saveDocument(trimmedName);
+      setIsEditing(false);
+      toast.success('Document saved');
     }
   };
   
@@ -102,6 +125,16 @@ export const DocumentHeader = () => {
     const title = content.match(/^#\s+(.+)$/m)?.[1] || 'Untitled';
     saveDocument(title);
     toast.success('Document saved successfully');
+  };
+
+  const handleSaveAs = () => {
+    // Create a copy with a new name
+    const title = content.match(/^#\s+(.+)$/m)?.[1] || 'Untitled';
+    const newName = prompt('Enter new document name:', title);
+    if (newName && newName.trim()) {
+      saveDocumentAs(newName.trim());
+      toast.success('Document saved as new file');
+    }
   };
   
   return (
@@ -158,6 +191,16 @@ export const DocumentHeader = () => {
                   New Document
                 </DropdownMenuItem>
                 
+                {currentDoc && (
+                  <DropdownMenuItem
+                    onClick={handleSaveAs}
+                    className="flex items-center gap-2 cursor-pointer font-medium"
+                  >
+                    <Save className="h-4 w-4" />
+                    Save As...
+                  </DropdownMenuItem>
+                )}
+                
                 {savedDocuments.length > 0 && <DropdownMenuSeparator />}
                 
                 {savedDocuments.length === 0 ? (
@@ -200,17 +243,15 @@ export const DocumentHeader = () => {
               </DropdownMenuContent>
             </DropdownMenu>
             
-            {currentDoc && (
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={handleStartEdit}
-                className="h-7 w-7"
-                title="Rename document"
-              >
-                <Edit2 className="h-3 w-3" />
-              </Button>
-            )}
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={handleStartEdit}
+              className="h-7 w-7"
+              title={currentDoc ? "Rename document" : "Name and save document"}
+            >
+              <Edit2 className="h-3 w-3" />
+            </Button>
             
             <Button
               size="icon"
