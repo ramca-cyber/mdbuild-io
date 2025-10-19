@@ -361,13 +361,13 @@ export const exportToPdfWithRendering = async (
     throw new Error('Article element not found');
   }
 
-  // Capture with high quality
+  // Capture with appropriate quality and size
   const canvas = await html2canvas(article as HTMLElement, {
-    scale: 3, // Higher quality
+    scale: 2, // Good quality without oversizing
     useCORS: true,
     backgroundColor: '#ffffff',
     logging: false,
-    windowWidth: 1200,
+    windowWidth: 900, // Match typical content width
   });
 
   const imgData = canvas.toDataURL('image/png');
@@ -379,14 +379,18 @@ export const exportToPdfWithRendering = async (
 
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 10;
+  const margin = 15;
   const availableWidth = pageWidth - margin * 2;
   
-  const imgWidth = canvas.width;
-  const imgHeight = canvas.height;
-  const ratio = availableWidth / imgWidth;
+  // Convert pixels to mm properly (assuming 96 DPI)
+  const pixelToMm = 0.264583;
+  const imgWidthMm = (canvas.width / 2) * pixelToMm; // Divide by scale
+  const imgHeightMm = (canvas.height / 2) * pixelToMm;
   
-  const scaledHeight = imgHeight * ratio;
+  // Calculate scaling to fit page width
+  const scale = Math.min(1, availableWidth / imgWidthMm);
+  const scaledWidth = imgWidthMm * scale;
+  const scaledHeight = imgHeightMm * scale;
   const availableHeight = pageHeight - margin * 2;
 
   // Handle multi-page content
@@ -404,7 +408,7 @@ export const exportToPdfWithRendering = async (
       'PNG',
       margin,
       position - (page * availableHeight),
-      availableWidth,
+      scaledWidth,
       scaledHeight
     );
 
