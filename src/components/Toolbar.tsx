@@ -24,6 +24,7 @@ import {
   BookTemplate,
   ListTree,
   FileText,
+  Link,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -47,6 +48,8 @@ export const Toolbar = () => {
     showOutline,
     setShowOutline,
     saveDocument,
+    syncScroll,
+    setSyncScroll,
   } = useEditorStore();
 
   const insertText = (before: string, after: string = '', placeholder: string = 'text') => {
@@ -309,6 +312,15 @@ export const Toolbar = () => {
 
       {/* View & Settings */}
       <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setSyncScroll(!syncScroll)}
+          title="Toggle Synced Scrolling"
+        >
+          <Link className={`h-4 w-4 ${syncScroll ? 'text-primary' : ''}`} />
+        </Button>
+        
         <Button
           variant="ghost"
           size="icon"

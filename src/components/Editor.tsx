@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -6,7 +6,8 @@ import { useEditorStore } from '@/store/editorStore';
 import { keymap } from '@codemirror/view';
 
 export const Editor = () => {
-  const { content, setContent, theme, fontSize, lineWrap, lineNumbers } = useEditorStore();
+  const { content, setContent, theme, fontSize, lineWrap, lineNumbers, syncScroll } = useEditorStore();
+  const editorRef = useRef<HTMLDivElement>(null);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -32,8 +33,23 @@ export const Editor = () => {
     [setContent]
   );
 
+  useEffect(() => {
+    if (!syncScroll || !editorRef.current) return;
+
+    const editorScroll = editorRef.current.querySelector('.cm-scroller');
+    if (!editorScroll) return;
+
+    const handleScroll = () => {
+      const scrollPercentage = editorScroll.scrollTop / (editorScroll.scrollHeight - editorScroll.clientHeight);
+      window.dispatchEvent(new CustomEvent('editor-scroll', { detail: scrollPercentage }));
+    };
+
+    editorScroll.addEventListener('scroll', handleScroll);
+    return () => editorScroll.removeEventListener('scroll', handleScroll);
+  }, [syncScroll]);
+
   return (
-    <div className="h-full w-full overflow-hidden">
+    <div ref={editorRef} className="h-full w-full overflow-hidden">
       <CodeMirror
         value={content}
         height="100%"

@@ -19,6 +19,7 @@ interface EditorState {
   showOutline: boolean;
   lineNumbers: boolean;
   autoSave: boolean;
+  syncScroll: boolean;
   savedDocuments: SavedDocument[];
   currentDocId: string | null;
   versions: { content: string; timestamp: number }[];
@@ -30,6 +31,7 @@ interface EditorState {
   setShowOutline: (show: boolean) => void;
   setLineNumbers: (show: boolean) => void;
   setAutoSave: (enabled: boolean) => void;
+  setSyncScroll: (enabled: boolean) => void;
   setCurrentDocId: (id: string | null) => void;
   saveDocument: (name: string) => void;
   loadDocument: (id: string) => void;
@@ -271,6 +273,7 @@ export const useEditorStore = create<EditorState>()(
       showOutline: false,
       lineNumbers: true,
       autoSave: true,
+      syncScroll: true,
       savedDocuments: [],
       currentDocId: null,
       versions: [],
@@ -288,6 +291,7 @@ export const useEditorStore = create<EditorState>()(
       setShowOutline: (show) => set({ showOutline: show }),
       setLineNumbers: (show) => set({ lineNumbers: show }),
       setAutoSave: (enabled) => set({ autoSave: enabled }),
+      setSyncScroll: (enabled) => set({ syncScroll: enabled }),
       setCurrentDocId: (id) => set({ currentDocId: id }),
       saveDocument: (name) => {
         const state = get();

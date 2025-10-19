@@ -20,7 +20,7 @@ mermaid.initialize({
 });
 
 export const Preview = () => {
-  const { content, theme } = useEditorStore();
+  const { content, theme, syncScroll } = useEditorStore();
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -79,6 +79,22 @@ export const Preview = () => {
       mermaid.initialize({ theme: 'default' });
     }
   }, [theme]);
+
+  useEffect(() => {
+    if (!syncScroll || !previewRef.current) return;
+
+    const handleEditorScroll = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const scrollPercentage = customEvent.detail;
+      if (previewRef.current) {
+        const maxScroll = previewRef.current.scrollHeight - previewRef.current.clientHeight;
+        previewRef.current.scrollTop = maxScroll * scrollPercentage;
+      }
+    };
+
+    window.addEventListener('editor-scroll', handleEditorScroll);
+    return () => window.removeEventListener('editor-scroll', handleEditorScroll);
+  }, [syncScroll]);
 
   return (
     <div 

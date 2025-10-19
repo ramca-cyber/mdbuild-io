@@ -205,34 +205,34 @@ export const DocumentHeader = () => {
             )}
           </>
         )}
-      </div>
-      
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1.5">
-          <Label htmlFor="autosave" className="text-xs text-muted-foreground cursor-pointer hidden sm:inline">
-            Auto-save
-          </Label>
-          <Switch
-            id="autosave"
-            checked={autoSave}
-            onCheckedChange={setAutoSave}
-            className="scale-75"
-          />
-        </div>
         
-        <div 
-          className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-help"
-          title={`Using ${formatStorageSize(storageInfo.bytes)} of 4MB`}
-        >
-          <Database className={cn(
-            "h-3 w-3",
-            storageInfo.isCritical && "text-destructive",
-            storageInfo.isNearLimit && !storageInfo.isCritical && "text-warning"
-          )} />
-          <span className="hidden sm:inline">
-            {storageInfo.mb.toFixed(1)} MB / 4 MB
-          </span>
-          <span className="sm:hidden">{storageInfo.percentage.toFixed(0)}%</span>
+        <div className="flex items-center gap-2 ml-2">
+          <div className="flex items-center gap-1.5">
+            <Label htmlFor="autosave" className="text-xs text-muted-foreground cursor-pointer hidden sm:inline">
+              Auto-save
+            </Label>
+            <Switch
+              id="autosave"
+              checked={autoSave}
+              onCheckedChange={setAutoSave}
+              className="scale-75"
+            />
+          </div>
+          
+          <div 
+            className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-help"
+            title={`Using ${formatStorageSize(storageInfo.bytes)} of 4MB`}
+          >
+            <Database className={cn(
+              "h-3 w-3",
+              storageInfo.isCritical && "text-destructive",
+              storageInfo.isNearLimit && !storageInfo.isCritical && "text-warning"
+            )} />
+            <span className="hidden sm:inline">
+              {storageInfo.mb.toFixed(1)} MB / 4 MB
+            </span>
+            <span className="sm:hidden">{storageInfo.percentage.toFixed(0)}%</span>
+          </div>
         </div>
       </div>
 
