@@ -4,7 +4,7 @@ import {
   Heading1, 
   Heading2, 
   Link2, 
-  Image, 
+  Image as ImageIcon, 
   List, 
   ListOrdered,
   CheckSquare,
@@ -19,14 +19,34 @@ import {
   Eye,
   EyeOff,
   SplitSquareHorizontal,
+  Save,
+  Settings,
+  BookTemplate,
+  ListTree,
+  FileText,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useEditorStore } from '@/store/editorStore';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
+import { SettingsSheet } from '@/components/SettingsSheet';
+import { TemplatesDrawer } from '@/components/TemplatesDrawer';
+import { SavedDocuments } from '@/components/SavedDocuments';
 import { toast } from 'sonner';
 
 export const Toolbar = () => {
-  const { theme, setTheme, viewMode, setViewMode, content, setContent } = useEditorStore();
+  const { 
+    theme, 
+    setTheme, 
+    viewMode, 
+    setViewMode, 
+    content, 
+    setContent, 
+    showOutline,
+    setShowOutline,
+    saveDocument,
+  } = useEditorStore();
 
   const insertText = (before: string, after: string = '', placeholder: string = 'text') => {
     const textarea = document.querySelector('textarea');
@@ -85,8 +105,78 @@ export const Toolbar = () => {
     setViewMode(modes[nextIndex]);
   };
 
+  const handleSave = () => {
+    const title = content.match(/^#\s+(.+)$/m)?.[1] || 'Untitled';
+    saveDocument(title);
+    toast.success('Document saved successfully');
+  };
+
+  const handleImageUpload = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const dataUrl = e.target?.result as string;
+          insertBlock(`![${file.name}](${dataUrl})`);
+          toast.success('Image uploaded');
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    input.click();
+  };
+
   return (
-    <div className="flex items-center gap-2 px-4 py-2 bg-toolbar-bg border-b border-border">
+    <div className="flex items-center gap-2 px-2 sm:px-4 py-2 bg-toolbar-bg border-b border-border overflow-x-auto">
+      {/* Save & Documents */}
+      <div className="hidden lg:flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleSave}
+          title="Save Document (Ctrl+S)"
+        >
+          <Save className="h-4 w-4" />
+        </Button>
+        
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" title="Saved Documents">
+              <FileText className="h-4 w-4" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-80">
+            <SheetHeader>
+              <SheetTitle>Saved Documents</SheetTitle>
+            </SheetHeader>
+            <SavedDocuments />
+          </SheetContent>
+        </Sheet>
+
+        <Drawer>
+          <DrawerTrigger asChild>
+            <Button variant="ghost" size="icon" title="Templates">
+              <BookTemplate className="h-4 w-4" />
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>Templates</DrawerTitle>
+            </DrawerHeader>
+            <div className="max-h-[60vh]">
+              <TemplatesDrawer />
+            </div>
+          </DrawerContent>
+        </Drawer>
+      </div>
+
+      <Separator orientation="vertical" className="h-6 hidden lg:block" />
+
+      {/* Formatting */}
       <div className="flex items-center gap-1">
         <Button
           variant="ghost"
@@ -149,10 +239,10 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => insertBlock('![Alt text](image-url.jpg)')}
-          title="Image"
+          onClick={handleImageUpload}
+          title="Upload Image"
         >
-          <Image className="h-4 w-4" />
+          <ImageIcon className="h-4 w-4" />
         </Button>
       </div>
 
@@ -215,6 +305,35 @@ export const Toolbar = () => {
       </div>
 
       <div className="flex-1" />
+
+      {/* View & Settings */}
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setShowOutline(!showOutline)}
+          title="Toggle Outline"
+          className="hidden lg:flex"
+        >
+          <ListTree className={`h-4 w-4 ${showOutline ? 'text-primary' : ''}`} />
+        </Button>
+
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" title="Settings" className="hidden lg:flex">
+              <Settings className="h-4 w-4" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-80">
+            <SheetHeader>
+              <SheetTitle>Settings</SheetTitle>
+            </SheetHeader>
+            <SettingsSheet />
+          </SheetContent>
+        </Sheet>
+
+        <Separator orientation="vertical" className="h-6" />
+      </div>
 
       <div className="flex items-center gap-1">
         <Button
