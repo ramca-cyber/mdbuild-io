@@ -35,15 +35,45 @@ export const waitForContentToRender = async (): Promise<void> => {
 // Convert DOM element to PNG image data
 export const convertElementToImage = async (element: HTMLElement): Promise<string> => {
   try {
+    // Ensure element is visible and has dimensions
+    const rect = element.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+      console.warn('Element has zero dimensions, cannot convert to image');
+      throw new Error('Element has zero dimensions');
+    }
+
+    // Make sure element is in viewport and visible
+    const originalDisplay = element.style.display;
+    const originalVisibility = element.style.visibility;
+    element.style.display = 'block';
+    element.style.visibility = 'visible';
+
     const dataUrl = await toPng(element, {
       quality: 1,
       pixelRatio: 2,
       backgroundColor: '#ffffff',
-      skipFonts: true, // Skip external fonts to avoid CORS issues
+      cacheBust: true,
+      filter: (node) => {
+        // Filter out copy buttons and other interactive elements
+        if (node instanceof HTMLElement) {
+          if (node.classList?.contains('copy-button')) return false;
+        }
+        return true;
+      },
     });
+
+    // Restore original styles
+    element.style.display = originalDisplay;
+    element.style.visibility = originalVisibility;
+
+    // Validate the data URL
+    if (!dataUrl || dataUrl === 'data:,' || dataUrl.length < 100) {
+      throw new Error('Invalid data URL generated');
+    }
+
     return dataUrl;
   } catch (error) {
-    console.error('Error converting element to image:', error);
+    console.error('Error converting element to image:', error, element);
     throw error;
   }
 };
@@ -492,9 +522,36 @@ export const exportToHtmlWithInlineStyles = async (
   // Rasterize complex elements to embedded images for robust formatting
   const rasterizeToImg = async (selector: string, altFactory: (el: Element) => string) => {
     const nodes = Array.from(clonedArticle.querySelectorAll(selector));
+    
     for (const node of nodes) {
       try {
-        const dataUrl = await convertElementToImage(node as HTMLElement);
+        const htmlNode = node as HTMLElement;
+        
+        // Skip if element is not visible or has no dimensions
+        const rect = htmlNode.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) {
+          console.warn('Skipping element with zero dimensions:', selector);
+          continue;
+        }
+
+        // Find the original element in the live DOM to capture
+        const originalElement = previewElement.querySelector(
+          selector + ':nth-of-type(' + (Array.from(article?.querySelectorAll(selector) || []).indexOf(node) + 1) + ')'
+        ) as HTMLElement;
+
+        if (!originalElement) {
+          console.warn('Could not find original element for:', selector);
+          continue;
+        }
+
+        const dataUrl = await convertElementToImage(originalElement);
+        
+        // Validate data URL before creating image
+        if (!dataUrl || dataUrl === 'data:,' || dataUrl.length < 100) {
+          console.error('Invalid data URL, skipping element');
+          continue;
+        }
+
         const img = document.createElement('img');
         img.src = dataUrl;
         img.alt = altFactory(node);
@@ -503,7 +560,8 @@ export const exportToHtmlWithInlineStyles = async (
         img.style.height = 'auto';
         node.replaceWith(img);
       } catch (e) {
-        console.error('Rasterize error:', e);
+        console.error('Rasterize error for', selector, ':', e);
+        // Leave the original element if conversion fails
       }
     }
   };
