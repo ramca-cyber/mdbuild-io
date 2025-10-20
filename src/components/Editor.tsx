@@ -280,14 +280,14 @@ export const Editor = () => {
   return (
     <div 
       ref={editorRef} 
-      className="h-full w-full overflow-hidden relative flex flex-col no-print"
+      className="h-full w-full overflow-hidden relative flex flex-col no-print bg-editor-bg"
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <div className="px-4 py-2 bg-muted/30 border-b border-border flex-shrink-0">
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide" role="heading" aria-level={2}>
+      <div className="px-4 py-3 bg-muted/50 border-b-2 border-border/80 flex-shrink-0 shadow-sm">
+        <h2 className="text-sm font-bold text-foreground/70 uppercase tracking-wider" role="heading" aria-level={2}>
           Markdown Editor
         </h2>
       </div>

@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
+import { Panel, PanelGroup } from 'react-resizable-panels';
+import { ResizableHandle } from '@/components/ui/resizable';
 import { Link } from 'react-router-dom';
 import { SEO } from '@/components/SEO';
 import { Editor } from '@/components/Editor';
@@ -18,12 +19,14 @@ import { Menu, FileText, Settings, BookTemplate, List, Home, X, Moon, Sun, Keybo
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { calculateStatistics } from '@/lib/statisticsUtils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const { theme, setTheme, viewMode, setViewMode, showOutline, focusMode, setFocusMode, content } = useEditorStore();
   const [mobilePanel, setMobilePanel] = useState<'documents' | 'templates' | 'settings' | 'outline' | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
+  const isMobile = useIsMobile();
 
   // Calculate word count for focus mode
   const stats = useMemo(() => calculateStatistics(content), [content]);
@@ -310,15 +313,25 @@ const Index = () => {
             </div>
           ) : (
             <>
-              {viewMode === 'split' && (
+              {viewMode === 'split' && !isMobile && (
                 <PanelGroup direction="horizontal" className="h-full">
-                  <Panel defaultSize={50} minSize={30} className="panel-editor">
-                    <div className="h-full border-r border-border">
-                      <Editor />
-                    </div>
+                  <Panel defaultSize={50} minSize={30}>
+                    <Editor />
                   </Panel>
-                  <PanelResizeHandle className="w-1 bg-border hover:bg-primary transition-colors" />
-                  <Panel defaultSize={50} minSize={30} className="panel-preview">
+                  <ResizableHandle withHandle />
+                  <Panel defaultSize={50} minSize={30}>
+                    <Preview />
+                  </Panel>
+                </PanelGroup>
+              )}
+              
+              {viewMode === 'split' && isMobile && (
+                <PanelGroup direction="vertical" className="h-full">
+                  <Panel defaultSize={50} minSize={30}>
+                    <Editor />
+                  </Panel>
+                  <ResizableHandle withHandle />
+                  <Panel defaultSize={50} minSize={30}>
                     <Preview />
                   </Panel>
                 </PanelGroup>

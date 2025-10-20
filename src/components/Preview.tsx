@@ -218,15 +218,15 @@ export const Preview = () => {
   );
 
   return (
-    <div className="h-full w-full flex flex-col overflow-hidden">
-      <div className="px-4 py-2 bg-muted/30 border-b border-border flex-shrink-0 no-print">
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+    <div className="h-full w-full flex flex-col overflow-hidden bg-preview-bg">
+      <div className="px-4 py-3 bg-muted/50 border-b-2 border-border/80 flex-shrink-0 no-print shadow-sm">
+        <h2 className="text-sm font-bold text-foreground/70 uppercase tracking-wider">
           Preview
         </h2>
       </div>
       <div 
         ref={previewRef}
-        className="flex-1 overflow-auto bg-preview-bg p-8 cursor-text preview-content"
+        className="flex-1 overflow-auto p-8 cursor-text preview-content"
         onClick={handleClick}
         role="document"
         aria-label="Markdown preview"

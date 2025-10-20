@@ -259,6 +259,29 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
+  /* Panel-specific styling for editor and preview */
+  .bg-editor-bg {
+    background-color: hsl(var(--editor-bg));
+  }
+  
+  .bg-preview-bg {
+    background-color: hsl(var(--preview-bg));
+  }
+  
+  /* Enhanced resize handle styling */
+  [data-panel-resize-handle-id] {
+    position: relative;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  [data-panel-resize-handle-id]:hover {
+    background: linear-gradient(to bottom, hsl(var(--primary) / 0.3), hsl(var(--primary) / 0.5), hsl(var(--primary) / 0.3)) !important;
+  }
+  
+  [data-panel-resize-handle-id]:active {
+    background: linear-gradient(to bottom, hsl(var(--primary) / 0.5), hsl(var(--primary) / 0.7), hsl(var(--primary) / 0.5)) !important;
+  }
+  
   .animate-fade-in {
     animation: fade-in 0.3s ease-out;
   }
