@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -16,6 +16,7 @@ export const Preview = () => {
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const syncScrollRef = useRef(syncScroll);
+  const lineMapRef = useRef<Map<Element, number>>(new Map());
 
   // Add copy buttons to code blocks
   const addCopyButtons = () => {
@@ -48,16 +49,40 @@ export const Preview = () => {
     });
   };
 
-  // Handle content changes - add copy buttons after render
+  // Build line number map from markdown content
+  const buildLineMap = useCallback(() => {
+    if (!previewRef.current) return;
+    
+    lineMapRef.current.clear();
+    const lines = content.split('\n');
+    let currentLine = 1;
+    
+    // Map markdown lines to approximate positions
+    const elements = previewRef.current.querySelectorAll('h1, h2, h3, h4, h5, h6, p, li, pre, blockquote, table');
+    elements.forEach((el) => {
+      const text = el.textContent || '';
+      // Find the line in markdown that contains this text
+      for (let i = currentLine - 1; i < lines.length; i++) {
+        if (lines[i].includes(text.substring(0, 50)) || text.includes(lines[i].substring(0, 50))) {
+          lineMapRef.current.set(el, i + 1);
+          currentLine = i + 1;
+          break;
+        }
+      }
+    });
+  }, [content]);
+
+  // Handle content changes - add copy buttons and build line map
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       requestAnimationFrame(() => {
         addCopyButtons();
+        buildLineMap();
       });
     }, 100);
     
     return () => clearTimeout(timeoutId);
-  }, [content, toast]);
+  }, [content, toast, buildLineMap]);
 
   // Track syncScroll changes without re-rendering diagrams
   useEffect(() => {
@@ -110,10 +135,28 @@ export const Preview = () => {
     };
   }, []); // Only setup once
 
+  // Handle clicks to sync cursor position
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    let target = e.target as Element;
+    let line: number | undefined;
+    
+    // Walk up the DOM tree to find an element with a line mapping
+    while (target && target !== previewRef.current) {
+      line = lineMapRef.current.get(target);
+      if (line) break;
+      target = target.parentElement as Element;
+    }
+    
+    if (line) {
+      window.dispatchEvent(new CustomEvent('preview-click', { detail: line }));
+    }
+  }, []);
+
   return (
     <div 
       ref={previewRef}
-      className="h-full w-full overflow-auto bg-preview-bg p-8"
+      className="h-full w-full overflow-auto bg-preview-bg p-8 cursor-text"
+      onClick={handleClick}
     >
       <article className="prose prose-slate dark:prose-invert max-w-none preview-content">
         <ReactMarkdown

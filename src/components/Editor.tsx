@@ -3,11 +3,12 @@ import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { useEditorStore } from '@/store/editorStore';
-import { keymap } from '@codemirror/view';
+import { EditorView } from '@codemirror/view';
 
 export const Editor = () => {
   const { content, setContent, theme, fontSize, lineWrap, lineNumbers, syncScroll } = useEditorStore();
   const editorRef = useRef<HTMLDivElement>(null);
+  const viewRef = useRef<EditorView | null>(null);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -32,6 +33,33 @@ export const Editor = () => {
     },
     [setContent]
   );
+
+  // Listen for preview clicks to set cursor position
+  useEffect(() => {
+    const handlePreviewClick = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const line = customEvent.detail;
+      
+      if (viewRef.current && typeof line === 'number') {
+        const view = viewRef.current;
+        const doc = view.state.doc;
+        const lineCount = doc.lines;
+        
+        // Ensure line is within bounds
+        const targetLine = Math.min(Math.max(1, line), lineCount);
+        const pos = doc.line(targetLine).from;
+        
+        view.dispatch({
+          selection: { anchor: pos },
+          scrollIntoView: true,
+        });
+        view.focus();
+      }
+    };
+
+    window.addEventListener('preview-click', handlePreviewClick);
+    return () => window.removeEventListener('preview-click', handlePreviewClick);
+  }, []);
 
   // Dispatch editor scroll events
   useEffect(() => {
@@ -100,6 +128,9 @@ export const Editor = () => {
         theme={theme === 'dark' ? oneDark : 'light'}
         extensions={[markdown()]}
         onChange={onChange}
+        onCreateEditor={(view) => {
+          viewRef.current = view;
+        }}
         className="h-full text-base"
         basicSetup={{
           lineNumbers: lineNumbers,
