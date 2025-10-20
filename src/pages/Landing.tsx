@@ -226,56 +226,6 @@ const Landing = () => {
         </div>
       </section>
       
-      {/* Quick Features Showcase */}
-      <section className="py-12 px-4 bg-background border-y">
-        <div className="container max-w-6xl mx-auto">
-          <h3 className="text-center text-sm font-semibold text-muted-foreground mb-8 uppercase tracking-wider">
-            Core Features at a Glance
-          </h3>
-          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
-            <div className="group flex items-center gap-3 px-4 py-3 rounded-xl bg-card border-2 border-border hover:border-primary transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-default">
-              <span className="text-2xl">🪶</span>
-              <div>
-                <div className="font-semibold text-sm">Markdown + GFM</div>
-                <div className="text-xs text-muted-foreground">Full GitHub support</div>
-              </div>
-            </div>
-            
-            <div className="group flex items-center gap-3 px-4 py-3 rounded-xl bg-card border-2 border-border hover:border-primary transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-default">
-              <span className="text-2xl">📊</span>
-              <div>
-                <div className="font-semibold text-sm">Mermaid Diagrams</div>
-                <div className="text-xs text-muted-foreground">Flowcharts & more</div>
-              </div>
-            </div>
-            
-            <div className="group flex items-center gap-3 px-4 py-3 rounded-xl bg-card border-2 border-border hover:border-primary transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-default">
-              <span className="text-2xl">🧮</span>
-              <div>
-                <div className="font-semibold text-sm">KaTeX Math</div>
-                <div className="text-xs text-muted-foreground">LaTeX equations</div>
-              </div>
-            </div>
-            
-            <div className="group flex items-center gap-3 px-4 py-3 rounded-xl bg-card border-2 border-border hover:border-primary transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-default">
-              <span className="text-2xl">📥</span>
-              <div>
-                <div className="font-semibold text-sm">Export Formats</div>
-                <div className="text-xs text-muted-foreground">PDF, HTML, DOCX</div>
-              </div>
-            </div>
-            
-            <div className="group flex items-center gap-3 px-4 py-3 rounded-xl bg-card border-2 border-border hover:border-primary transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-default">
-              <span className="text-2xl">🚀</span>
-              <div>
-                <div className="font-semibold text-sm">Offline-Ready</div>
-                <div className="text-xs text-muted-foreground">PWA installable</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      
       {/* Feature Comparison Table */}
       <section id="features" className="py-20 px-4 bg-muted/30">
         <div className="container max-w-6xl mx-auto">
