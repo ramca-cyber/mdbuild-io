@@ -30,7 +30,8 @@ export const Preview = () => {
         const button = document.createElement('button');
         button.className = 'copy-button';
         button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
-        button.onclick = () => {
+        button.addEventListener('click', (ev) => {
+          ev.stopPropagation();
           const text = code.textContent || '';
           navigator.clipboard.writeText(text);
           toast({
@@ -41,7 +42,7 @@ export const Preview = () => {
           setTimeout(() => {
             button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
           }, 2000);
-        };
+        });
         pre.style.position = 'relative';
         pre.appendChild(button);
       }
@@ -113,22 +114,32 @@ export const Preview = () => {
   // Handle clicks to sync cursor position based on scroll ratio
   const handleClick = useCallback((e: React.MouseEvent) => {
     if (!previewRef.current) return;
-    
-    const preview = previewRef.current;
+
+    const root = previewRef.current;
+    let el = e.target as HTMLElement | null;
+
+    // Walk up to find element with data-sourcepos from react-markdown
+    while (el && el !== root) {
+      const sp = (el as HTMLElement).dataset?.sourcepos;
+      if (sp) {
+        // format: "startLine:startCol-endLine:endCol"
+        const m = /^(\d+):(\d+)-(\d+):(\d+)$/.exec(sp);
+        const startLine = m ? parseInt(m[1], 10) : parseInt(sp.split(':')[0], 10) || 1;
+        window.dispatchEvent(new CustomEvent('preview-click', { detail: startLine }));
+        return;
+      }
+      el = el.parentElement;
+    }
+
+    // Fallback: estimate using scroll ratio
+    const preview = root;
     const clickY = e.clientY;
     const previewRect = preview.getBoundingClientRect();
-    
-    // Calculate click position relative to preview content
     const clickOffset = clickY - previewRect.top + preview.scrollTop;
-    const scrollableHeight = preview.scrollHeight;
-    
-    // Calculate ratio of click position
-    const clickRatio = Math.max(0, Math.min(1, clickOffset / scrollableHeight));
-    
-    // Calculate corresponding line in markdown
+    const totalHeight = Math.max(1, preview.scrollHeight);
+    const clickRatio = Math.max(0, Math.min(1, clickOffset / totalHeight));
     const lines = content.split('\n');
-    const targetLine = Math.round(clickRatio * lines.length) || 1;
-    
+    const targetLine = Math.max(1, Math.round(clickRatio * lines.length));
     window.dispatchEvent(new CustomEvent('preview-click', { detail: targetLine }));
   }, [content]);
 
@@ -139,7 +150,7 @@ export const Preview = () => {
       onClick={handleClick}
     >
       <article className="prose prose-slate dark:prose-invert max-w-none preview-content">
-        <ReactMarkdown
+        <ReactMarkdown {...({ sourcePos: true } as any)}
           remarkPlugins={[remarkGfm, remarkMath, remarkEmoji, remarkFrontmatter]}
           rehypePlugins={[rehypeRaw, rehypeKatex, rehypeHighlight]}
           components={{
