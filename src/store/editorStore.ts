@@ -11,14 +11,6 @@ export interface SavedDocument {
   timestamp: number;
 }
 
-export interface GitHubFile {
-  repo: string;
-  owner: string;
-  path: string;
-  sha: string;
-  branch: string;
-}
-
 interface EditorState {
   content: string;
   theme: Theme;
@@ -38,10 +30,6 @@ interface EditorState {
   autoSaveTimeoutId: ReturnType<typeof setTimeout> | null;
   previewRefreshKey: number;
   statisticsExpanded: boolean;
-  
-  // GitHub Integration
-  githubConnected: boolean;
-  currentGithubFile: GitHubFile | null;
   
   // Search & Replace
   showSearchReplace: boolean;
@@ -73,11 +61,6 @@ interface EditorState {
   restoreVersion: (index: number) => void;
   createNewDocument: () => void;
   resetToDefaults: () => void;
-  
-  // GitHub Integration actions
-  setGithubConnected: (connected: boolean) => void;
-  setCurrentGithubFile: (file: GitHubFile | null) => void;
-  saveToGitHub: (commitMessage: string) => Promise<void>;
   
   // Search & Replace actions
   setShowSearchReplace: (show: boolean) => void;
@@ -334,10 +317,6 @@ export const useEditorStore = create<EditorState>()(
       previewRefreshKey: 0,
       statisticsExpanded: false,
       
-      // GitHub Integration initial state
-      githubConnected: false,
-      currentGithubFile: null,
-      
       // Search & Replace initial state
       showSearchReplace: false,
       searchQuery: '',
@@ -531,38 +510,6 @@ export const useEditorStore = create<EditorState>()(
           syncScroll: true,
           showOutline: false,
           viewMode: 'split',
-        });
-      },
-      
-      // GitHub Integration methods
-      setGithubConnected: (connected) => set({ githubConnected: connected }),
-      setCurrentGithubFile: (file) => set({ currentGithubFile: file }),
-      saveToGitHub: async (commitMessage: string) => {
-        const { content, currentGithubFile } = get();
-        if (!currentGithubFile) {
-          throw new Error('No GitHub file is currently open');
-        }
-        
-        const { githubService } = await import('@/lib/githubService');
-        
-        const newSha = await githubService.updateFile(
-          currentGithubFile.owner,
-          currentGithubFile.repo,
-          currentGithubFile.path,
-          content,
-          currentGithubFile.sha,
-          commitMessage,
-          currentGithubFile.branch
-        );
-        
-        // Update the SHA for next save
-        set({
-          currentGithubFile: {
-            ...currentGithubFile,
-            sha: newSha,
-          },
-          lastSavedContent: content,
-          hasUnsavedChanges: false,
         });
       },
       
