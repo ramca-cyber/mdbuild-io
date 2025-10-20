@@ -130,6 +130,7 @@ const Index = () => {
                     Home
                   </Link>
                 </Button>
+                
                 <Button 
                   variant="ghost" 
                   className="justify-start"
@@ -138,6 +139,7 @@ const Index = () => {
                   <FileText className="h-4 w-4 mr-2" />
                   Documents
                 </Button>
+                
                 <Button 
                   variant="ghost" 
                   className="justify-start"
@@ -146,6 +148,10 @@ const Index = () => {
                   <BookTemplate className="h-4 w-4 mr-2" />
                   Templates
                 </Button>
+                
+                {/* Visual Separator */}
+                <div className="h-px bg-border my-2" />
+                
                 <Button 
                   variant="ghost" 
                   className="justify-start"
@@ -154,6 +160,32 @@ const Index = () => {
                   <List className="h-4 w-4 mr-2" />
                   Outline
                 </Button>
+                
+                <Button 
+                  variant="ghost" 
+                  className="justify-start"
+                  onClick={() => {
+                    setTheme(theme === 'light' ? 'dark' : 'light');
+                  }}
+                >
+                  {theme === 'light' ? <Moon className="h-4 w-4 mr-2" /> : <Sun className="h-4 w-4 mr-2" />}
+                  Theme
+                </Button>
+                
+                <Button 
+                  variant="ghost" 
+                  className="justify-start"
+                  onClick={() => {
+                    setShowKeyboardShortcuts(true);
+                  }}
+                >
+                  <Keyboard className="h-4 w-4 mr-2" />
+                  Keyboard Shortcuts
+                </Button>
+                
+                {/* Visual Separator */}
+                <div className="h-px bg-border my-2" />
+                
                 <Button 
                   variant="ghost" 
                   className="justify-start"
@@ -169,40 +201,14 @@ const Index = () => {
 
         {/* Desktop menu */}
         <div className="hidden lg:flex items-center gap-2">
+          {/* Primary Navigation Group */}
           <Button variant="ghost" size="sm" asChild>
             <Link to="/landing" className="flex items-center gap-2">
               <Home className="h-4 w-4" />
               <span>Home</span>
             </Link>
           </Button>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-              >
-                {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Toggle Theme</p>
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => setShowKeyboardShortcuts(true)}
-              >
-                <Keyboard className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Keyboard Shortcuts</p>
-            </TooltipContent>
-          </Tooltip>
+          
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="sm">
@@ -217,6 +223,40 @@ const Index = () => {
               <SettingsSheet />
             </SheetContent>
           </Sheet>
+          
+          {/* Visual Separator */}
+          <div className="w-px h-6 bg-border mx-1" />
+          
+          {/* Utility Group */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+              >
+                {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Toggle Theme</p>
+            </TooltipContent>
+          </Tooltip>
+          
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setShowKeyboardShortcuts(true)}
+              >
+                <Keyboard className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Keyboard Shortcuts</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </header>
       )}
