@@ -85,6 +85,21 @@ export const Toolbar = () => {
     setViewMode(mode);
   };
 
+  const handleLinkInsert = () => {
+    try {
+      const url = prompt('Enter link URL:', 'https://');
+      if (url && url.trim()) {
+        const linkText = prompt('Enter link text (or leave empty to use URL):', '');
+        const text = linkText?.trim() || url.trim();
+        insertText('[', `](${url.trim()})`, text);
+        toast.success('Link inserted successfully');
+      }
+    } catch (error) {
+      console.error('Error inserting link:', error);
+      toast.error('Failed to insert link. Please try again.');
+    }
+  };
+
   const handleImageUpload = () => {
     try {
       const url = prompt('Enter image URL:', 'https://');
@@ -189,31 +204,6 @@ export const Toolbar = () => {
 
       <Separator orientation="vertical" className="h-6 hidden sm:block mx-1" />
 
-      {/* Link & Image */}
-      <div className="hidden sm:flex items-center gap-1 bg-muted/30 rounded-md px-2 py-1 border border-border/50">
-        <span className="text-xs font-semibold text-muted-foreground mr-1 hidden md:inline">Media</span>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => insertText('[', '](url)', 'link text')}
-          title="Insert Link (Ctrl+K)"
-          aria-label="Insert link"
-        >
-          <Link2 className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleImageUpload}
-          title="Insert Image from URL"
-          aria-label="Insert image from URL"
-        >
-          <ImageIcon className="h-4 w-4" />
-        </Button>
-      </div>
-
-      <Separator orientation="vertical" className="h-6 hidden sm:block mx-1" />
-
       {/* Lists Dropdown */}
       <div className="hidden sm:flex items-center gap-1 bg-muted/30 rounded-md px-2 py-1 border border-border/50">
         <span className="text-xs font-semibold text-muted-foreground mr-1 hidden md:inline">Lists</span>
@@ -254,6 +244,14 @@ export const Toolbar = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="bg-popover">
+            <DropdownMenuItem onClick={handleLinkInsert}>
+              <Link2 className="h-4 w-4 mr-2" />
+              Link
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleImageUpload}>
+              <ImageIcon className="h-4 w-4 mr-2" />
+              Image
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => insertText('> ', '', 'quote')}>
               <Quote className="h-4 w-4 mr-2" />
               Quote
@@ -316,7 +314,7 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => insertText('[', '](url)', 'link text')}
+          onClick={handleLinkInsert}
           title="Link"
         >
           <Link2 className="h-4 w-4" />
