@@ -83,23 +83,52 @@ export const Editor = () => {
         if (rafId) cancelAnimationFrame(rafId);
         rafId = requestAnimationFrame(() => {
           const maxScroll = editorScroll.scrollHeight - editorScroll.clientHeight;
-          if (maxScroll > 0) {
-            const scrollPercentage = editorScroll.scrollTop / maxScroll;
-            window.dispatchEvent(new CustomEvent('editor-scroll', { detail: scrollPercentage }));
+          const scrollPercentage = maxScroll > 0 ? editorScroll.scrollTop / maxScroll : 0;
+
+          // Compute top visible line for higher precision
+          let topLine = 1;
+          if (viewRef.current) {
+            const view = viewRef.current;
+            const rect = editorScroll.getBoundingClientRect();
+            const pos = view.posAtCoords({ x: rect.left + 20, y: rect.top + 20 });
+            if (pos != null) {
+              try {
+                topLine = view.state.doc.lineAt(pos).number;
+              } catch {}
+            }
           }
+
+          window.dispatchEvent(new CustomEvent('editor-scroll', { detail: { ratio: scrollPercentage, line: topLine } }));
           rafId = null;
         });
       };
 
       const handlePreviewScroll = (e: Event) => {
         const customEvent = e as CustomEvent;
-        const scrollPercentage = customEvent.detail;
+        const detail = customEvent.detail;
 
         isSyncing = true;
         if (rafId) cancelAnimationFrame(rafId);
         rafId = requestAnimationFrame(() => {
           const maxScroll = editorScroll.scrollHeight - editorScroll.clientHeight;
-          editorScroll.scrollTop = scrollPercentage * maxScroll;
+
+          if (detail && typeof detail === 'object' && 'line' in detail && viewRef.current) {
+            const view = viewRef.current;
+            const doc = view.state.doc;
+            const lineNum = Math.min(Math.max(1, detail.line as number), doc.lines);
+            const pos = doc.line(lineNum).from;
+            const coords = view.coordsAtPos(pos);
+            const rect = editorScroll.getBoundingClientRect();
+            if (coords) {
+              const delta = coords.top - rect.top;
+              editorScroll.scrollTop += delta;
+            } else if (maxScroll > 0 && detail.ratio != null) {
+              editorScroll.scrollTop = detail.ratio * maxScroll;
+            }
+          } else {
+            const ratio = typeof detail === 'number' ? detail : detail?.ratio ?? 0;
+            editorScroll.scrollTop = ratio * maxScroll;
+          }
 
           // Release the lock on the next frame (after the scroll event fires)
           requestAnimationFrame(() => {

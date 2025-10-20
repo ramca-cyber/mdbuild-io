@@ -38,7 +38,7 @@ export const Preview = () => {
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const syncScrollRef = useRef(syncScroll);
-
+  const anchorsRef = useRef<{ line: number; top: number }[]>([]);
   // Optimized copy buttons with proper cleanup and memoization
   const addCopyButtons = useCallback(() => {
     if (!previewRef.current) return;
@@ -109,13 +109,33 @@ export const Preview = () => {
     if (!previewRef.current) return;
     const root = previewRef.current;
 
+    // Build anchors map from preview content
+    const rebuildAnchors = () => {
+      const nodes = Array.from(root.querySelectorAll('[data-line]')) as HTMLElement[];
+      const anchors = nodes
+        .map((el) => ({ line: parseInt(el.getAttribute('data-line') || '0', 10) || 0, top: el.offsetTop }))
+        .filter((a) => a.line > 0)
+        .sort((a, b) => a.line - b.line);
+      anchorsRef.current = anchors;
+    };
+
     const emitCurrent = () => {
+      if (!previewRef.current) return;
+      rebuildAnchors();
       if (!syncScrollRef.current) return;
       const maxScroll = root.scrollHeight - root.clientHeight;
       if (maxScroll <= 0) return;
       const ratio = Math.max(0, Math.min(1, root.scrollTop / maxScroll));
-      window.dispatchEvent(new CustomEvent('preview-scroll', { detail: ratio }));
+      // Compute current top line from anchors
+      const anchors = anchorsRef.current;
+      let i = 0;
+      while (i + 1 < anchors.length && anchors[i + 1].top <= root.scrollTop) i++;
+      const line = anchors[i]?.line || 1;
+      window.dispatchEvent(new CustomEvent('preview-scroll', { detail: { ratio, line } }));
     };
+
+    // Initial build
+    rebuildAnchors();
 
     const imgs = Array.from(root.querySelectorAll('img')) as HTMLImageElement[];
     imgs.forEach((img) => {
@@ -153,13 +173,25 @@ export const Preview = () => {
       if (!syncScrollRef.current) return;
 
       const customEvent = e as CustomEvent;
-      const scrollPercentage = customEvent.detail;
+      const detail = customEvent.detail;
 
       isSyncing = true;
       if (rafId) cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(() => {
-        const maxScroll = preview.scrollHeight - preview.clientHeight;
-        preview.scrollTop = maxScroll * scrollPercentage;
+        if (detail && typeof detail === 'object' && 'line' in detail) {
+          // Precise: map line -> preview top via anchors
+          const anchors = anchorsRef.current;
+          let idx = anchors.findIndex((a) => a.line >= detail.line);
+          if (idx === -1) idx = anchors.length - 1;
+          if (idx < 0) idx = 0;
+          const targetTop = anchors[idx]?.top ?? 0;
+          preview.scrollTop = targetTop;
+        } else {
+          // Fallback: simple ratio
+          const scrollPercentage = typeof detail === 'number' ? detail : detail?.ratio ?? 0;
+          const maxScroll = preview.scrollHeight - preview.clientHeight;
+          preview.scrollTop = maxScroll * scrollPercentage;
+        }
 
         // Release the lock on the next frame after the scroll event fires
         requestAnimationFrame(() => {
@@ -176,8 +208,13 @@ export const Preview = () => {
       rafId = requestAnimationFrame(() => {
         const maxScroll = preview.scrollHeight - preview.clientHeight;
         if (maxScroll > 0) {
-          const scrollPercentage = preview.scrollTop / maxScroll;
-          window.dispatchEvent(new CustomEvent('preview-scroll', { detail: scrollPercentage }));
+          const ratio = preview.scrollTop / maxScroll;
+          // Determine top line from anchors
+          const anchors = anchorsRef.current;
+          let i = 0;
+          while (i + 1 < anchors.length && anchors[i + 1].top <= preview.scrollTop) i++;
+          const line = anchors[i]?.line || 1;
+          window.dispatchEvent(new CustomEvent('preview-scroll', { detail: { ratio, line } }));
         }
         rafId = null;
       });
