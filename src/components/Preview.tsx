@@ -95,76 +95,72 @@ export const Preview = () => {
   // Make task list checkboxes interactive
   const makeTaskListsInteractive = useCallback(() => {
     if (!previewRef.current) return;
+
+    // Build index of task lines from source (ignore code fences)
+    const src = useEditorStore.getState().content;
+    const linesSrc = src.split('\n');
+    const taskLineIndices: number[] = [];
+    let inFence = false;
+    for (let i = 0; i < linesSrc.length; i++) {
+      const l = linesSrc[i];
+      if (l.trim().startsWith('```')) {
+        inFence = !inFence;
+        continue;
+      }
+      if (inFence) continue;
+      if (/^\s*[-*+]\s+\[([ xX])\]\s+/.test(l)) {
+        taskLineIndices.push(i);
+      }
+    }
+
+    // Map DOM checkboxes to source line indices by DOM order
+    const checkboxes = previewRef.current.querySelectorAll('li input[type="checkbox"]');
     
-    // Find all checkboxes in task lists
-    const checkboxes = previewRef.current.querySelectorAll('input[type="checkbox"]');
-    
-    checkboxes.forEach((checkbox, checkboxIndex) => {
-      const input = checkbox as HTMLInputElement;
+    checkboxes.forEach((cb, idx) => {
+      const input = cb as HTMLInputElement;
       
       // Skip if already interactive
       if (input.hasAttribute('data-interactive')) return;
       
-      // Remove disabled attribute to make it clickable
+      // Enable interaction
       input.removeAttribute('disabled');
       input.setAttribute('data-interactive', 'true');
-      input.setAttribute('data-task-index', checkboxIndex.toString());
       input.style.cursor = 'pointer';
-      
+
+      const srcIndex = taskLineIndices[idx];
+      if (typeof srcIndex === 'number') {
+        input.dataset.taskLine = String(srcIndex);
+      }
+
       input.addEventListener('change', (e) => {
-        const clickedInput = e.target as HTMLInputElement;
-        const newCheckedState = clickedInput.checked;
-        
-        // Use source line number from closest list item for precise mapping
-        const listItem = clickedInput.closest('li') as HTMLElement | null;
-        const lineAttr = listItem?.getAttribute('data-line') || listItem?.dataset.line;
-        const sourceLine = lineAttr ? parseInt(lineAttr, 10) : NaN;
-        
-        const lines = content.split('\n');
-        let targetIndex = Number.isFinite(sourceLine) ? Math.max(0, sourceLine - 1) : -1;
-        
-        // Helper to try toggling a specific line index
-        const tryToggleAt = (idx: number): boolean => {
-          if (idx < 0 || idx >= lines.length) return false;
-          const line = lines[idx];
-          const match = line.match(/^(\s*[-*+])\s+\[([ xX])\]\s+(.*)$/);
-          if (!match) return false;
-          const indent = match[1];
-          const text = match[3];
-          const newState = newCheckedState ? 'x' : ' ';
-          lines[idx] = `${indent} [${newState}] ${text}`;
-          
-          setContent(lines.join('\n'));
-          toast({
-            title: newCheckedState ? 'Task completed! ✓' : 'Task unchecked',
-            description: text.length > 50 ? text.substring(0, 50) + '...' : text,
-          });
-          return true;
-        };
-        
-        // 1) Try exact line
-        if (tryToggleAt(targetIndex)) return;
-        
-        // 2) Try a small window around the line (handles markup shifts)
-        for (let offset = 1; offset <= 3; offset++) {
-          if (tryToggleAt(targetIndex + offset)) return;
-          if (tryToggleAt(targetIndex - offset)) return;
-        }
-        
-        // 3) Fallback: scan forward from start line until next blank line
-        if (Number.isFinite(sourceLine)) {
-          for (let i = targetIndex; i < lines.length && lines[i].trim() !== ''; i++) {
-            if (tryToggleAt(i)) return;
-          }
-        }
-        
-        // 4) Final fallback: scan entire document (rare)
-        for (let i = 0; i < lines.length; i++) {
-          if (tryToggleAt(i)) return;
-        }
+        const el = e.currentTarget as HTMLInputElement;
+        const lineIdxAttr = el.dataset.taskLine;
+        if (lineIdxAttr == null) return;
+        const lineIdx = parseInt(lineIdxAttr, 10);
+
+        // Always use the latest content
+        const current = useEditorStore.getState().content;
+        const lines = current.split('\n');
+        if (isNaN(lineIdx) || lineIdx < 0 || lineIdx >= lines.length) return;
+
+        const original = lines[lineIdx];
+        const m = original.match(/^(\s*[-*+])\s+\[([ xX])\]\s+(.*)$/);
+        if (!m) return;
+
+        const indent = m[1];
+        const text = m[3];
+        const newState = el.checked ? 'x' : ' ';
+        const newLines = [...lines];
+        newLines[lineIdx] = `${indent} [${newState}] ${text}`;
+
+        setContent(newLines.join('\n'));
+        toast({
+          title: el.checked ? 'Task completed! ✓' : 'Task unchecked',
+          description: text.length > 50 ? text.substring(0, 50) + '...' : text,
+        });
       });
     });
-  }, [content, setContent, toast]);
+  }, [setContent, toast]);
 
   // Handle content changes - add copy buttons and make checkboxes interactive after render
   useEffect(() => {
