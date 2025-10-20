@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 const Index = () => {
   const { theme, viewMode, showOutline, focusMode, setFocusMode } = useEditorStore();
   const [mobilePanel, setMobilePanel] = useState<'documents' | 'templates' | 'settings' | 'outline' | null>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -46,6 +47,25 @@ const Index = () => {
       document.documentElement.classList.remove('dark');
     }
   }, [theme]);
+
+  // Handle print mode
+  useEffect(() => {
+    const handleBeforePrint = () => setIsPrinting(true);
+    const handleAfterPrint = () => setIsPrinting(false);
+    
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
+    
+    const printMedia = window.matchMedia('print');
+    const handlePrintMediaChange = (e: MediaQueryListEvent) => setIsPrinting(e.matches);
+    printMedia.addEventListener('change', handlePrintMediaChange);
+    
+    return () => {
+      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('afterprint', handleAfterPrint);
+      printMedia.removeEventListener('change', handlePrintMediaChange);
+    };
+  }, []);
 
   const SidePanel = ({ children }: { children: React.ReactNode }) => (
     <div className="hidden lg:block w-64 border-l border-border bg-muted/30">
@@ -128,30 +148,38 @@ const Index = () => {
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         <main className="flex-1 overflow-hidden">
-          {viewMode === 'split' && (
-            <PanelGroup direction="horizontal" className="h-full">
-              <Panel defaultSize={50} minSize={30}>
-                <div className="h-full border-r border-border">
-                  <Editor />
-                </div>
-              </Panel>
-              <PanelResizeHandle className="w-1 bg-border hover:bg-primary transition-colors" />
-              <Panel defaultSize={50} minSize={30}>
-                <Preview />
-              </Panel>
-            </PanelGroup>
-          )}
-          
-          {viewMode === 'editor' && (
-            <div className="h-full">
-              <Editor />
-            </div>
-          )}
-          
-          {viewMode === 'preview' && (
+          {isPrinting ? (
             <div className="h-full">
               <Preview />
             </div>
+          ) : (
+            <>
+              {viewMode === 'split' && (
+                <PanelGroup direction="horizontal" className="h-full">
+                  <Panel defaultSize={50} minSize={30} className="panel-editor">
+                    <div className="h-full border-r border-border">
+                      <Editor />
+                    </div>
+                  </Panel>
+                  <PanelResizeHandle className="w-1 bg-border hover:bg-primary transition-colors" />
+                  <Panel defaultSize={50} minSize={30} className="panel-preview">
+                    <Preview />
+                  </Panel>
+                </PanelGroup>
+              )}
+              
+              {viewMode === 'editor' && (
+                <div className="h-full">
+                  <Editor />
+                </div>
+              )}
+              
+              {viewMode === 'preview' && (
+                <div className="h-full">
+                  <Preview />
+                </div>
+              )}
+            </>
           )}
         </main>
 

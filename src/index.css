@@ -220,6 +220,25 @@ All colors MUST be HSL.
     padding: 0 !important;
   }
   
+  /* Override panel layout for full width printing */
+  [data-panel-group] {
+    display: block !important;
+  }
+  
+  .panel-editor {
+    display: none !important;
+  }
+  
+  .panel-preview {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+  
+  [data-panel-resize-handle] {
+    display: none !important;
+  }
+  
   /* Hide everything except preview */
   body > div > * {
     display: none !important;
