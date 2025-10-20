@@ -12,8 +12,8 @@ interface SEOProps {
 
 export const SEO = ({
   title = "MDBuild.io - Modern Markdown Editor & Preview",
-  description = "Markdown Editor + Live Preview + Diagrams + Math - All in Your Browser. Write technical docs with Mermaid diagrams, LaTeX equations, and export to PDF, HTML, DOCX. No sign-up required, 100% private.",
-  keywords = "markdown editor, mermaid markdown, latex markdown editor, markdown to pdf, markdown to html, markdown to docx, live preview, technical documentation, offline markdown editor, free markdown editor, diagram editor, math editor",
+  description = "Markdown Editor + Live Preview + GitHub Alerts + Diagrams + Math - All in Your Browser. Write technical docs with Mermaid diagrams, KaTeX equations, GitHub admonitions, interactive task lists. Export to PDF, HTML, DOCX, PNG. No sign-up required, 100% private, installable PWA.",
+  keywords = "markdown editor, github alerts markdown, markdown admonitions, markdown callouts, mermaid markdown, latex markdown editor, katex markdown, interactive task list markdown, markdown to pdf, markdown to html, markdown to docx, markdown to png, live preview, technical documentation, offline markdown editor, free markdown editor, pwa markdown editor, browser based markdown, installable markdown app, github flavored markdown editor",
   canonicalUrl = "https://mdbuild.io/",
   ogType = "website",
   ogImage = "https://mdbuild.io/og-image.png",

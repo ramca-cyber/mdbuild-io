@@ -126,20 +126,56 @@ const About = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">Features</h2>
+            <h2 className="text-2xl font-semibold mb-4">What Makes Us Unique</h2>
+            <p className="text-muted-foreground mb-4">
+              Unlike other markdown editors, MDBuild.io offers several unique features that set us apart:
+            </p>
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-6 space-y-4 mb-6">
+              <div>
+                <h3 className="font-semibold text-primary mb-2">🎯 GitHub Alerts & Admonitions</h3>
+                <p className="text-sm text-muted-foreground">
+                  One of the few markdown editors supporting GitHub's official alert syntax ([!NOTE], [!TIP], [!WARNING], [!IMPORTANT], [!CAUTION]). Create beautiful, semantic callouts without custom HTML.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-primary mb-2">✅ Interactive Task Lists</h3>
+                <p className="text-sm text-muted-foreground">
+                  Not just rendered checkboxes - actually clickable! Check off tasks directly in the preview without switching back to edit mode.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-primary mb-2">🖼️ Export to PNG</h3>
+                <p className="text-sm text-muted-foreground">
+                  Export your beautifully rendered markdown (including Mermaid diagrams and math equations) as high-quality PNG images - perfect for sharing on social media or embedding in presentations.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-primary mb-2">📱 Installable PWA</h3>
+                <p className="text-sm text-muted-foreground">
+                  Install as a native-feeling app on any device. Works completely offline with service workers. Your personal markdown editor that travels with you.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold mb-4">All Features</h2>
             <ul className="space-y-2 text-muted-foreground list-disc pl-6">
               <li>Real-time markdown preview with split-view mode</li>
               <li>GitHub Flavored Markdown (GFM) support</li>
+              <li>GitHub Alerts and Admonitions ([!NOTE], [!TIP], etc.)</li>
+              <li>Interactive clickable task lists</li>
               <li>Mermaid diagram rendering (flowcharts, sequences, etc.)</li>
               <li>Mathematical equation support with KaTeX</li>
               <li>Syntax highlighting for code blocks</li>
-              <li>Export to PDF, HTML, DOCX, and Markdown</li>
+              <li>Export to PNG, PDF, HTML, DOCX, and Markdown (5 formats)</li>
+              <li>PWA installable on desktop and mobile</li>
               <li>Auto-save functionality</li>
               <li>Document templates</li>
-              <li>Dark and light themes</li>
+              <li>Dark, light, and sepia themes</li>
               <li>Document outline navigation</li>
               <li>Emoji support 🚀</li>
-              <li>Works offline (PWA)</li>
+              <li>Works completely offline</li>
             </ul>
           </section>
 

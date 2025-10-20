@@ -13,7 +13,8 @@ import {
   Edit3,
   Eye,
   Share2,
-  BookOpen
+  BookOpen,
+  CheckSquare
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect } from "react";
@@ -43,7 +44,7 @@ const Landing = () => {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "MDBuild.io",
-    "description": "Fast, elegant markdown editor with live preview, Mermaid diagrams, and math support",
+    "description": "Fast, elegant markdown editor with live preview, GitHub Alerts, Mermaid diagrams, and math support",
     "url": "https://mdbuild.io",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "Web Browser",
@@ -55,14 +56,18 @@ const Landing = () => {
     "featureList": [
       "Markdown editing with live preview",
       "GitHub Flavored Markdown support",
-      "Mermaid diagram creation",
+      "GitHub Alerts and Admonitions (Note, Tip, Warning, Important, Caution)",
+      "Interactive clickable task lists",
+      "Mermaid diagram creation (flowcharts, sequences, Gantt, etc.)",
       "Math equation rendering with KaTeX",
       "Syntax highlighting for code blocks",
-      "Export to PDF, DOCX, HTML, and Markdown",
+      "Export to PNG, PDF, DOCX, HTML, and Markdown (5 formats)",
+      "PWA installable as desktop or mobile app",
+      "Offline functionality",
       "Auto-save functionality",
       "Version history",
       "Document templates",
-      "Dark and light themes"
+      "Dark, light, and sepia themes"
     ],
     "screenshot": "https://mdbuild.io/og-image.png"
   };
@@ -70,9 +75,9 @@ const Landing = () => {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="MDBuild.io - Markdown Editor with Live Preview, Diagrams & Math"
-        description="Free markdown editor with live preview, Mermaid diagrams, and LaTeX math. Export to PDF, HTML, DOCX. No sign-up, 100% private, works offline."
-        keywords="markdown editor, mermaid markdown, latex markdown editor, markdown to pdf, markdown to html, markdown to docx, live preview, technical documentation, offline markdown editor, free markdown editor"
+        title="MDBuild.io - Markdown Editor with GitHub Alerts, Diagrams & Math"
+        description="Free markdown editor with GitHub Alerts & Admonitions, live preview, Mermaid diagrams, KaTeX math, interactive task lists. Export to PNG, PDF, HTML, DOCX. No sign-up, 100% private, installable PWA."
+        keywords="markdown editor, github alerts markdown, markdown admonitions, markdown callouts, mermaid markdown, latex markdown editor, katex markdown, interactive task list markdown, markdown to pdf, markdown to html, markdown to docx, markdown to png, live preview, technical documentation, offline markdown editor, free markdown editor, pwa markdown editor"
         canonicalUrl="https://mdbuild.io/"
         structuredData={landingStructuredData}
       />
@@ -257,6 +262,23 @@ const Landing = () => {
                     </span>
                   </td>
                 </tr>
+                <tr className="hover:bg-muted/30 transition-colors bg-primary/5">
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-primary" />
+                      <span className="font-medium">GitHub Alerts</span>
+                      <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">Unique</span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6 text-sm text-muted-foreground hidden md:table-cell">
+                    Create beautiful callouts with [!NOTE], [!TIP], [!WARNING], [!IMPORTANT], [!CAUTION]
+                  </td>
+                  <td className="py-4 px-6 text-center">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">
+                      <span className="text-green-600 dark:text-green-500 text-lg">✓</span>
+                    </span>
+                  </td>
+                </tr>
                 <tr className="hover:bg-muted/30 transition-colors">
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
@@ -289,15 +311,32 @@ const Landing = () => {
                     </span>
                   </td>
                 </tr>
+                <tr className="hover:bg-muted/30 transition-colors bg-primary/5">
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-2">
+                      <CheckSquare className="h-5 w-5 text-primary" />
+                      <span className="font-medium">Interactive Tasks</span>
+                      <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">Unique</span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6 text-sm text-muted-foreground hidden md:table-cell">
+                    Clickable checkboxes in task lists - check them off in preview mode
+                  </td>
+                  <td className="py-4 px-6 text-center">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">
+                      <span className="text-green-600 dark:text-green-500 text-lg">✓</span>
+                    </span>
+                  </td>
+                </tr>
                 <tr className="hover:bg-muted/30 transition-colors">
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
                       <Download className="h-5 w-5 text-primary" />
-                      <span className="font-medium">Export</span>
+                      <span className="font-medium">5 Export Formats</span>
                     </div>
                   </td>
                   <td className="py-4 px-6 text-sm text-muted-foreground hidden md:table-cell">
-                    Export to MD, HTML, PDF, DOCX, and PNG formats
+                    Export to MD, HTML, PDF, DOCX, and PNG (including diagrams!)
                   </td>
                   <td className="py-4 px-6 text-center">
                     <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">

@@ -16,8 +16,8 @@ const Help = () => {
     <div className="min-h-screen bg-background">
       <SEO 
         title="Help & Documentation - MDBuild.io"
-        description="Complete guide to using MDBuild.io markdown editor. Learn about Markdown syntax, Mermaid diagrams, LaTeX math equations, keyboard shortcuts, and documentation links."
-        keywords="markdown help, mermaid tutorial, katex guide, markdown shortcuts, technical documentation, markdown editor guide"
+        description="Complete guide to using MDBuild.io markdown editor. Learn about GitHub Alerts, Markdown syntax, Mermaid diagrams, KaTeX math equations, interactive task lists, keyboard shortcuts, and export options."
+        keywords="markdown help, github alerts tutorial, markdown admonitions guide, mermaid tutorial, katex guide, markdown shortcuts, interactive task lists, technical documentation, markdown editor guide, markdown to png"
         canonicalUrl="https://mdbuild.io/help"
       />
 

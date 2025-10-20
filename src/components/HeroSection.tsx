@@ -31,7 +31,7 @@ export const HeroSection = ({ onStartWriting, onSeeFeatures }: HeroSectionProps)
         </h1>
         
         <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto animate-fade-in">
-          Mermaid diagrams • KaTeX math • GFM tables • Export to PDF, HTML, DOCX • 100% browser-based
+          GitHub Alerts • Mermaid diagrams • KaTeX math • Interactive tasks • Export to PNG, PDF, HTML, DOCX • PWA installable
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in">

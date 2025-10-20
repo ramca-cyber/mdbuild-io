@@ -100,9 +100,9 @@ const Index = () => {
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-background">
       <SEO 
-        title="MDBuild.io Editor - Write Markdown with Live Preview"
-        description="Professional markdown editor with real-time preview, Mermaid diagrams, LaTeX math equations. Export to PDF, HTML, DOCX. Free, private, no sign-up."
-        keywords="markdown editor online, live preview, mermaid diagrams, latex equations, markdown to pdf, technical writing, documentation editor"
+        title="MDBuild.io Editor - GitHub Alerts, Mermaid, LaTeX & Interactive Tasks"
+        description="Professional markdown editor with GitHub Alerts & Admonitions, real-time preview, Mermaid diagrams, KaTeX math, interactive task lists. Export to PNG, PDF, HTML, DOCX. Free, private, no sign-up."
+        keywords="markdown editor online, github alerts markdown, markdown admonitions, live preview, mermaid diagrams, latex equations, katex markdown, interactive task list, markdown to pdf, markdown to png, technical writing, documentation editor, pwa markdown editor"
         canonicalUrl="https://mdbuild.io/editor"
       />
       {/* Skip to content link for keyboard navigation */}
