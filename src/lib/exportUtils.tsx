@@ -408,11 +408,26 @@ export const createDocxFromPreview = async (
     }
   }
 
-  // Create the document
+  // Create the document with letter size (8.5" x 11")
   const doc = new Document({
     sections: [
       {
-        properties: {},
+        properties: {
+          page: {
+            size: {
+              // Letter size in twips (1/1440 inch)
+              // 8.5" = 12240 twips, 11" = 15840 twips
+              width: 12240,
+              height: 15840,
+            },
+            margin: {
+              top: 1440,    // 1 inch
+              right: 1440,  // 1 inch
+              bottom: 1440, // 1 inch
+              left: 1440,   // 1 inch
+            },
+          },
+        },
         children: sections.length > 0 ? sections : [
           new Paragraph({ text: 'No content to export' }),
         ],
@@ -454,7 +469,7 @@ export const exportToPdfWithRendering = async (
   const pdf = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
-    format: 'a4',
+    format: 'letter', // US Letter size (8.5" x 11" / 215.9mm x 279.4mm)
   });
 
   const pageWidth = pdf.internal.pageSize.getWidth();
