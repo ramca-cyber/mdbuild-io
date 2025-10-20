@@ -11,32 +11,29 @@ export const ViewModeSwitcher = () => {
       value: 'editor' as const, 
       icon: Edit3, 
       label: 'Edit',
-      tooltip: 'Editor Only (Ctrl+E)',
-      description: '📝 Edit'
+      tooltip: 'Editor Only (Ctrl+E)'
     },
     { 
       value: 'split' as const, 
       icon: Columns3, 
       label: 'Split',
-      tooltip: 'Split View (Ctrl+D)',
-      description: '⚡ Split'
+      tooltip: 'Split View (Ctrl+D)'
     },
     { 
       value: 'preview' as const, 
       icon: Eye, 
       label: 'Preview',
-      tooltip: 'Preview Only (Ctrl+P)',
-      description: '👁️ Preview'
+      tooltip: 'Preview Only (Ctrl+P)'
     },
   ];
 
   return (
     <div 
-      className="fixed top-20 right-4 z-40 bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-lg no-print"
+      className="fixed top-20 right-4 z-40 no-print"
       role="group"
       aria-label="View mode switcher"
     >
-      <div className="flex items-center gap-1 p-1">
+      <div className="flex items-center gap-0.5 bg-toolbar-bg border border-border rounded-md p-0.5 shadow-sm">
         {modes.map((mode) => {
           const Icon = mode.icon;
           const isActive = viewMode === mode.value;
@@ -48,16 +45,16 @@ export const ViewModeSwitcher = () => {
                   variant={isActive ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode(mode.value)}
-                  className={`gap-2 transition-all duration-200 ${
+                  className={`gap-1.5 transition-all duration-200 h-8 ${
                     isActive 
-                      ? 'bg-primary text-primary-foreground shadow-md' 
+                      ? 'bg-primary text-primary-foreground' 
                       : 'hover:bg-accent'
                   }`}
                   aria-label={mode.tooltip}
                   aria-pressed={isActive}
                 >
                   <Icon className="h-4 w-4" />
-                  <span className="hidden sm:inline font-medium">{mode.label}</span>
+                  <span className="hidden sm:inline text-xs font-medium">{mode.label}</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
@@ -66,13 +63,6 @@ export const ViewModeSwitcher = () => {
             </Tooltip>
           );
         })}
-      </div>
-      
-      {/* Keyboard shortcut hints */}
-      <div className="px-2 pb-1 pt-0">
-        <div className="text-[10px] text-muted-foreground text-center">
-          <kbd className="px-1">Ctrl</kbd>+<kbd className="px-1">E/D/P</kbd>
-        </div>
       </div>
     </div>
   );
