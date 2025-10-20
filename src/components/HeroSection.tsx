@@ -1,5 +1,6 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "./ui/button";
+import { AnimatedPreview } from "./AnimatedPreview";
 
 interface HeroSectionProps {
   onStartWriting: () => void;
@@ -13,10 +14,13 @@ export const HeroSection = ({ onStartWriting, onSeeFeatures }: HeroSectionProps)
       
       <div className="container max-w-6xl mx-auto text-center space-y-8">
         {/* Logo */}
-        <div className="flex justify-center animate-fade-in">
+        <div className="flex flex-col items-center gap-3 animate-fade-in">
           <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
             <span className="text-primary-foreground font-bold text-4xl">M</span>
           </div>
+          <p className="text-lg text-muted-foreground font-medium">
+            Build Markdown with Live Preview, Diagrams, and Math — 100% Offline.
+          </p>
         </div>
         
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium animate-fade-in">
@@ -51,6 +55,9 @@ export const HeroSection = ({ onStartWriting, onSeeFeatures }: HeroSectionProps)
             See Features
           </Button>
         </div>
+        
+        {/* Animated Preview Demo */}
+        <AnimatedPreview />
       </div>
     </section>
   );
