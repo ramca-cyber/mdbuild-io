@@ -1,11 +1,27 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { SEO } from "@/components/SEO";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Mail, MessageSquare, Github, Twitter } from "lucide-react";
 
 const Contact = () => {
+  const contactStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Contact MDBuild.io",
+    "description": "Get in touch with MDBuild.io team for support, feedback, and inquiries.",
+    "url": "https://mdbuild.io/contact"
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Contact MDBuild.io - Support & Feedback"
+        description="Get in touch with MDBuild.io team. Email support, bug reports, feature requests. We'd love to hear from you!"
+        keywords="contact mdbuild, markdown editor support, feedback, bug report"
+        canonicalUrl="https://mdbuild.io/contact"
+        structuredData={contactStructuredData}
+      />
       <header className="border-b">
         <div className="container max-w-4xl mx-auto px-4 py-4">
           <Button variant="ghost" asChild>

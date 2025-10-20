@@ -1,10 +1,17 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { SEO } from "@/components/SEO";
 import { ArrowLeft } from "lucide-react";
 
 const TermsOfService = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Terms of Service - MDBuild.io"
+        description="MDBuild.io Terms of Service: Free markdown editor terms, user responsibilities, and service usage guidelines."
+        keywords="terms of service, terms and conditions, user agreement, markdown editor terms"
+        canonicalUrl="https://mdbuild.io/terms"
+      />
       <header className="border-b">
         <div className="container max-w-4xl mx-auto px-4 py-4">
           <Button variant="ghost" asChild>

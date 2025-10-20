@@ -1,10 +1,17 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { SEO } from "@/components/SEO";
 import { ArrowLeft } from "lucide-react";
 
 const PrivacyPolicy = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Privacy Policy - MDBuild.io"
+        description="MDBuild.io Privacy Policy: Learn how we protect your privacy. All data stored locally, no tracking, no sign-up required."
+        keywords="privacy policy, data protection, local storage, privacy-focused markdown editor"
+        canonicalUrl="https://mdbuild.io/privacy"
+      />
       <header className="border-b">
         <div className="container max-w-4xl mx-auto px-4 py-4">
           <Button variant="ghost" asChild>

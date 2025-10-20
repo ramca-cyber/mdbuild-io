@@ -1,6 +1,7 @@
 import { HeroSection } from "@/components/HeroSection";
 import { FeatureCard } from "@/components/FeatureCard";
 import { Button } from "@/components/ui/button";
+import { SEO } from "@/components/SEO";
 import { 
   FileText, 
   GitBranch, 
@@ -37,8 +38,43 @@ const Landing = () => {
     }
   };
 
+  const landingStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "MDBuild.io",
+    "description": "Fast, elegant markdown editor with live preview, Mermaid diagrams, and math support",
+    "url": "https://mdbuild.io",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Web Browser",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "featureList": [
+      "Markdown editing with live preview",
+      "GitHub Flavored Markdown support",
+      "Mermaid diagram creation",
+      "Math equation rendering with KaTeX",
+      "Syntax highlighting for code blocks",
+      "Export to PDF, DOCX, HTML, and Markdown",
+      "Auto-save functionality",
+      "Version history",
+      "Document templates",
+      "Dark and light themes"
+    ],
+    "screenshot": "https://mdbuild.io/og-image.png"
+  };
+
   return (
     <div className="min-h-screen">
+      <SEO 
+        title="MDBuild.io - Markdown Editor with Live Preview, Diagrams & Math"
+        description="Free markdown editor with live preview, Mermaid diagrams, and LaTeX math. Export to PDF, HTML, DOCX. No sign-up, 100% private, works offline."
+        keywords="markdown editor, mermaid markdown, latex markdown editor, markdown to pdf, markdown to html, markdown to docx, live preview, technical documentation, offline markdown editor, free markdown editor"
+        canonicalUrl="https://mdbuild.io/"
+        structuredData={landingStructuredData}
+      />
       {/* Header with Logo */}
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">

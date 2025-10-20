@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { Link } from 'react-router-dom';
+import { SEO } from '@/components/SEO';
 import { Editor } from '@/components/Editor';
 import { Preview } from '@/components/Preview';
 import { Toolbar } from '@/components/Toolbar';
@@ -98,6 +99,12 @@ const Index = () => {
 
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-background">
+      <SEO 
+        title="MDBuild.io Editor - Write Markdown with Live Preview"
+        description="Professional markdown editor with real-time preview, Mermaid diagrams, LaTeX math equations. Export to PDF, HTML, DOCX. Free, private, no sign-up."
+        keywords="markdown editor online, live preview, mermaid diagrams, latex equations, markdown to pdf, technical writing, documentation editor"
+        canonicalUrl="https://mdbuild.io/editor"
+      />
       {/* Skip to content link for keyboard navigation */}
       <a 
         href="#main-content" 

@@ -1,10 +1,26 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { SEO } from "@/components/SEO";
 import { ArrowLeft, Github, Heart, Zap, Shield, Code } from "lucide-react";
 
 const About = () => {
+  const aboutStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "name": "About MDBuild.io",
+    "description": "Learn about MDBuild.io - a privacy-focused, free markdown editor with live preview, diagrams, and math support.",
+    "url": "https://mdbuild.io/about"
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="About MDBuild.io - Modern Markdown Editor"
+        description="Learn about MDBuild.io: a privacy-first, free markdown editor built for developers and writers. Features Mermaid diagrams, LaTeX math, and offline support."
+        keywords="about mdbuild, markdown editor features, privacy-focused editor, open source markdown"
+        canonicalUrl="https://mdbuild.io/about"
+        structuredData={aboutStructuredData}
+      />
       <header className="border-b">
         <div className="container max-w-4xl mx-auto px-4 py-4">
           <Button variant="ghost" asChild>
