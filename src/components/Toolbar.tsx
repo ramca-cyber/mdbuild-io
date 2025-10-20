@@ -26,10 +26,6 @@ import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
 import { Separator } from '@/components/ui/separator';
 import { useEditorStore } from '@/store/editorStore';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
-import { SettingsSheet } from '@/components/SettingsSheet';
-import { TemplatesDrawer } from '@/components/TemplatesDrawer';
 import { toast } from 'sonner';
 import React from 'react';
 
@@ -260,20 +256,6 @@ export const Toolbar = () => {
         >
           <ListTree className="h-4 w-4" />
         </Toggle>
-
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" title="Settings" className="hidden lg:flex">
-              <Settings className="h-4 w-4" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-80">
-            <SheetHeader>
-              <SheetTitle>Settings</SheetTitle>
-            </SheetHeader>
-            <SettingsSheet />
-          </SheetContent>
-        </Sheet>
 
         <Separator orientation="vertical" className="h-6" />
 

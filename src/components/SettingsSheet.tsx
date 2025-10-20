@@ -5,6 +5,9 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { RotateCcw } from 'lucide-react';
+import { toast } from 'sonner';
 
 export const SettingsSheet = () => {
   const {
@@ -18,7 +21,13 @@ export const SettingsSheet = () => {
     setLineNumbers,
     setAutoSave,
     setTheme,
+    resetToDefaults,
   } = useEditorStore();
+
+  const handleReset = () => {
+    resetToDefaults();
+    toast.success('Settings reset to defaults');
+  };
 
   return (
     <ScrollArea className="h-full">
@@ -116,6 +125,23 @@ export const SettingsSheet = () => {
               <kbd className="px-2 py-1 bg-muted rounded text-xs">Ctrl+S</kbd>
             </div>
           </div>
+        </div>
+
+        <Separator />
+
+        <div>
+          <h4 className="text-sm font-semibold mb-2">Reset Settings</h4>
+          <p className="text-xs text-muted-foreground mb-3">
+            Restore all settings to their default values. This will not affect your saved documents.
+          </p>
+          <Button 
+            variant="destructive" 
+            onClick={handleReset}
+            className="w-full"
+          >
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Reset to Defaults
+          </Button>
         </div>
       </div>
     </ScrollArea>

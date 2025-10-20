@@ -46,6 +46,7 @@ interface EditorState {
   saveVersion: () => void;
   restoreVersion: (index: number) => void;
   createNewDocument: () => void;
+  resetToDefaults: () => void;
 }
 
 const defaultContent = `# Welcome to MDBuild.io 🚀
@@ -455,6 +456,18 @@ export const useEditorStore = create<EditorState>()(
           currentDocId: null,
           lastSavedContent: defaultContent,
           hasUnsavedChanges: false
+        });
+      },
+      resetToDefaults: () => {
+        set({
+          theme: 'light',
+          fontSize: 14,
+          lineWrap: true,
+          lineNumbers: true,
+          autoSave: true,
+          syncScroll: true,
+          showOutline: false,
+          viewMode: 'split',
         });
       },
     }),

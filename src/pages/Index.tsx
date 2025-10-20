@@ -10,7 +10,7 @@ import { TemplatesDrawer } from '@/components/TemplatesDrawer';
 import { SettingsSheet } from '@/components/SettingsSheet';
 import { SavedDocuments } from '@/components/SavedDocuments';
 import { useEditorStore } from '@/store/editorStore';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, FileText, Settings, BookTemplate, List, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -88,6 +88,20 @@ const Index = () => {
               <span>Home</span>
             </Link>
           </Button>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <Settings className="h-4 w-4 mr-2" />
+                <span>Settings</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-80">
+              <SheetHeader>
+                <SheetTitle>Settings</SheetTitle>
+              </SheetHeader>
+              <SettingsSheet />
+            </SheetContent>
+          </Sheet>
         </div>
       </header>
 
