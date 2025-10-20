@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -8,76 +8,14 @@ import rehypeKatex from 'rehype-katex';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
 import { useEditorStore } from '@/store/editorStore';
-import mermaid from 'mermaid';
-import { Copy, Check } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-
-// Initialize mermaid
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'default',
-  securityLevel: 'loose',
-});
-
-interface DiagramMetadata {
-  code: string;
-  containerId: string;
-}
+import { MermaidDiagram } from '@/components/MermaidDiagram';
 
 export const Preview = () => {
-  const { content, theme, syncScroll, previewRefreshKey } = useEditorStore();
+  const { content, syncScroll } = useEditorStore();
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const diagramsRef = useRef<Map<string, DiagramMetadata>>(new Map());
-  const renderingRef = useRef(false);
   const syncScrollRef = useRef(syncScroll);
-
-  // Unified function to render mermaid diagrams
-  const renderMermaidDiagrams = async () => {
-    if (!previewRef.current) return;
-    
-    // Wait for any ongoing rendering to complete
-    while (renderingRef.current) {
-      await new Promise(resolve => setTimeout(resolve, 50));
-    }
-    
-    renderingRef.current = true;
-    
-    try {
-      const containers = previewRef.current.querySelectorAll('.mermaid-diagram-container');
-      
-      for (let index = 0; index < containers.length; index++) {
-        const container = containers[index] as HTMLElement;
-        const codeElement = container.querySelector('.mermaid-code');
-        if (!codeElement) continue;
-        
-        const code = codeElement.textContent || '';
-        const containerId = container.id || `mermaid-container-${index}`;
-        container.id = containerId;
-        
-        // Store metadata
-        diagramsRef.current.set(containerId, { code, containerId });
-        
-        try {
-          const renderID = `mermaid-${Date.now()}-${index}`;
-          const { svg } = await mermaid.render(renderID, code);
-          // Only update if container still exists in DOM
-          if (container.parentElement) {
-            container.innerHTML = svg;
-          }
-        } catch (error) {
-          console.error('Mermaid rendering error:', error);
-          if (container.parentElement) {
-            container.innerHTML = `<div class="text-destructive">Error rendering diagram</div>`;
-          }
-        }
-      }
-    } finally {
-      renderingRef.current = false;
-    }
-  };
 
   // Add copy buttons to code blocks
   const addCopyButtons = () => {
@@ -110,100 +48,16 @@ export const Preview = () => {
     });
   };
 
-  // Handle content changes and force refresh
+  // Handle content changes - add copy buttons after render
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       requestAnimationFrame(() => {
-        renderMermaidDiagrams();
         addCopyButtons();
       });
-    }, 50);
+    }, 100);
     
     return () => clearTimeout(timeoutId);
-  }, [content, toast, previewRefreshKey]);
-
-  // Handle theme changes
-  useEffect(() => {
-    const isDark = theme === 'dark';
-    
-    // Update mermaid configuration
-    mermaid.initialize({
-      startOnLoad: false,
-      securityLevel: 'loose',
-      theme: isDark ? 'dark' : 'default',
-      themeVariables: isDark
-        ? {
-            background: 'transparent',
-            mainBkg: '#1a2332',
-            primaryColor: '#2d3748',
-            secondaryColor: '#1a2332',
-            tertiaryColor: '#151d28',
-            textColor: '#f7f8f9',
-            primaryTextColor: '#f7f8f9',
-            lineColor: '#94a3b8',
-            nodeBorder: '#4a5568',
-            clusterBkg: '#1a2332',
-            clusterBorder: '#4a5568',
-            edgeLabelBackground: '#1a2332',
-          }
-        : {
-            background: 'transparent',
-            mainBkg: '#ffffff',
-            primaryColor: '#f8fafc',
-            secondaryColor: '#ffffff',
-            tertiaryColor: '#f1f5f9',
-            textColor: '#1a202c',
-            primaryTextColor: '#1a202c',
-            lineColor: '#4a5568',
-            nodeBorder: '#cbd5e1',
-            clusterBkg: '#ffffff',
-            clusterBorder: '#cbd5e1',
-            edgeLabelBackground: '#ffffff',
-          },
-    });
-
-    // Re-render existing diagrams with new theme (with longer debounce)
-    const timeoutId = setTimeout(async () => {
-      if (!previewRef.current) return;
-      
-      // Wait for any ongoing rendering
-      while (renderingRef.current) {
-        await new Promise(resolve => setTimeout(resolve, 50));
-      }
-      
-      renderingRef.current = true;
-      
-      try {
-        const containers = previewRef.current.querySelectorAll('.mermaid-diagram-container');
-        
-        for (let index = 0; index < containers.length; index++) {
-          const container = containers[index] as HTMLElement;
-          const existingId = container.id || `mermaid-container-${index}`;
-          container.id = existingId;
-          const metadata = diagramsRef.current.get(existingId);
-          const codeFromDom = container.querySelector('.mermaid-code')?.textContent || '';
-          const code = metadata?.code || codeFromDom;
-          
-          if (!code) continue;
-          
-          try {
-            const renderID = `mermaid-theme-${Date.now()}-${index}`;
-            const { svg } = await mermaid.render(renderID, code);
-            if (container && container.parentNode) {
-              container.innerHTML = svg;
-            }
-            diagramsRef.current.set(existingId, { code, containerId: existingId });
-          } catch (e) {
-            console.error('Mermaid re-render error:', e);
-          }
-        }
-      } finally {
-        renderingRef.current = false;
-      }
-    }, 200);
-
-    return () => clearTimeout(timeoutId);
-  }, [theme]);
+  }, [content, toast]);
 
   // Track syncScroll changes without re-rendering diagrams
   useEffect(() => {
@@ -271,13 +125,7 @@ export const Preview = () => {
               const isInline = !match;
               
               if (!isInline && match?.[1] === 'mermaid') {
-                return (
-                  <div className="mermaid-diagram-container">
-                    <code className="mermaid-code" style={{ display: 'none' }}>
-                      {children}
-                    </code>
-                  </div>
-                );
+                return <MermaidDiagram code={String(children)} />;
               }
 
               return (
