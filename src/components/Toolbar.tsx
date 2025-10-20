@@ -87,42 +87,15 @@ export const Toolbar = () => {
 
   const handleImageUpload = () => {
     try {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/*';
-      input.onchange = (e) => {
-        const file = (e.target as HTMLInputElement).files?.[0];
-        if (file) {
-          // Check file size (max 10MB)
-          if (file.size > 10 * 1024 * 1024) {
-            toast.error('Image too large. Maximum size is 10MB.');
-            return;
-          }
-          
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            try {
-              const dataUrl = e.target?.result as string;
-              if (!dataUrl) {
-                throw new Error('Failed to read image');
-              }
-              insertBlock(`![${file.name}](${dataUrl})`);
-              toast.success('Image uploaded successfully');
-            } catch (error) {
-              console.error('Error processing image:', error);
-              toast.error('Failed to process image. Please try again.');
-            }
-          };
-          reader.onerror = () => {
-            toast.error('Failed to read image file');
-          };
-          reader.readAsDataURL(file);
-        }
-      };
-      input.click();
+      const url = prompt('Enter image URL:', 'https://');
+      if (url && url.trim()) {
+        const altText = prompt('Enter image description (optional):', 'image');
+        insertBlock(`![${altText || 'image'}](${url.trim()})`);
+        toast.success('Image inserted successfully');
+      }
     } catch (error) {
-      console.error('Error uploading image:', error);
-      toast.error('Failed to upload image. Please try again.');
+      console.error('Error inserting image:', error);
+      toast.error('Failed to insert image. Please try again.');
     }
   };
 
@@ -232,8 +205,8 @@ export const Toolbar = () => {
           variant="ghost"
           size="icon"
           onClick={handleImageUpload}
-          title="Upload Image"
-          aria-label="Upload image file"
+          title="Insert Image from URL"
+          aria-label="Insert image from URL"
         >
           <ImageIcon className="h-4 w-4" />
         </Button>

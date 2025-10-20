@@ -8,7 +8,7 @@ export interface StorageInfo {
   isCritical: boolean;
 }
 
-const STORAGE_LIMIT = 4 * 1024 * 1024; // 4MB soft limit
+const STORAGE_LIMIT = 5 * 1024 * 1024; // 5MB soft limit (browsers typically allow 5-10MB)
 const WARNING_THRESHOLD = 0.8; // 80%
 const CRITICAL_THRESHOLD = 0.95; // 95%
 
