@@ -1,10 +1,32 @@
 import { Edit3, Eye, Columns3 } from 'lucide-react';
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useEditorStore } from '@/store/editorStore';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export const ViewModeSwitcher = () => {
   const { viewMode, setViewMode } = useEditorStore();
+
+  // Handle keyboard shortcuts for view modes
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'e') {
+          e.preventDefault();
+          setViewMode('editor');
+        } else if (e.key === 'd') {
+          e.preventDefault();
+          setViewMode('split');
+        } else if (e.key === 'p') {
+          e.preventDefault();
+          setViewMode('preview');
+        }
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [setViewMode]);
 
   const modes = [
     { 
@@ -29,11 +51,10 @@ export const ViewModeSwitcher = () => {
 
   return (
     <div 
-      className="fixed top-20 right-4 z-40 no-print"
+      className="flex items-center gap-0.5"
       role="group"
       aria-label="View mode switcher"
     >
-      <div className="flex items-center gap-0.5 bg-toolbar-bg border border-border rounded-md p-0.5 shadow-sm">
         {modes.map((mode) => {
           const Icon = mode.icon;
           const isActive = viewMode === mode.value;
@@ -63,7 +84,6 @@ export const ViewModeSwitcher = () => {
             </Tooltip>
           );
         })}
-      </div>
     </div>
   );
 };

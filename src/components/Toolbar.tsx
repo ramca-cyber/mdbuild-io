@@ -39,6 +39,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { ViewModeSwitcher } from '@/components/ViewModeSwitcher';
 
 export const Toolbar = () => {
   const { 
@@ -451,6 +452,10 @@ export const Toolbar = () => {
       {/* RIGHT SIDE: View & Settings */}
       <div className="flex items-center gap-1 bg-muted/30 rounded-md px-2 py-1 border border-border/50">
         <span className="text-xs font-semibold text-muted-foreground mr-1 hidden md:inline">Tools</span>
+        
+        <ViewModeSwitcher />
+        
+        <Separator orientation="vertical" className="h-6 mx-1" />
         
         <Toggle
           pressed={showOutline}
