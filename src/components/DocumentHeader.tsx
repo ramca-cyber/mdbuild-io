@@ -262,7 +262,7 @@ export function DocumentHeader() {
 
   return (
     <>
-      <div className="h-12 border-b bg-background flex items-center justify-between px-4 gap-4">
+      <div className="h-12 border-b bg-background flex items-center justify-between px-4 gap-4 no-print">
         {/* LEFT: File Menu */}
         <div className="flex items-center gap-2">
           <DropdownMenu>

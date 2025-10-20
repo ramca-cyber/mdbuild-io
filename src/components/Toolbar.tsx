@@ -109,7 +109,7 @@ export const Toolbar = () => {
   };
 
   return (
-    <div className="flex items-center gap-2 px-2 sm:px-4 py-2 bg-toolbar-bg border-b border-border overflow-x-auto">
+    <div className="flex items-center gap-2 px-2 sm:px-4 py-2 bg-toolbar-bg border-b border-border overflow-x-auto no-print">
       {/* Formatting */}
       <div className="flex items-center gap-1">
         <Button
