@@ -50,7 +50,7 @@ const App = () => {
           </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>
-    </HelelProvider>
+    </HelmetProvider>
   );
 };
 
