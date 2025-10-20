@@ -182,47 +182,113 @@ export const Editor = () => {
     e.stopPropagation();
     setIsDragging(false);
 
-    const files = Array.from(e.dataTransfer.files);
-    const imageFiles = files.filter(f => f.type.startsWith('image/'));
+    try {
+      const files = Array.from(e.dataTransfer.files);
+      const imageFiles = files.filter(f => f.type.startsWith('image/'));
 
-    if (imageFiles.length === 0) {
+      if (imageFiles.length === 0) {
+        toast({
+          title: 'No images found',
+          description: 'Please drop image files only.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Check total size (max 50MB total)
+      const totalSize = imageFiles.reduce((sum, f) => sum + f.size, 0);
+      if (totalSize > 50 * 1024 * 1024) {
+        toast({
+          title: 'Files too large',
+          description: 'Total file size must be less than 50MB.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      let insertedCount = 0;
+      let errorCount = 0;
+
+      imageFiles.forEach(file => {
+        // Check individual file size (max 10MB each)
+        if (file.size > 10 * 1024 * 1024) {
+          errorCount++;
+          if (insertedCount + errorCount === imageFiles.length) {
+            toast({
+              title: errorCount > 0 ? 'Some images skipped' : 'Images inserted',
+              description: errorCount > 0 
+                ? `${insertedCount} inserted, ${errorCount} skipped (too large, max 10MB each)`
+                : `${imageFiles.length} image(s) added to document.`,
+              variant: errorCount > 0 ? 'destructive' : 'default',
+            });
+          }
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const dataUrl = e.target?.result as string;
+            if (!dataUrl) {
+              throw new Error('Failed to read image');
+            }
+            const imageMarkdown = `![${file.name}](${dataUrl})\n`;
+            
+            // Insert at current cursor position or append
+            if (viewRef.current) {
+              const view = viewRef.current;
+              const pos = view.state.selection.main.head;
+              view.dispatch({
+                changes: { from: pos, insert: imageMarkdown }
+              });
+            } else {
+              setContent(content + imageMarkdown);
+            }
+            
+            insertedCount++;
+            if (insertedCount + errorCount === imageFiles.length) {
+              toast({
+                title: errorCount > 0 ? 'Some images skipped' : 'Images inserted',
+                description: errorCount > 0 
+                  ? `${insertedCount} inserted, ${errorCount} skipped (too large, max 10MB each)`
+                  : `${imageFiles.length} image(s) added to document.`,
+                variant: errorCount > 0 ? 'destructive' : 'default',
+              });
+            }
+          } catch (error) {
+            console.error('Error processing image:', error);
+            errorCount++;
+            if (insertedCount + errorCount === imageFiles.length) {
+              toast({
+                title: 'Error processing images',
+                description: `${insertedCount} inserted, ${errorCount} failed`,
+                variant: 'destructive',
+              });
+            }
+          }
+        };
+        reader.onerror = () => {
+          errorCount++;
+          console.error('Failed to read file:', file.name);
+          if (insertedCount + errorCount === imageFiles.length) {
+            toast({
+              title: 'Error reading images',
+              description: `${insertedCount} inserted, ${errorCount} failed`,
+              variant: 'destructive',
+            });
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    } catch (error) {
+      console.error('Error dropping files:', error);
       toast({
-        title: 'No images found',
-        description: 'Please drop image files only.',
+        title: 'Error processing drop',
+        description: 'Failed to process dropped files. Please try again.',
         variant: 'destructive',
       });
-      return;
     }
-
-    let insertedCount = 0;
-    imageFiles.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target?.result as string;
-        const imageMarkdown = `![${file.name}](${dataUrl})\n`;
-        
-        // Insert at current cursor position or append
-        if (viewRef.current) {
-          const view = viewRef.current;
-          const pos = view.state.selection.main.head;
-          view.dispatch({
-            changes: { from: pos, insert: imageMarkdown }
-          });
-        } else {
-          setContent(content + imageMarkdown);
-        }
-        
-        insertedCount++;
-        if (insertedCount === imageFiles.length) {
-          toast({
-            title: 'Images inserted',
-            description: `${imageFiles.length} image(s) added to document.`,
-          });
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-  }, [content, setContent]);
+  }, [content, setContent, toast]);
 
   return (
     <div 
@@ -234,7 +300,7 @@ export const Editor = () => {
       onDrop={handleDrop}
     >
       <div className="px-4 py-2 bg-muted/30 border-b border-border flex-shrink-0">
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide" role="heading" aria-level={2}>
           Markdown Editor
         </h2>
       </div>
@@ -276,6 +342,7 @@ export const Editor = () => {
             fontSize: `${fontSize}px`,
             height: '100%',
           }}
+          aria-label="Markdown editor text area"
         />
       </div>
     </div>

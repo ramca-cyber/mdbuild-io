@@ -57,15 +57,23 @@ export const Toolbar = () => {
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
 
   const insertText = (before: string, after: string = '', placeholder: string = 'text') => {
-    const textarea = document.querySelector('textarea');
-    if (!textarea) return;
+    try {
+      const textarea = document.querySelector('textarea');
+      if (!textarea) {
+        toast.error('Editor not ready. Please try again.');
+        return;
+      }
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = content.substring(start, end) || placeholder;
-    const newText = content.substring(0, start) + before + selectedText + after + content.substring(end);
-    
-    setContent(newText);
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selectedText = content.substring(start, end) || placeholder;
+      const newText = content.substring(0, start) + before + selectedText + after + content.substring(end);
+      
+      setContent(newText);
+    } catch (error) {
+      console.error('Error inserting text:', error);
+      toast.error('Failed to insert text. Please try again.');
+    }
   };
 
   const insertBlock = (text: string) => {
@@ -77,22 +85,44 @@ export const Toolbar = () => {
   };
 
   const handleImageUpload = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const dataUrl = e.target?.result as string;
-          insertBlock(`![${file.name}](${dataUrl})`);
-          toast.success('Image uploaded');
-        };
-        reader.readAsDataURL(file);
-      }
-    };
-    input.click();
+    try {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) {
+          // Check file size (max 10MB)
+          if (file.size > 10 * 1024 * 1024) {
+            toast.error('Image too large. Maximum size is 10MB.');
+            return;
+          }
+          
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const dataUrl = e.target?.result as string;
+              if (!dataUrl) {
+                throw new Error('Failed to read image');
+              }
+              insertBlock(`![${file.name}](${dataUrl})`);
+              toast.success('Image uploaded successfully');
+            } catch (error) {
+              console.error('Error processing image:', error);
+              toast.error('Failed to process image. Please try again.');
+            }
+          };
+          reader.onerror = () => {
+            toast.error('Failed to read image file');
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      input.click();
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image. Please try again.');
+    }
   };
 
   const handlePrint = () => {
@@ -107,7 +137,8 @@ export const Toolbar = () => {
           variant="ghost"
           size="icon"
           onClick={() => insertText('**', '**', 'bold')}
-          title="Bold"
+          title="Bold (Ctrl+B)"
+          aria-label="Bold formatting"
         >
           <Bold className="h-4 w-4" />
         </Button>
@@ -115,7 +146,8 @@ export const Toolbar = () => {
           variant="ghost"
           size="icon"
           onClick={() => insertText('*', '*', 'italic')}
-          title="Italic"
+          title="Italic (Ctrl+I)"
+          aria-label="Italic formatting"
         >
           <Italic className="h-4 w-4" />
         </Button>
@@ -124,6 +156,7 @@ export const Toolbar = () => {
           size="icon"
           onClick={() => insertText('~~', '~~', 'strikethrough')}
           title="Strikethrough"
+          aria-label="Strikethrough formatting"
         >
           <Strikethrough className="h-4 w-4" />
         </Button>
@@ -131,7 +164,8 @@ export const Toolbar = () => {
           variant="ghost"
           size="icon"
           onClick={() => insertText('`', '`', 'code')}
-          title="Code"
+          title="Inline Code"
+          aria-label="Inline code formatting"
         >
           <Code className="h-4 w-4" />
         </Button>
@@ -143,7 +177,7 @@ export const Toolbar = () => {
       <div className="hidden sm:flex items-center gap-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" title="Headings">
+            <Button variant="ghost" size="icon" title="Insert Heading" aria-label="Insert heading">
               <Heading className="h-4 w-4" />
               <ChevronDown className="h-3 w-3 -ml-1" />
             </Button>
@@ -185,7 +219,8 @@ export const Toolbar = () => {
           variant="ghost"
           size="icon"
           onClick={() => insertText('[', '](url)', 'link text')}
-          title="Link"
+          title="Insert Link (Ctrl+K)"
+          aria-label="Insert link"
         >
           <Link2 className="h-4 w-4" />
         </Button>
@@ -194,6 +229,7 @@ export const Toolbar = () => {
           size="icon"
           onClick={handleImageUpload}
           title="Upload Image"
+          aria-label="Upload image file"
         >
           <ImageIcon className="h-4 w-4" />
         </Button>
@@ -205,7 +241,7 @@ export const Toolbar = () => {
       <div className="hidden sm:flex items-center gap-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" title="Lists">
+            <Button variant="ghost" size="icon" title="Insert List" aria-label="Insert list">
               <List className="h-4 w-4" />
               <ChevronDown className="h-3 w-3 -ml-1" />
             </Button>
@@ -233,7 +269,7 @@ export const Toolbar = () => {
       <div className="hidden sm:flex items-center gap-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" title="Insert">
+            <Button variant="ghost" size="icon" title="Insert Elements" aria-label="Insert elements menu">
               <Plus className="h-4 w-4" />
               <ChevronDown className="h-3 w-3 -ml-1" />
             </Button>
@@ -469,6 +505,8 @@ export const Toolbar = () => {
           size="icon"
           onClick={() => setFocusMode(!focusMode)}
           title={focusMode ? "Exit Focus Mode (Esc)" : "Focus Mode (F11)"}
+          aria-label={focusMode ? "Exit focus mode" : "Enter focus mode"}
+          aria-pressed={focusMode}
         >
           {focusMode ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
         </Button>
@@ -477,7 +515,8 @@ export const Toolbar = () => {
           variant="ghost"
           size="icon"
           onClick={handlePrint}
-          title="Print (Ctrl+P)"
+          title="Print Document (Ctrl+P)"
+          aria-label="Print document"
         >
           <Printer className="h-4 w-4" />
         </Button>

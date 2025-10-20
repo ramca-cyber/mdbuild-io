@@ -8,7 +8,12 @@ export const TemplatesDrawer = () => {
   const { setContent } = useEditorStore();
 
   const handleTemplateClick = (template: typeof templates[0]) => {
-    setContent(template.content);
+    try {
+      setContent(template.content);
+    } catch (error) {
+      console.error('Error loading template:', error);
+      // Error handling in store will show toast
+    }
   };
 
   return (
@@ -18,8 +23,17 @@ export const TemplatesDrawer = () => {
         {templates.map((template) => (
           <Card
             key={template.name}
-            className="p-4 cursor-pointer hover:bg-accent transition-colors"
+            className="p-4 cursor-pointer hover:bg-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             onClick={() => handleTemplateClick(template)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleTemplateClick(template);
+              }
+            }}
+            tabIndex={0}
+            role="button"
+            aria-label={`Load ${template.name} template`}
           >
             <div className="flex items-start gap-3">
               <template.icon className="w-5 h-5 text-primary mt-0.5" />

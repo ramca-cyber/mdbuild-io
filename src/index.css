@@ -99,6 +99,37 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
   
+  /* Enhanced focus styles for accessibility */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+  
+  /* Keyboard navigation indicator */
+  button:focus-visible,
+  a:focus-visible,
+  [role="button"]:focus-visible {
+    @apply ring-2 ring-primary ring-offset-2;
+  }
+  
+  /* Ensure minimum tap target size for touch (48x48px) */
+  button,
+  a,
+  [role="button"],
+  [tabindex]:not([tabindex="-1"]) {
+    min-height: 2.5rem; /* 40px base, close to 48px with padding */
+    min-width: 2.5rem;
+  }
+  
+  /* Better tablet touch targets */
+  @media (min-width: 768px) and (max-width: 1024px) {
+    button,
+    a,
+    [role="button"] {
+      min-height: 2.75rem; /* Slightly larger for tablets */
+      padding: 0.75rem;
+    }
+  }
+  
   pre {
     @apply relative;
   }
@@ -202,6 +233,25 @@ All colors MUST be HSL.
       opacity: 1;
       transform: translateY(0);
     }
+  }
+  
+  /* Skip to content link for accessibility */
+  .skip-to-content {
+    @apply absolute -top-10 left-0 bg-primary text-primary-foreground px-4 py-2 z-50;
+    @apply focus:top-0 transition-all;
+  }
+  
+  /* Screen reader only content */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
   }
 }
 

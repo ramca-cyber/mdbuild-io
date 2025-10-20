@@ -10,6 +10,24 @@ export const SavedDocuments = () => {
   const { savedDocuments, currentDocId, loadDocument, deleteDocument } = useEditorStore();
   const [searchQuery, setSearchQuery] = useState('');
 
+  const handleLoadDocument = (id: string) => {
+    try {
+      loadDocument(id);
+    } catch (error) {
+      console.error('Error loading document:', error);
+      // Toast will be shown by the store if there's an error
+    }
+  };
+
+  const handleDeleteDocument = (id: string) => {
+    try {
+      deleteDocument(id);
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      // Toast will be shown by the store if there's an error
+    }
+  };
+
   const filteredDocuments = useMemo(() => {
     if (!searchQuery.trim()) return savedDocuments;
     
@@ -43,6 +61,7 @@ export const SavedDocuments = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 h-9"
+              aria-label="Search documents"
             />
           </div>
           {searchQuery && (
@@ -67,8 +86,9 @@ export const SavedDocuments = () => {
           >
             <div className="flex items-start justify-between gap-2">
               <button
-                onClick={() => loadDocument(doc.id)}
-                className="flex-1 text-left"
+                onClick={() => handleLoadDocument(doc.id)}
+                className="flex-1 text-left focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded p-1 -m-1"
+                aria-label={`Load document ${doc.name}`}
               >
                 <div className="font-medium text-sm mb-1">{doc.name}</div>
                 <div className="text-xs text-muted-foreground">
@@ -78,8 +98,10 @@ export const SavedDocuments = () => {
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => deleteDocument(doc.id)}
+                onClick={() => handleDeleteDocument(doc.id)}
                 className="h-7 w-7"
+                aria-label={`Delete document ${doc.name}`}
+                title="Delete document"
               >
                 <Trash2 className="h-3 w-3" />
               </Button>

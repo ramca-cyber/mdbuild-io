@@ -97,9 +97,18 @@ const Index = () => {
 
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-background">
+      {/* Skip to content link for keyboard navigation */}
+      <a 
+        href="#main-content" 
+        className="skip-to-content"
+        aria-label="Skip to main content"
+      >
+        Skip to content
+      </a>
+      
       {/* Header */}
       {!focusMode && (
-      <header className="no-print flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border bg-gradient-to-r from-primary/10 to-accent/10">
+      <header className="no-print flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border bg-gradient-to-r from-primary/10 to-accent/10" role="banner">
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
@@ -269,7 +278,7 @@ const Index = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
-        <main className="flex-1 overflow-hidden">
+        <main id="main-content" className="flex-1 overflow-hidden" role="main" aria-label="Document editor">
           {isPrinting ? (
             <div className="h-full">
               <Preview />
@@ -308,17 +317,23 @@ const Index = () => {
         {/* Desktop Side Panels */}
         {!focusMode && showOutline && (
           <SidePanel>
-            <OutlinePanel />
+            <aside role="complementary" aria-label="Document outline">
+              <OutlinePanel />
+            </aside>
           </SidePanel>
         )}
       </div>
 
       {/* Footer with Enhanced Statistics */}
-      {!focusMode && <StatisticsPanel />}
+      {!focusMode && (
+        <footer role="contentinfo" className="border-t">
+          <StatisticsPanel />
+        </footer>
+      )}
 
       {/* Focus Mode Exit Button and Word Count Overlay */}
       {focusMode && (
-        <>
+        <div role="dialog" aria-modal="true" aria-label="Focus mode">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -326,6 +341,8 @@ const Index = () => {
                 size="icon"
                 onClick={() => setFocusMode(false)}
                 className="no-print fixed top-4 right-4 z-50 bg-background/80 backdrop-blur-sm border-border shadow-lg hover:bg-accent transition-all"
+                aria-label="Exit focus mode"
+                title="Exit Focus Mode (Esc)"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -336,7 +353,12 @@ const Index = () => {
           </Tooltip>
 
           {/* Word Count Overlay */}
-          <div className="no-print fixed bottom-4 left-4 z-50 bg-background/80 backdrop-blur-sm border border-border rounded-lg px-4 py-2 shadow-lg">
+          <div 
+            className="no-print fixed bottom-4 left-4 z-50 bg-background/80 backdrop-blur-sm border border-border rounded-lg px-4 py-2 shadow-lg"
+            role="status"
+            aria-live="polite"
+            aria-label="Document statistics"
+          >
             <div className="flex items-center gap-4 text-sm">
               <span className="text-muted-foreground">
                 Words: <span className="font-medium text-foreground">{stats.words}</span>
@@ -349,7 +371,7 @@ const Index = () => {
               </span>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {/* Keyboard Shortcuts Dialog */}
