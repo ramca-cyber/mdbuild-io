@@ -4,6 +4,7 @@ import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { useEditorStore } from '@/store/editorStore';
 import { EditorView } from '@codemirror/view';
+import { EditorSelection } from '@codemirror/state';
 import { SearchReplace } from '@/components/SearchReplace';
 
 export const Editor = () => {
@@ -140,6 +141,55 @@ export const Editor = () => {
       view.focus();
     }
   }, [currentSearchIndex, searchResults]);
+
+  // Insertion bus - handles all toolbar insertions at the correct cursor position
+  useEffect(() => {
+    const handleInsert = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { kind, before, after, placeholder, block } = customEvent.detail;
+      
+      if (!viewRef.current) return;
+      
+      const view = viewRef.current;
+      const state = view.state;
+      const selection = state.selection.main;
+      
+      if (kind === 'wrap') {
+        // Wrap selection or insert with placeholder
+        const selectedText = state.sliceDoc(selection.from, selection.to);
+        const textToInsert = selectedText || (placeholder || 'text');
+        const fullText = before + textToInsert + (after || '');
+        
+        view.dispatch({
+          changes: { from: selection.from, to: selection.to, insert: fullText },
+          selection: EditorSelection.cursor(selection.from + before.length + textToInsert.length + (after?.length || 0)),
+          scrollIntoView: true,
+        });
+      } else if (kind === 'block') {
+        // Insert block with proper newlines
+        const doc = state.doc;
+        const line = doc.lineAt(selection.from);
+        const isStartOfLine = selection.from === line.from;
+        const isEndOfDoc = selection.from === doc.length;
+        
+        // Add newlines as needed
+        const prefix = isStartOfLine || line.text.trim() === '' ? '' : '\n\n';
+        const suffix = isEndOfDoc ? '' : '\n\n';
+        const fullBlock = prefix + block + suffix;
+        
+        view.dispatch({
+          changes: { from: selection.from, to: selection.from, insert: fullBlock },
+          selection: EditorSelection.cursor(selection.from + fullBlock.length),
+          scrollIntoView: true,
+        });
+      }
+      
+      view.focus();
+    };
+
+    window.addEventListener('editor-insert', handleInsert);
+    return () => window.removeEventListener('editor-insert', handleInsert);
+  }, []);
 
 
   return (

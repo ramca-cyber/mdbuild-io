@@ -57,40 +57,18 @@ export const Toolbar = () => {
 
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
 
-  const insertText = (before: string, after: string = '', placeholder: string = 'text') => {
-    try {
-      const textarea = document.querySelector('textarea') || document.querySelector('.cm-content');
-      if (!textarea) {
-        // Fallback: just append to content if editor not found
-        setContent(content + '\n' + before + placeholder + after);
-        return;
-      }
-
-      // For CodeMirror or textarea
-      const start = (textarea as HTMLTextAreaElement).selectionStart || 0;
-      const end = (textarea as HTMLTextAreaElement).selectionEnd || 0;
-      const selectedText = content.substring(start, end) || placeholder;
-      const newText = content.substring(0, start) + before + selectedText + after + content.substring(end);
-      
-      setContent(newText);
-      
-      // Set cursor position after insertion
-      setTimeout(() => {
-        if (textarea && 'selectionStart' in textarea) {
-          const newPosition = start + before.length + selectedText.length;
-          (textarea as HTMLTextAreaElement).selectionStart = newPosition;
-          (textarea as HTMLTextAreaElement).selectionEnd = newPosition;
-          textarea.focus();
-        }
-      }, 10);
-    } catch (error) {
-      console.error('Error inserting text:', error);
-      toast.error('Failed to insert text. Please try again.');
-    }
+  // Dispatch wrap insertion (for inline formatting)
+  const dispatchWrap = (before: string, after: string = '', placeholder: string = 'text') => {
+    window.dispatchEvent(new CustomEvent('editor-insert', { 
+      detail: { kind: 'wrap', before, after, placeholder } 
+    }));
   };
 
-  const insertBlock = (text: string) => {
-    setContent(content + '\n\n' + text + '\n\n');
+  // Dispatch block insertion (for block elements)
+  const dispatchBlock = (block: string) => {
+    window.dispatchEvent(new CustomEvent('editor-insert', { 
+      detail: { kind: 'block', block } 
+    }));
   };
 
   const handleViewMode = (mode: 'split' | 'editor' | 'preview') => {
@@ -103,7 +81,7 @@ export const Toolbar = () => {
       if (url && url.trim()) {
         const linkText = prompt('Enter link text (or leave empty to use URL):', '');
         const text = linkText?.trim() || url.trim();
-        insertText('[', `](${url.trim()})`, text);
+        dispatchWrap('[', `](${url.trim()})`, text);
         toast.success('Link inserted successfully');
       }
     } catch (error) {
@@ -117,7 +95,7 @@ export const Toolbar = () => {
       const url = prompt('Enter image URL:', 'https://');
       if (url && url.trim()) {
         const altText = prompt('Enter image description (optional):', 'image');
-        insertBlock(`![${altText || 'image'}](${url.trim()})`);
+        dispatchBlock(`![${altText || 'image'}](${url.trim()})`);
         toast.success('Image inserted successfully');
       }
     } catch (error) {
@@ -138,7 +116,7 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => insertText('**', '**', 'bold')}
+          onClick={() => dispatchWrap('**', '**', 'bold')}
           title="Bold (Ctrl+B)"
           aria-label="Bold formatting"
         >
@@ -147,7 +125,7 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => insertText('*', '*', 'italic')}
+          onClick={() => dispatchWrap('*', '*', 'italic')}
           title="Italic (Ctrl+I)"
           aria-label="Italic formatting"
         >
@@ -156,7 +134,7 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => insertText('~~', '~~', 'strikethrough')}
+          onClick={() => dispatchWrap('~~', '~~', 'strikethrough')}
           title="Strikethrough"
           aria-label="Strikethrough formatting"
         >
@@ -165,7 +143,7 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => insertText('`', '`', 'code')}
+          onClick={() => dispatchWrap('`', '`', 'code')}
           title="Inline Code"
           aria-label="Inline code formatting"
         >
@@ -186,27 +164,27 @@ export const Toolbar = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="bg-popover">
-            <DropdownMenuItem onClick={() => insertText('# ', '', 'Heading 1')}>
+            <DropdownMenuItem onClick={() => dispatchWrap('# ', '', 'Heading 1')}>
               <Heading1 className="h-4 w-4 mr-2" />
               Heading 1
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => insertText('## ', '', 'Heading 2')}>
+            <DropdownMenuItem onClick={() => dispatchWrap('## ', '', 'Heading 2')}>
               <Heading2 className="h-4 w-4 mr-2" />
               Heading 2
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => insertText('### ', '', 'Heading 3')}>
+            <DropdownMenuItem onClick={() => dispatchWrap('### ', '', 'Heading 3')}>
               <Heading className="h-4 w-4 mr-2" />
               Heading 3
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => insertText('#### ', '', 'Heading 4')}>
+            <DropdownMenuItem onClick={() => dispatchWrap('#### ', '', 'Heading 4')}>
               <Heading className="h-4 w-4 mr-2" />
               Heading 4
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => insertText('##### ', '', 'Heading 5')}>
+            <DropdownMenuItem onClick={() => dispatchWrap('##### ', '', 'Heading 5')}>
               <Heading className="h-4 w-4 mr-2" />
               Heading 5
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => insertText('###### ', '', 'Heading 6')}>
+            <DropdownMenuItem onClick={() => dispatchWrap('###### ', '', 'Heading 6')}>
               <Heading className="h-4 w-4 mr-2" />
               Heading 6
             </DropdownMenuItem>
@@ -227,15 +205,15 @@ export const Toolbar = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="bg-popover">
-            <DropdownMenuItem onClick={() => insertText('- ', '', 'list item')}>
+            <DropdownMenuItem onClick={() => dispatchWrap('- ', '', 'list item')}>
               <List className="h-4 w-4 mr-2" />
               Bullet List
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => insertText('1. ', '', 'list item')}>
+            <DropdownMenuItem onClick={() => dispatchWrap('1. ', '', 'list item')}>
               <ListOrdered className="h-4 w-4 mr-2" />
               Numbered List
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => insertText('- [ ] ', '', 'task')}>
+            <DropdownMenuItem onClick={() => dispatchWrap('- [ ] ', '', 'task')}>
               <CheckSquare className="h-4 w-4 mr-2" />
               Task List
             </DropdownMenuItem>
@@ -264,19 +242,19 @@ export const Toolbar = () => {
               <ImageIcon className="h-4 w-4 mr-2" />
               Image
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => insertText('> ', '', 'quote')}>
+            <DropdownMenuItem onClick={() => dispatchWrap('> ', '', 'quote')}>
               <Quote className="h-4 w-4 mr-2" />
               Quote
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => insertBlock('| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |')}>
+            <DropdownMenuItem onClick={() => dispatchBlock('| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |')}>
               <Table className="h-4 w-4 mr-2" />
               Table
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => insertBlock('---')}>
+            <DropdownMenuItem onClick={() => dispatchBlock('---')}>
               <Minus className="h-4 w-4 mr-2" />
               Horizontal Rule
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => insertBlock('```\ncode\n```')}>
+            <DropdownMenuItem onClick={() => dispatchBlock('```\ncode\n```')}>
               <Code className="h-4 w-4 mr-2" />
               Code Block
             </DropdownMenuItem>
@@ -289,7 +267,7 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => insertText('**', '**', 'bold')}
+          onClick={() => dispatchWrap('**', '**', 'bold')}
           title="Bold"
         >
           <Bold className="h-4 w-4" />
@@ -297,7 +275,7 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => insertText('*', '*', 'italic')}
+          onClick={() => dispatchWrap('*', '*', 'italic')}
           title="Italic"
         >
           <Italic className="h-4 w-4" />
@@ -309,15 +287,15 @@ export const Toolbar = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="bg-popover">
-            <DropdownMenuItem onClick={() => insertText('# ', '', 'Heading 1')}>
+            <DropdownMenuItem onClick={() => dispatchWrap('# ', '', 'Heading 1')}>
               <Heading1 className="h-4 w-4 mr-2" />
               Heading 1
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => insertText('## ', '', 'Heading 2')}>
+            <DropdownMenuItem onClick={() => dispatchWrap('## ', '', 'Heading 2')}>
               <Heading2 className="h-4 w-4 mr-2" />
               Heading 2
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => insertText('### ', '', 'Heading 3')}>
+            <DropdownMenuItem onClick={() => dispatchWrap('### ', '', 'Heading 3')}>
               <Heading className="h-4 w-4 mr-2" />
               Heading 3
             </DropdownMenuItem>
@@ -338,11 +316,11 @@ export const Toolbar = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="bg-popover">
-            <DropdownMenuItem onClick={() => insertText('- ', '', 'list item')}>
+            <DropdownMenuItem onClick={() => dispatchWrap('- ', '', 'list item')}>
               <List className="h-4 w-4 mr-2" />
               Bullet List
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => insertText('1. ', '', 'list item')}>
+            <DropdownMenuItem onClick={() => dispatchWrap('1. ', '', 'list item')}>
               <ListOrdered className="h-4 w-4 mr-2" />
               Numbered List
             </DropdownMenuItem>
@@ -363,7 +341,7 @@ export const Toolbar = () => {
                 variant="outline"
                 className="h-16 flex-col gap-1"
                 onClick={() => {
-                  insertText('~~', '~~', 'strikethrough');
+                  dispatchWrap('~~', '~~', 'strikethrough');
                   setMobileMoreOpen(false);
                 }}
               >
@@ -374,7 +352,7 @@ export const Toolbar = () => {
                 variant="outline"
                 className="h-16 flex-col gap-1"
                 onClick={() => {
-                  insertText('`', '`', 'code');
+                  dispatchWrap('`', '`', 'code');
                   setMobileMoreOpen(false);
                 }}
               >
@@ -396,7 +374,7 @@ export const Toolbar = () => {
                 variant="outline"
                 className="h-16 flex-col gap-1"
                 onClick={() => {
-                  insertText('> ', '', 'quote');
+                  dispatchWrap('> ', '', 'quote');
                   setMobileMoreOpen(false);
                 }}
               >
@@ -407,7 +385,7 @@ export const Toolbar = () => {
                 variant="outline"
                 className="h-16 flex-col gap-1"
                 onClick={() => {
-                  insertBlock('| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |');
+                  dispatchBlock('| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |');
                   setMobileMoreOpen(false);
                 }}
               >
@@ -418,7 +396,7 @@ export const Toolbar = () => {
                 variant="outline"
                 className="h-16 flex-col gap-1"
                 onClick={() => {
-                  insertText('- [ ] ', '', 'task');
+                  dispatchWrap('- [ ] ', '', 'task');
                   setMobileMoreOpen(false);
                 }}
               >
