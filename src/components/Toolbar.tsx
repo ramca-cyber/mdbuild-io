@@ -59,18 +59,30 @@ export const Toolbar = () => {
 
   const insertText = (before: string, after: string = '', placeholder: string = 'text') => {
     try {
-      const textarea = document.querySelector('textarea');
+      const textarea = document.querySelector('textarea') || document.querySelector('.cm-content');
       if (!textarea) {
-        toast.error('Editor not ready. Please try again.');
+        // Fallback: just append to content if editor not found
+        setContent(content + '\n' + before + placeholder + after);
         return;
       }
 
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
+      // For CodeMirror or textarea
+      const start = (textarea as HTMLTextAreaElement).selectionStart || 0;
+      const end = (textarea as HTMLTextAreaElement).selectionEnd || 0;
       const selectedText = content.substring(start, end) || placeholder;
       const newText = content.substring(0, start) + before + selectedText + after + content.substring(end);
       
       setContent(newText);
+      
+      // Set cursor position after insertion
+      setTimeout(() => {
+        if (textarea && 'selectionStart' in textarea) {
+          const newPosition = start + before.length + selectedText.length;
+          (textarea as HTMLTextAreaElement).selectionStart = newPosition;
+          (textarea as HTMLTextAreaElement).selectionEnd = newPosition;
+          textarea.focus();
+        }
+      }, 10);
     } catch (error) {
       console.error('Error inserting text:', error);
       toast.error('Failed to insert text. Please try again.');

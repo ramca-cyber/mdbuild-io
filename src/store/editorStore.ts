@@ -240,11 +240,23 @@ pie title Project Time Distribution
 
 ## 🔗 Links and Images
 
+### Links
 [Visit MDBuild.io](https://mdbuild.io)
 
 [Link with title](https://example.com "Example Website")
 
 Automatic link: https://www.example.com
+
+### Images
+Add beautiful images to your documents using public URLs:
+
+![Beautiful mountain landscape at sunset](https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80)
+*Photo: Mountain landscape - Always use descriptive alt text for accessibility*
+
+![Code editor on a desk](https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80)
+*Photo: Developer workspace*
+
+You can add images from any public URL - just click the Insert menu in the toolbar!
 
 ---
 
