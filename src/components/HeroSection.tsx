@@ -25,15 +25,13 @@ export const HeroSection = ({ onStartWriting, onSeeFeatures }: HeroSectionProps)
         </div>
         
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight animate-fade-in">
-          Markdown Editor + Live Preview
+          Build Markdown documents with diagrams, math, and instant preview
           <br />
-          <span className="text-primary">+ Diagrams + Math</span>
-          <br />
-          <span className="text-muted-foreground text-3xl md:text-4xl">All in Your Browser</span>
+          <span className="text-primary">— all offline.</span>
         </h1>
         
         <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto animate-fade-in">
-          Write technical docs with Mermaid diagrams, LaTeX equations, and export to PDF, HTML, DOCX, or Markdown—no sign-up, 100% private.
+          Mermaid diagrams • KaTeX math • GFM tables • Export to PDF, HTML, DOCX • 100% browser-based
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in">
