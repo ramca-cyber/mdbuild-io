@@ -249,32 +249,6 @@ All colors MUST be HSL.
                 0 8px 10px -6px hsl(var(--foreground) / 0.1);
   }
   
-  /* Interactive Task List Checkboxes */
-  .task-list-item {
-    @apply list-none;
-  }
-  
-  .task-list-item-checkbox {
-    @apply mr-2 cursor-pointer;
-    @apply w-4 h-4;
-    @apply rounded border-2 border-primary/60;
-    @apply transition-all duration-200;
-    accent-color: hsl(var(--primary));
-  }
-  
-  .task-list-item-checkbox:hover {
-    @apply border-primary scale-110;
-    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
-  }
-  
-  .task-list-item-checkbox:checked {
-    @apply border-primary;
-  }
-  
-  .task-list-item-checkbox:focus {
-    @apply outline-none ring-2 ring-primary ring-offset-2;
-  }
-  
   /* Keyboard shortcut styling */
   kbd {
     @apply inline-block px-2 py-1 text-xs font-semibold;

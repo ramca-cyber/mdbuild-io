@@ -27,14 +27,14 @@ const rehypeAddLineNumbers = () => {
     visit(tree, 'element', (node: any) => {
       if (node.position?.start?.line) {
         node.properties = node.properties || {};
-        node.properties['data-line'] = node.position.start.line;
+        node.properties.dataLine = node.position.start.line;
       }
     });
   };
 };
 
 export const Preview = () => {
-  const { content, syncScroll, setContent } = useEditorStore();
+  const { content, syncScroll } = useEditorStore();
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const syncScrollRef = useRef(syncScroll);
@@ -92,83 +92,12 @@ export const Preview = () => {
     });
   }, [toast]);
 
-  // Make task list checkboxes interactive
-  const makeTaskListsInteractive = useCallback(() => {
-    if (!previewRef.current) return;
-
-    // Build index of task lines from source (ignore code fences)
-    const src = useEditorStore.getState().content;
-    const linesSrc = src.split('\n');
-    const taskLineIndices: number[] = [];
-    let inFence = false;
-    for (let i = 0; i < linesSrc.length; i++) {
-      const l = linesSrc[i];
-      if (l.trim().startsWith('```')) {
-        inFence = !inFence;
-        continue;
-      }
-      if (inFence) continue;
-      if (/^\s*[-*+]\s+\[([ xX])\]\s+/.test(l)) {
-        taskLineIndices.push(i);
-      }
-    }
-
-    // Map DOM checkboxes to source line indices by DOM order
-    const checkboxes = previewRef.current.querySelectorAll('li input[type="checkbox"]');
-    
-    checkboxes.forEach((cb, idx) => {
-      const input = cb as HTMLInputElement;
-      
-      // Skip if already interactive
-      if (input.hasAttribute('data-interactive')) return;
-      
-      // Enable interaction
-      input.removeAttribute('disabled');
-      input.setAttribute('data-interactive', 'true');
-      input.style.cursor = 'pointer';
-
-      const srcIndex = taskLineIndices[idx];
-      if (typeof srcIndex === 'number') {
-        input.dataset.taskLine = String(srcIndex);
-      }
-
-      input.addEventListener('change', (e) => {
-        const el = e.currentTarget as HTMLInputElement;
-        const lineIdxAttr = el.dataset.taskLine;
-        if (lineIdxAttr == null) return;
-        const lineIdx = parseInt(lineIdxAttr, 10);
-
-        // Always use the latest content
-        const current = useEditorStore.getState().content;
-        const lines = current.split('\n');
-        if (isNaN(lineIdx) || lineIdx < 0 || lineIdx >= lines.length) return;
-
-        const original = lines[lineIdx];
-        const m = original.match(/^(\s*[-*+])\s+\[([ xX])\]\s+(.*)$/);
-        if (!m) return;
-
-        const indent = m[1];
-        const text = m[3];
-        const newState = el.checked ? 'x' : ' ';
-        const newLines = [...lines];
-        newLines[lineIdx] = `${indent} [${newState}] ${text}`;
-
-        setContent(newLines.join('\n'));
-        toast({
-          title: el.checked ? 'Task completed! ✓' : 'Task unchecked',
-          description: text.length > 50 ? text.substring(0, 50) + '...' : text,
-        });
-      });
-    });
-  }, [setContent, toast]);
-
-  // Handle content changes - add copy buttons and make checkboxes interactive after render
+  // Handle content changes - add copy buttons after render (optimized)
   useEffect(() => {
     requestAnimationFrame(() => {
       addCopyButtons();
-      makeTaskListsInteractive();
     });
-  }, [content, addCopyButtons, makeTaskListsInteractive]);
+  }, [content, addCopyButtons]);
 
   // Track syncScroll changes without re-rendering diagrams
   useEffect(() => {
