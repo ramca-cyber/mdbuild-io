@@ -103,6 +103,11 @@ All colors MUST be HSL.
     @apply relative;
   }
   
+  /* Override rehype-highlight background to be theme-aware */
+  .prose pre {
+    @apply bg-muted/50 dark:bg-card;
+  }
+  
   .copy-button {
     @apply absolute top-2 right-2 p-2 bg-muted hover:bg-accent rounded opacity-0 transition-opacity;
     @apply text-muted-foreground hover:text-foreground;
