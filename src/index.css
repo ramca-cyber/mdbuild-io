@@ -103,35 +103,80 @@ All colors MUST be HSL.
     @apply relative;
   }
   
-  /* Override rehype-highlight background to be theme-aware */
+  /* Enhanced code block styling - theme-aware with better contrast */
   .prose pre {
-    @apply bg-muted/50 dark:bg-card;
+    @apply bg-muted/50 dark:bg-card border border-border/50;
+    @apply rounded-lg p-4 my-4 overflow-x-auto;
+    box-shadow: var(--shadow-md);
+    transition: all 0.2s ease;
   }
   
+  .prose pre:hover {
+    @apply border-border;
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .prose pre code {
+    @apply bg-transparent text-sm leading-relaxed;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  
+  /* Enhanced copy button with smooth transitions */
   .copy-button {
-    @apply absolute top-2 right-2 p-2 bg-muted hover:bg-accent rounded opacity-0 transition-opacity;
+    @apply absolute top-3 right-3 p-2 bg-muted/80 hover:bg-accent rounded-md;
     @apply text-muted-foreground hover:text-foreground;
+    @apply opacity-0 transition-all duration-200 ease-in-out;
+    @apply backdrop-blur-sm border border-border/50;
+    z-index: 10;
+  }
+  
+  .copy-button:hover {
+    @apply scale-110;
+    box-shadow: var(--shadow-md);
+  }
+  
+  .copy-button:active {
+    @apply scale-95;
   }
   
   pre:hover .copy-button {
     @apply opacity-100;
   }
   
+  /* Code language badge */
+  .code-language-badge {
+    @apply absolute top-3 left-3 px-2 py-1 text-xs font-semibold;
+    @apply bg-primary/10 text-primary border border-primary/20 rounded;
+    @apply opacity-0 transition-opacity duration-200;
+    z-index: 10;
+  }
+  
+  pre:hover .code-language-badge {
+    @apply opacity-100;
+  }
+  
+  /* Consolidated Mermaid diagram styling */
   .mermaid-diagram-container {
-    @apply flex justify-center my-6;
+    @apply flex justify-center my-6 transition-transform duration-200;
+  }
+  
+  .mermaid-diagram-container:hover {
+    @apply scale-[1.02];
   }
   
   .mermaid-diagram-container svg {
-    max-width: 100%;
-    height: auto;
-  }
-  
-  /* Mermaid diagram styling - theme-aware background */
-  .mermaid-diagram-container svg {
+    @apply max-w-full h-auto;
     background: hsl(var(--card));
-    border-radius: 0.5rem;
-    padding: 1rem;
-    box-shadow: var(--shadow-md);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid hsl(var(--border));
+    transition: all 0.2s ease;
+  }
+  
+  .mermaid-diagram-container svg:hover {
+    box-shadow: 0 20px 25px -5px hsl(var(--foreground) / 0.1), 
+                0 8px 10px -6px hsl(var(--foreground) / 0.1);
   }
   
   /* Keyboard shortcut styling */

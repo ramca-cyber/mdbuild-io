@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -11,6 +11,13 @@ import { useEditorStore } from '@/store/editorStore';
 import { useToast } from '@/hooks/use-toast';
 import { MermaidDiagram } from '@/components/MermaidDiagram';
 import { visit } from 'unist-util-visit';
+
+// TypeScript interfaces
+interface CodeProps {
+  className?: string;
+  children?: React.ReactNode;
+  inline?: boolean;
+}
 
 // Custom rehype plugin to add line number data attributes
 const rehypeAddLineNumbers = () => {
@@ -30,19 +37,36 @@ export const Preview = () => {
   const { toast } = useToast();
   const syncScrollRef = useRef(syncScroll);
 
-  // Add copy buttons to code blocks
-  const addCopyButtons = () => {
+  // Optimized copy buttons with proper cleanup and memoization
+  const addCopyButtons = useCallback(() => {
     if (!previewRef.current) return;
     
     const codeBlocks = previewRef.current.querySelectorAll('pre');
     codeBlocks.forEach((pre) => {
-      if (pre.querySelector('.copy-button')) return;
+      // Skip if button already added
+      if (pre.hasAttribute('data-copy-button-added')) return;
       
       const code = pre.querySelector('code');
       if (code && !code.classList.contains('mermaid-diagram-container')) {
+        // Extract language from class name
+        const className = code.className || '';
+        const langMatch = /language-(\w+)/.exec(className);
+        const language = langMatch ? langMatch[1] : '';
+        
+        // Add language badge if detected
+        if (language) {
+          const langBadge = document.createElement('span');
+          langBadge.className = 'code-language-badge';
+          langBadge.textContent = language;
+          langBadge.setAttribute('aria-label', `Code language: ${language}`);
+          pre.appendChild(langBadge);
+        }
+        
         const button = document.createElement('button');
         button.className = 'copy-button';
+        button.setAttribute('aria-label', 'Copy code to clipboard');
         button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
+        
         button.addEventListener('click', (ev) => {
           ev.stopPropagation();
           const text = code.textContent || '';
@@ -52,26 +76,26 @@ export const Preview = () => {
             description: 'Code copied to clipboard',
           });
           button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+          button.setAttribute('aria-label', 'Code copied');
           setTimeout(() => {
             button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
+            button.setAttribute('aria-label', 'Copy code to clipboard');
           }, 2000);
         });
+        
         pre.style.position = 'relative';
         pre.appendChild(button);
+        pre.setAttribute('data-copy-button-added', 'true');
       }
     });
-  };
+  }, [toast]);
 
-  // Handle content changes - add copy buttons after render
+  // Handle content changes - add copy buttons after render (optimized)
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      requestAnimationFrame(() => {
-        addCopyButtons();
-      });
-    }, 100);
-    
-    return () => clearTimeout(timeoutId);
-  }, [content, toast]);
+    requestAnimationFrame(() => {
+      addCopyButtons();
+    });
+  }, [content, addCopyButtons]);
 
   // Track syncScroll changes without re-rendering diagrams
   useEffect(() => {
@@ -156,35 +180,45 @@ export const Preview = () => {
     window.dispatchEvent(new CustomEvent('preview-click', { detail: targetLine }));
   }, [content]);
 
+  // Memoize ReactMarkdown to prevent unnecessary re-renders
+  const markdownContent = useMemo(
+    () => (
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkMath, remarkEmoji, remarkFrontmatter]}
+        rehypePlugins={[rehypeRaw, rehypeKatex, rehypeHighlight, rehypeAddLineNumbers]}
+        components={{
+          code({ className, children, ...props }: CodeProps) {
+            const match = /language-(\w+)/.exec(className || '');
+            const isInline = !match;
+            
+            if (!isInline && match?.[1] === 'mermaid') {
+              return <MermaidDiagram code={String(children)} />;
+            }
+
+            return (
+              <code className={className} {...props}>
+                {children}
+              </code>
+            );
+          },
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    ),
+    [content]
+  );
+
   return (
     <div 
       ref={previewRef}
       className="h-full w-full overflow-auto bg-preview-bg p-8 cursor-text"
       onClick={handleClick}
+      role="document"
+      aria-label="Markdown preview"
     >
       <article className="prose prose-slate dark:prose-invert max-w-none preview-content">
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm, remarkMath, remarkEmoji, remarkFrontmatter]}
-          rehypePlugins={[rehypeRaw, rehypeKatex, rehypeHighlight, rehypeAddLineNumbers]}
-          components={{
-          code({ className, children, ...props }: any) {
-              const match = /language-(\w+)/.exec(className || '');
-              const isInline = !match;
-              
-              if (!isInline && match?.[1] === 'mermaid') {
-                return <MermaidDiagram code={String(children)} />;
-              }
-
-              return (
-                <code className={className} {...props}>
-                  {children}
-                </code>
-              );
-            },
-          }}
-        >
-          {content}
-        </ReactMarkdown>
+        {markdownContent}
       </article>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import mermaid from 'mermaid';
 import { useEditorStore } from '@/store/editorStore';
 
@@ -7,12 +7,23 @@ interface MermaidDiagramProps {
 }
 
 export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
-  const { theme, previewRefreshKey } = useEditorStore();
+  const { theme } = useEditorStore();
   const [svg, setSvg] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [retryCount, setRetryCount] = useState<number>(0);
+
+  // Memoize code to prevent unnecessary re-renders
+  const memoizedCode = useMemo(() => code.trim(), [code]);
 
   useEffect(() => {
+    let isMounted = true;
+    
     const renderDiagram = async () => {
+      if (!memoizedCode) {
+        setError('Empty diagram code');
+        return;
+      }
+
       try {
         // Initialize mermaid with theme-specific settings
         const isDark = theme === 'dark';
@@ -53,23 +64,54 @@ export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
 
         // Render the diagram
         const renderID = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        const { svg: renderedSvg } = await mermaid.render(renderID, code);
-        setSvg(renderedSvg);
-        setError('');
+        const { svg: renderedSvg } = await mermaid.render(renderID, memoizedCode);
+        
+        if (isMounted) {
+          setSvg(renderedSvg);
+          setError('');
+          setRetryCount(0);
+        }
       } catch (err) {
         console.error('Mermaid rendering error:', err);
-        setError('Error rendering diagram');
-        setSvg('');
+        if (isMounted) {
+          const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+          setError(`Failed to render diagram: ${errorMessage}`);
+          setSvg('');
+          
+          // Retry logic for transient errors
+          if (retryCount < 2) {
+            setTimeout(() => {
+              if (isMounted) setRetryCount(prev => prev + 1);
+            }, 500);
+          }
+        }
       }
     };
 
     renderDiagram();
-  }, [code, theme, previewRefreshKey]);
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [memoizedCode, theme, retryCount]);
 
   if (error) {
     return (
-      <div className="mermaid-diagram-container text-destructive p-4 border border-destructive rounded">
-        {error}
+      <div 
+        className="mermaid-diagram-container text-destructive p-4 border border-destructive rounded bg-destructive/10"
+        role="alert"
+        aria-live="polite"
+      >
+        <strong>Diagram Error:</strong> {error}
+        {retryCount > 0 && <p className="text-sm mt-2">Retry attempt {retryCount}/2...</p>}
+      </div>
+    );
+  }
+
+  if (!svg) {
+    return (
+      <div className="mermaid-diagram-container p-4 text-muted-foreground">
+        Loading diagram...
       </div>
     );
   }
@@ -78,6 +120,8 @@ export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
     <div 
       className="mermaid-diagram-container"
       dangerouslySetInnerHTML={{ __html: svg }}
+      role="img"
+      aria-label="Mermaid diagram"
     />
   );
 };
