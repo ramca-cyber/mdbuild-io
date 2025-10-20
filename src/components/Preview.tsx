@@ -16,7 +16,6 @@ export const Preview = () => {
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const syncScrollRef = useRef(syncScroll);
-  const lineMapRef = useRef<Map<Element, number>>(new Map());
 
   // Add copy buttons to code blocks
   const addCopyButtons = () => {
@@ -49,40 +48,16 @@ export const Preview = () => {
     });
   };
 
-  // Build line number map from markdown content
-  const buildLineMap = useCallback(() => {
-    if (!previewRef.current) return;
-    
-    lineMapRef.current.clear();
-    const lines = content.split('\n');
-    let currentLine = 1;
-    
-    // Map markdown lines to approximate positions
-    const elements = previewRef.current.querySelectorAll('h1, h2, h3, h4, h5, h6, p, li, pre, blockquote, table');
-    elements.forEach((el) => {
-      const text = el.textContent || '';
-      // Find the line in markdown that contains this text
-      for (let i = currentLine - 1; i < lines.length; i++) {
-        if (lines[i].includes(text.substring(0, 50)) || text.includes(lines[i].substring(0, 50))) {
-          lineMapRef.current.set(el, i + 1);
-          currentLine = i + 1;
-          break;
-        }
-      }
-    });
-  }, [content]);
-
-  // Handle content changes - add copy buttons and build line map
+  // Handle content changes - add copy buttons after render
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       requestAnimationFrame(() => {
         addCopyButtons();
-        buildLineMap();
       });
     }, 100);
     
     return () => clearTimeout(timeoutId);
-  }, [content, toast, buildLineMap]);
+  }, [content, toast]);
 
   // Track syncScroll changes without re-rendering diagrams
   useEffect(() => {
@@ -135,22 +110,27 @@ export const Preview = () => {
     };
   }, []); // Only setup once
 
-  // Handle clicks to sync cursor position
+  // Handle clicks to sync cursor position based on scroll ratio
   const handleClick = useCallback((e: React.MouseEvent) => {
-    let target = e.target as Element;
-    let line: number | undefined;
+    if (!previewRef.current) return;
     
-    // Walk up the DOM tree to find an element with a line mapping
-    while (target && target !== previewRef.current) {
-      line = lineMapRef.current.get(target);
-      if (line) break;
-      target = target.parentElement as Element;
-    }
+    const preview = previewRef.current;
+    const clickY = e.clientY;
+    const previewRect = preview.getBoundingClientRect();
     
-    if (line) {
-      window.dispatchEvent(new CustomEvent('preview-click', { detail: line }));
-    }
-  }, []);
+    // Calculate click position relative to preview content
+    const clickOffset = clickY - previewRect.top + preview.scrollTop;
+    const scrollableHeight = preview.scrollHeight;
+    
+    // Calculate ratio of click position
+    const clickRatio = Math.max(0, Math.min(1, clickOffset / scrollableHeight));
+    
+    // Calculate corresponding line in markdown
+    const lines = content.split('\n');
+    const targetLine = Math.round(clickRatio * lines.length) || 1;
+    
+    window.dispatchEvent(new CustomEvent('preview-click', { detail: targetLine }));
+  }, [content]);
 
   return (
     <div 
