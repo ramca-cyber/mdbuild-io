@@ -29,6 +29,7 @@ interface EditorState {
   hasUnsavedChanges: boolean;
   autoSaveTimeoutId: ReturnType<typeof setTimeout> | null;
   previewRefreshKey: number;
+  statisticsExpanded: boolean;
   
   // Search & Replace
   showSearchReplace: boolean;
@@ -50,6 +51,7 @@ interface EditorState {
   setSyncScroll: (enabled: boolean) => void;
   setCurrentDocId: (id: string | null) => void;
   forceRefreshPreview: () => void;
+  setStatisticsExpanded: (expanded: boolean) => void;
   saveDocument: (name: string) => void;
   saveDocumentAs: (name: string) => void;
   loadDocument: (id: string) => void;
@@ -313,6 +315,7 @@ export const useEditorStore = create<EditorState>()(
       hasUnsavedChanges: false,
       autoSaveTimeoutId: null,
       previewRefreshKey: 0,
+      statisticsExpanded: false,
       
       // Search & Replace initial state
       showSearchReplace: false,
@@ -389,6 +392,7 @@ export const useEditorStore = create<EditorState>()(
       setSyncScroll: (enabled) => set({ syncScroll: enabled }),
       setCurrentDocId: (id) => set({ currentDocId: id }),
       forceRefreshPreview: () => set({ previewRefreshKey: get().previewRefreshKey + 1 }),
+      setStatisticsExpanded: (expanded) => set({ statisticsExpanded: expanded }),
       saveDocument: (name) => {
         const state = get();
         

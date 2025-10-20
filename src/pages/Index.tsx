@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { Link } from 'react-router-dom';
 import { Editor } from '@/components/Editor';
@@ -10,20 +10,41 @@ import { TemplatesDrawer } from '@/components/TemplatesDrawer';
 import { SettingsSheet } from '@/components/SettingsSheet';
 import { SavedDocuments } from '@/components/SavedDocuments';
 import { StatisticsPanel } from '@/components/StatisticsPanel';
+import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog';
 import { useEditorStore } from '@/store/editorStore';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, FileText, Settings, BookTemplate, List, Home, X } from 'lucide-react';
+import { Menu, FileText, Settings, BookTemplate, List, Home, X, Moon, Sun, Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { calculateStatistics } from '@/lib/statisticsUtils';
 
 const Index = () => {
-  const { theme, viewMode, showOutline, focusMode, setFocusMode } = useEditorStore();
+  const { theme, setTheme, viewMode, showOutline, focusMode, setFocusMode, content } = useEditorStore();
   const [mobilePanel, setMobilePanel] = useState<'documents' | 'templates' | 'settings' | 'outline' | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
+
+  // Calculate word count for focus mode
+  const stats = useMemo(() => calculateStatistics(content), [content]);
   
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // System theme detection and sync
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const handleChange = (e: MediaQueryListEvent) => {
+      setTheme(e.matches ? 'dark' : 'light');
+    };
+    
+    // Set initial theme based on system preference
+    setTheme(mediaQuery.matches ? 'dark' : 'light');
+    
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [setTheme]);
 
   // Handle ESC key to exit focus mode
   useEffect(() => {
@@ -154,6 +175,34 @@ const Index = () => {
               <span>Home</span>
             </Link>
           </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+              >
+                {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Toggle Theme</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setShowKeyboardShortcuts(true)}
+              >
+                <Keyboard className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Keyboard Shortcuts</p>
+            </TooltipContent>
+          </Tooltip>
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="sm">
@@ -227,24 +276,47 @@ const Index = () => {
       {/* Footer with Enhanced Statistics */}
       {!focusMode && <StatisticsPanel />}
 
-      {/* Focus Mode Exit Button */}
+      {/* Focus Mode Exit Button and Word Count Overlay */}
       {focusMode && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setFocusMode(false)}
-              className="no-print fixed top-4 right-4 z-50 bg-background/80 backdrop-blur-sm border-border shadow-lg hover:bg-accent transition-all"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Exit Focus Mode (ESC)</p>
-          </TooltipContent>
-        </Tooltip>
+        <>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setFocusMode(false)}
+                className="no-print fixed top-4 right-4 z-50 bg-background/80 backdrop-blur-sm border-border shadow-lg hover:bg-accent transition-all"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Exit Focus Mode (ESC)</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Word Count Overlay */}
+          <div className="no-print fixed bottom-4 left-4 z-50 bg-background/80 backdrop-blur-sm border border-border rounded-lg px-4 py-2 shadow-lg">
+            <div className="flex items-center gap-4 text-sm">
+              <span className="text-muted-foreground">
+                Words: <span className="font-medium text-foreground">{stats.words}</span>
+              </span>
+              <span className="text-muted-foreground">
+                Characters: <span className="font-medium text-foreground">{stats.characters}</span>
+              </span>
+              <span className="text-muted-foreground">
+                Reading: <span className="font-medium text-foreground">{stats.readingTime} min</span>
+              </span>
+            </div>
+          </div>
+        </>
       )}
+
+      {/* Keyboard Shortcuts Dialog */}
+      <KeyboardShortcutsDialog 
+        open={showKeyboardShortcuts} 
+        onOpenChange={setShowKeyboardShortcuts} 
+      />
 
       {/* Mobile Sheets */}
       <Sheet open={mobilePanel === 'documents'} onOpenChange={(open) => !open && setMobilePanel(null)}>

@@ -12,8 +12,6 @@ import {
   Quote,
   Table,
   Minus,
-  Moon,
-  Sun,
   Eye,
   SplitSquareHorizontal,
   ListTree,
@@ -44,8 +42,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 
 export const Toolbar = () => {
   const { 
-    theme, 
-    setTheme, 
     viewMode, 
     setViewMode, 
     content, 
@@ -74,10 +70,6 @@ export const Toolbar = () => {
 
   const insertBlock = (text: string) => {
     setContent(content + '\n\n' + text + '\n\n');
-  };
-
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
   };
 
   const handleViewMode = (mode: 'split' | 'editor' | 'preview') => {
@@ -471,15 +463,6 @@ export const Toolbar = () => {
         </DropdownMenu>
 
         <Separator orientation="vertical" className="h-6" />
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleTheme}
-          title="Toggle Theme"
-        >
-          {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-        </Button>
 
         <Button
           variant={focusMode ? "default" : "ghost"}

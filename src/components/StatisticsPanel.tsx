@@ -1,12 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { calculateStatistics } from '@/lib/statisticsUtils';
 import { useEditorStore } from '@/store/editorStore';
 
 export const StatisticsPanel = () => {
-  const { content } = useEditorStore();
-  const [expanded, setExpanded] = useState(false);
+  const { content, statisticsExpanded, setStatisticsExpanded } = useEditorStore();
 
   const stats = useMemo(() => calculateStatistics(content), [content]);
 
@@ -31,15 +30,15 @@ export const StatisticsPanel = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setExpanded(!expanded)}
+          onClick={() => setStatisticsExpanded(!statisticsExpanded)}
           className="h-8 px-2"
-          aria-label={expanded ? 'Hide detailed statistics' : 'Show detailed statistics'}
+          aria-label={statisticsExpanded ? 'Hide detailed statistics' : 'Show detailed statistics'}
         >
-          {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+          {statisticsExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
         </Button>
       </div>
 
-      {expanded && (
+      {statisticsExpanded && (
         <div className="px-4 pb-3 pt-1 border-t animate-accordion-down">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div>
