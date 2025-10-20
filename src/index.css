@@ -207,25 +207,8 @@ All colors MUST be HSL.
 
 /* Print Styles */
 @media print {
-  /* Hide all UI elements and editor */
-  *:has(.no-print),
-  .no-print,
-  header,
-  nav,
-  button,
-  [role="toolbar"],
-  [role="navigation"],
-  footer,
-  .cm-editor,
-  .border-b:not(table *),
-  .border-t:not(table *) {
-    display: none !important;
-  }
-  
-  /* Specifically hide section headers */
-  h2:has-text("Markdown Editor"),
-  h2:has-text("Preview"),
-  .bg-muted {
+  /* Hide specific UI elements */
+  .no-print {
     display: none !important;
   }
 
@@ -237,25 +220,34 @@ All colors MUST be HSL.
     padding: 0 !important;
   }
   
-  /* Force full width for the entire layout */
-  body > div,
-  body > div > div,
-  main {
+  /* Hide everything except preview */
+  body > div > * {
+    display: none !important;
+  }
+  
+  /* Show only the main content area */
+  body > div > div:has(.preview-content) {
+    display: block !important;
     width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    height: auto !important;
+  }
+  
+  /* Show preview container and its children */
+  .preview-content,
+  .preview-content * {
+    display: revert !important;
+    visibility: visible !important;
   }
 
-  /* Show only preview content - full width */
+  /* Format preview content for print */
   .preview-content {
-    display: block !important;
     max-width: 100% !important;
     width: 100% !important;
     height: auto !important;
     padding: 1rem !important;
     margin: 0 !important;
     overflow: visible !important;
+    background: white !important;
   }
 
   .preview-content article,
