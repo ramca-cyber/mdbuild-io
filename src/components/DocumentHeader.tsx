@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { FileText, Plus, Save, Trash2, Database, Menu, Clock, FolderOpen, Edit2, X, Check, FileUp, FileDown, FileType, Code, Image as ImageIcon, BookTemplate } from 'lucide-react';
+import { FileText, Plus, Save, Trash2, Database, Menu, Clock, FolderOpen, Edit2, X, Check, FileUp, FileDown, FileType, Code, Image as ImageIcon, BookTemplate, Copy, Eraser, Files } from 'lucide-react';
 import { toast } from 'sonner';
 import { calculateStorageUsage, formatStorageSize } from '@/lib/storageUtils';
 import { SaveAsDialog } from './SaveAsDialog';
@@ -52,9 +52,11 @@ export function DocumentHeader() {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [clearAllConfirm, setClearAllConfirm] = useState(false);
   const [storageInfo, setStorageInfo] = useState(calculateStorageUsage());
   const [saveAsOpen, setSaveAsOpen] = useState(false);
   const [openDocOpen, setOpenDocOpen] = useState(false);
+  const [storageDialogOpen, setStorageDialogOpen] = useState(false);
 
   const currentDoc = savedDocuments.find((doc) => doc.id === currentDocId);
 
@@ -287,6 +289,45 @@ export function DocumentHeader() {
       .slice(0, 5);
   };
 
+  const handleCopyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(content);
+      toast.success('Content copied to clipboard');
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error);
+      toast.error('Failed to copy to clipboard');
+    }
+  };
+
+  const handleClearAll = () => {
+    try {
+      useEditorStore.getState().setContent(getDefaultContent());
+      setClearAllConfirm(false);
+      toast.success('Document cleared');
+    } catch (error) {
+      console.error('Failed to clear document:', error);
+      toast.error('Failed to clear document');
+    }
+  };
+
+  const handleDuplicateDocument = () => {
+    try {
+      if (currentDoc) {
+        const newName = `${currentDoc.name} (Copy)`;
+        saveDocumentAs(newName);
+        toast.success(`Document duplicated as "${newName}"`);
+      } else {
+        // If no current doc, save current content as new document
+        const title = content.match(/^#\s+(.+)$/m)?.[1] || 'Untitled';
+        saveDocument(`${title} (Copy)`);
+        toast.success('Document duplicated');
+      }
+    } catch (error) {
+      console.error('Failed to duplicate document:', error);
+      toast.error('Failed to duplicate document');
+    }
+  };
+
   return (
     <>
       <div className="h-12 border-b bg-background flex items-center justify-between px-4 gap-4 no-print">
@@ -359,6 +400,28 @@ export function DocumentHeader() {
                   Save As...
                 </DropdownMenuItem>
               )}
+              
+              <DropdownMenuItem onClick={handleDuplicateDocument} className="cursor-pointer">
+                <Files className="h-4 w-4 mr-2" />
+                Duplicate Document
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              
+              <DropdownMenuLabel>Edit</DropdownMenuLabel>
+              
+              <DropdownMenuItem onClick={handleCopyToClipboard} className="cursor-pointer">
+                <Copy className="h-4 w-4 mr-2" />
+                Copy to Clipboard
+              </DropdownMenuItem>
+              
+              <DropdownMenuItem 
+                onClick={() => setClearAllConfirm(true)} 
+                className="cursor-pointer text-destructive focus:text-destructive"
+              >
+                <Eraser className="h-4 w-4 mr-2" />
+                Clear All
+              </DropdownMenuItem>
               
               <DropdownMenuSeparator />
               
@@ -480,19 +543,21 @@ export function DocumentHeader() {
             </Label>
           </div>
 
-          <div
-            className={`flex items-center gap-2 text-xs ${
+          <button
+            onClick={() => setStorageDialogOpen(true)}
+            className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-md transition-colors hover:bg-accent ${
               storageInfo.isCritical
                 ? 'text-destructive'
                 : storageInfo.isNearLimit
                 ? 'text-yellow-600 dark:text-yellow-500'
                 : 'text-muted-foreground'
             }`}
-            title={`Storage: ${formatStorageSize(storageInfo.bytes)} / 4MB`}
+            title="Click for storage details"
+            aria-label="View storage usage details"
           >
             <Database className="h-4 w-4" />
             <span>{storageInfo.percentage.toFixed(0)}%</span>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -534,6 +599,92 @@ export function DocumentHeader() {
             <AlertDialogAction onClick={() => deleteConfirm && handleDelete(deleteConfirm)}>
               Delete
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={clearAllConfirm} onOpenChange={setClearAllConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear All Content</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to clear all content? This will reset the document to the default template. 
+              {hasUnsavedChanges && " You have unsaved changes that will be lost."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleClearAll} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Clear All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={storageDialogOpen} onOpenChange={setStorageDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Storage Usage</AlertDialogTitle>
+            <AlertDialogDescription>
+              Local browser storage information for your documents.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="font-medium">Used Storage:</span>
+                <span>{formatStorageSize(storageInfo.bytes)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="font-medium">Total Available:</span>
+                <span>4 MB</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="font-medium">Percentage:</span>
+                <span className={storageInfo.isCritical ? 'text-destructive font-semibold' : storageInfo.isNearLimit ? 'text-yellow-600 dark:text-yellow-500 font-semibold' : ''}>
+                  {storageInfo.percentage.toFixed(1)}%
+                </span>
+              </div>
+            </div>
+            
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div 
+                className={`h-full transition-all ${
+                  storageInfo.isCritical 
+                    ? 'bg-destructive' 
+                    : storageInfo.isNearLimit 
+                    ? 'bg-yellow-500' 
+                    : 'bg-primary'
+                }`}
+                style={{ width: `${Math.min(storageInfo.percentage, 100)}%` }}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="font-medium">Saved Documents:</span>
+                <span>{savedDocuments.length}</span>
+              </div>
+            </div>
+
+            {storageInfo.isNearLimit && (
+              <div className="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-md p-3">
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  ⚠️ Storage is running low. Consider deleting old documents or exporting them to free up space.
+                </p>
+              </div>
+            )}
+
+            {storageInfo.isCritical && (
+              <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
+                <p className="text-sm text-destructive">
+                  🚨 Critical storage level! Delete documents immediately to avoid data loss.
+                </p>
+              </div>
+            )}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Close</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
