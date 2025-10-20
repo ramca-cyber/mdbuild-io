@@ -149,19 +149,70 @@ const Index = () => {
         )}
       </div>
 
-      {/* Footer with Stats */}
-      <footer className="px-4 sm:px-6 py-2 border-t border-border bg-muted/50 text-xs text-muted-foreground flex items-center justify-between">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <span>Ready</span>
-          <span className="hidden sm:inline">
-            {viewMode === 'split' ? 'Split View' : viewMode === 'editor' ? 'Editor Only' : 'Preview Only'}
-          </span>
-        </div>
-        <div className="flex items-center gap-3 sm:gap-4">
-          <span className="hidden sm:inline">Words: {wordCount}</span>
-          <span className="hidden md:inline">Chars: {charCount}</span>
-          <span className="hidden lg:inline">{readingTime} min read</span>
-          <span>Lines: {content.split('\n').length}</span>
+      {/* Footer */}
+      <footer className="py-8 px-4 border-t bg-muted/30">
+        <div className="container max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-6 h-6 rounded-md bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-sm">M</span>
+                </div>
+                <h3 className="font-semibold">MDBuild.io</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Modern Markdown Editor with live preview, diagrams, and math support.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Product</h3>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Button variant="link" asChild className="h-auto p-0">
+                    <Link to="/landing#features">Features</Link>
+                  </Button>
+                </li>
+                <li>
+                  <Button variant="link" asChild className="h-auto p-0">
+                    <Link to="/editor">Start Writing</Link>
+                  </Button>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Company</h3>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Button variant="link" asChild className="h-auto p-0">
+                    <Link to="/about">About</Link>
+                  </Button>
+                </li>
+                <li>
+                  <Button variant="link" asChild className="h-auto p-0">
+                    <Link to="/contact">Contact</Link>
+                  </Button>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Legal</h3>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Button variant="link" asChild className="h-auto p-0">
+                    <Link to="/privacy">Privacy Policy</Link>
+                  </Button>
+                </li>
+                <li>
+                  <Button variant="link" asChild className="h-auto p-0">
+                    <Link to="/terms">Terms of Service</Link>
+                  </Button>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="pt-8 border-t text-center text-sm text-muted-foreground">
+            <p>© {new Date().getFullYear()} MDBuild.io - Modern Markdown Editor • Built with React & TypeScript</p>
+          </div>
         </div>
       </footer>
 
