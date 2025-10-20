@@ -27,7 +27,7 @@ const rehypeAddLineNumbers = () => {
     visit(tree, 'element', (node: any) => {
       if (node.position?.start?.line) {
         node.properties = node.properties || {};
-        node.properties.dataLine = node.position.start.line;
+        node.properties['data-line'] = node.position.start.line;
       }
     });
   };
@@ -114,39 +114,53 @@ export const Preview = () => {
       input.addEventListener('change', (e) => {
         const clickedInput = e.target as HTMLInputElement;
         const newCheckedState = clickedInput.checked;
-        const taskIndex = parseInt(clickedInput.getAttribute('data-task-index') || '0');
         
-        // Parse content to find and toggle the specific checkbox
+        // Use source line number from closest list item for precise mapping
+        const listItem = clickedInput.closest('li') as HTMLElement | null;
+        const lineAttr = listItem?.getAttribute('data-line') || listItem?.dataset.line;
+        const sourceLine = lineAttr ? parseInt(lineAttr, 10) : NaN;
+        
         const lines = content.split('\n');
-        let currentTaskCount = -1;
+        let targetIndex = Number.isFinite(sourceLine) ? Math.max(0, sourceLine - 1) : -1;
         
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i];
-          // Match task list items: - [ ] or - [x] or - [X] with optional indentation
-          const taskMatch = line.match(/^(\s*[-*+])\s+\[([ xX])\]\s+(.*)$/);
+        // Helper to try toggling a specific line index
+        const tryToggleAt = (idx: number): boolean => {
+          if (idx < 0 || idx >= lines.length) return false;
+          const line = lines[idx];
+          const match = line.match(/^(\s*[-*+])\s+\[([ xX])\]\s+(.*)$/);
+          if (!match) return false;
+          const indent = match[1];
+          const text = match[3];
+          const newState = newCheckedState ? 'x' : ' ';
+          lines[idx] = `${indent} [${newState}] ${text}`;
           
-          if (taskMatch) {
-            currentTaskCount++;
-            
-            if (currentTaskCount === taskIndex) {
-              // Update to the new checkbox state
-              const indent = taskMatch[1];
-              const newState = newCheckedState ? 'x' : ' ';
-              const text = taskMatch[3];
-              lines[i] = `${indent} [${newState}] ${text}`;
-              
-              // Update content
-              const newContent = lines.join('\n');
-              setContent(newContent);
-              
-              toast({
-                title: newCheckedState ? 'Task completed! ✓' : 'Task unchecked',
-                description: text.length > 50 ? text.substring(0, 50) + '...' : text,
-              });
-              
-              break;
-            }
+          setContent(lines.join('\n'));
+          toast({
+            title: newCheckedState ? 'Task completed! ✓' : 'Task unchecked',
+            description: text.length > 50 ? text.substring(0, 50) + '...' : text,
+          });
+          return true;
+        };
+        
+        // 1) Try exact line
+        if (tryToggleAt(targetIndex)) return;
+        
+        // 2) Try a small window around the line (handles markup shifts)
+        for (let offset = 1; offset <= 3; offset++) {
+          if (tryToggleAt(targetIndex + offset)) return;
+          if (tryToggleAt(targetIndex - offset)) return;
+        }
+        
+        // 3) Fallback: scan forward from start line until next blank line
+        if (Number.isFinite(sourceLine)) {
+          for (let i = targetIndex; i < lines.length && lines[i].trim() !== ''; i++) {
+            if (tryToggleAt(i)) return;
           }
+        }
+        
+        // 4) Final fallback: scan entire document (rare)
+        for (let i = 0; i < lines.length; i++) {
+          if (tryToggleAt(i)) return;
         }
       });
     });
