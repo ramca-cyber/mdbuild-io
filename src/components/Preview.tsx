@@ -99,7 +99,7 @@ export const Preview = () => {
     // Find all checkboxes in task lists
     const checkboxes = previewRef.current.querySelectorAll('input[type="checkbox"]');
     
-    checkboxes.forEach((checkbox) => {
+    checkboxes.forEach((checkbox, checkboxIndex) => {
       const input = checkbox as HTMLInputElement;
       
       // Skip if already interactive
@@ -108,25 +108,15 @@ export const Preview = () => {
       // Remove disabled attribute to make it clickable
       input.removeAttribute('disabled');
       input.setAttribute('data-interactive', 'true');
+      input.setAttribute('data-task-index', checkboxIndex.toString());
       input.style.cursor = 'pointer';
       
-      // Find the parent list item
-      const listItem = input.closest('li');
-      if (!listItem) return;
-      
-      input.addEventListener('click', (e) => {
+      input.addEventListener('change', (e) => {
         const clickedInput = e.target as HTMLInputElement;
         const newCheckedState = clickedInput.checked;
+        const taskIndex = parseInt(clickedInput.getAttribute('data-task-index') || '0');
         
-        // Get all task list items (only those with checkboxes)
-        const allTaskListItems = Array.from(previewRef.current!.querySelectorAll('li')).filter(li => 
-          li.querySelector('input[type="checkbox"]')
-        );
-        const taskIndex = allTaskListItems.indexOf(listItem);
-        
-        if (taskIndex === -1) return;
-        
-        // Parse content to find and toggle the checkbox
+        // Parse content to find and toggle the specific checkbox
         const lines = content.split('\n');
         let currentTaskCount = -1;
         
@@ -139,7 +129,7 @@ export const Preview = () => {
             currentTaskCount++;
             
             if (currentTaskCount === taskIndex) {
-              // Toggle the checkbox state
+              // Update to the new checkbox state
               const indent = taskMatch[1];
               const newState = newCheckedState ? 'x' : ' ';
               const text = taskMatch[3];
