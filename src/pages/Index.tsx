@@ -14,7 +14,7 @@ import { StatisticsPanel } from '@/components/StatisticsPanel';
 import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog';
 import { useEditorStore } from '@/store/editorStore';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, FileText, Settings, BookTemplate, List, Home, X, Moon, Sun, Keyboard } from 'lucide-react';
+import { Menu, FileText, Settings, BookTemplate, List, Home, X, Moon, Sun, Keyboard, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { calculateStatistics } from '@/lib/statisticsUtils';
@@ -200,6 +200,13 @@ const Index = () => {
                   <Keyboard className="h-4 w-4 mr-2" />
                   Keyboard Shortcuts
                 </Button>
+
+                <Button variant="ghost" className="justify-start" asChild>
+                  <Link to="/help">
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Help & Docs
+                  </Link>
+                </Button>
                 
                 {/* Visual Separator */}
                 <div className="h-px bg-border my-2" />
@@ -224,6 +231,12 @@ const Index = () => {
             <Link to="/landing" className="flex items-center gap-2">
               <Home className="h-4 w-4" />
               <span>Home</span>
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/help" className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              <span>Help</span>
             </Link>
           </Button>
           
@@ -340,6 +353,9 @@ const Index = () => {
       {!focusMode && (
         <footer role="contentinfo" className="border-t">
           <StatisticsPanel />
+          <div className="px-4 py-2 text-sm text-muted-foreground flex justify-end">
+            <Link to="/help" className="hover:text-foreground">Help & Docs</Link>
+          </div>
         </footer>
       )}
 

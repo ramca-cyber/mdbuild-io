@@ -12,7 +12,8 @@ import {
   Lock,
   Edit3,
   Eye,
-  Share2
+  Share2,
+  BookOpen
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect } from "react";
@@ -87,9 +88,17 @@ const Landing = () => {
               <span className="text-xs text-muted-foreground hidden sm:inline">Modern Markdown Editor</span>
             </div>
           </div>
-          <Button onClick={handleStartWriting} size="sm">
-            Start Writing
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" asChild className="hidden sm:flex">
+              <Link to="/help">
+                <BookOpen className="h-4 w-4 mr-2" />
+                Help
+              </Link>
+            </Button>
+            <Button onClick={handleStartWriting} size="sm">
+              Start Writing
+            </Button>
+          </div>
         </div>
       </header>
       
@@ -497,6 +506,11 @@ const Landing = () => {
             <div>
               <h3 className="font-semibold mb-4">Legal</h3>
               <ul className="space-y-2 text-sm">
+                <li>
+                  <Button variant="link" asChild className="h-auto p-0">
+                    <Link to="/help">Help & Docs</Link>
+                  </Button>
+                </li>
                 <li>
                   <Button variant="link" asChild className="h-auto p-0">
                     <Link to="/privacy">Privacy Policy</Link>
