@@ -104,6 +104,43 @@ export const Preview = () => {
     syncScrollRef.current = syncScroll;
   }, [syncScroll]);
 
+  // Re-sync when images or content size change (images, diagrams)
+  useEffect(() => {
+    if (!previewRef.current) return;
+    const root = previewRef.current;
+
+    const emitCurrent = () => {
+      if (!syncScrollRef.current) return;
+      const maxScroll = root.scrollHeight - root.clientHeight;
+      if (maxScroll <= 0) return;
+      const ratio = Math.max(0, Math.min(1, root.scrollTop / maxScroll));
+      window.dispatchEvent(new CustomEvent('preview-scroll', { detail: ratio }));
+    };
+
+    const imgs = Array.from(root.querySelectorAll('img')) as HTMLImageElement[];
+    imgs.forEach((img) => {
+      if (img.complete) {
+        requestAnimationFrame(emitCurrent);
+      } else {
+        img.addEventListener('load', emitCurrent);
+      }
+    });
+
+    const resizeObserver = new ResizeObserver(() => {
+      // Content height changed (e.g., diagram render)
+      requestAnimationFrame(emitCurrent);
+    });
+    resizeObserver.observe(root);
+
+    window.addEventListener('resize', emitCurrent);
+
+    return () => {
+      imgs.forEach((img) => img.removeEventListener('load', emitCurrent));
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', emitCurrent);
+    };
+  }, [content]);
+
   // Robust synchronized scrolling using RAF + lock to prevent feedback loops
   useEffect(() => {
     if (!previewRef.current) return;
