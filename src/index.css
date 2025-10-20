@@ -121,9 +121,8 @@ All colors MUST be HSL.
     height: auto;
   }
   
-  /* Mermaid diagram styling - theme-aware background */
+  /* Mermaid diagram styling */
   .mermaid-diagram-container svg {
-    background: hsl(var(--card));
     border-radius: 0.5rem;
     padding: 1rem;
     box-shadow: var(--shadow-md);

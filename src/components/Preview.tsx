@@ -5,7 +5,7 @@ import remarkMath from 'remark-math';
 import remarkEmoji from 'remark-emoji';
 import remarkFrontmatter from 'remark-frontmatter';
 import rehypeKatex from 'rehype-katex';
-import rehypeHighlight from 'rehype-highlight';
+
 import rehypeRaw from 'rehype-raw';
 import { useEditorStore } from '@/store/editorStore';
 import { useToast } from '@/hooks/use-toast';
@@ -165,7 +165,7 @@ export const Preview = () => {
       <article className="prose prose-slate dark:prose-invert max-w-none preview-content">
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkMath, remarkEmoji, remarkFrontmatter]}
-          rehypePlugins={[rehypeRaw, rehypeKatex, rehypeHighlight, rehypeAddLineNumbers]}
+          rehypePlugins={[rehypeRaw, rehypeKatex, rehypeAddLineNumbers]}
           components={{
           code({ className, children, ...props }: any) {
               const match = /language-(\w+)/.exec(className || '');
