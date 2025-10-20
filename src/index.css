@@ -207,14 +207,16 @@ All colors MUST be HSL.
 
 /* Print Styles */
 @media print {
-  /* Hide all UI elements */
+  /* Hide all UI elements and editor */
   header,
   nav,
   button,
   .no-print,
   [role="toolbar"],
   [role="navigation"],
-  footer {
+  footer,
+  [class*="border-r"],
+  .cm-editor {
     display: none !important;
   }
 
@@ -224,18 +226,29 @@ All colors MUST be HSL.
     color: black !important;
   }
 
-  /* Show only the preview content */
-  .markdown-body {
+  /* Show only preview content - full width */
+  .preview-content {
     max-width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
-    box-shadow: none !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .preview-content article,
+  .preview-content .prose {
+    max-width: 100% !important;
+    padding: 1rem !important;
   }
 
   /* Optimize for printing */
   * {
     box-shadow: none !important;
     text-shadow: none !important;
+  }
+
+  /* Remove borders except for code and tables */
+  *:not(pre):not(table):not(td):not(th) {
     border: none !important;
   }
 
@@ -269,5 +282,11 @@ All colors MUST be HSL.
   a[href]:after {
     content: " (" attr(href) ")";
     font-size: 0.8em;
+  }
+  
+  /* Hide copy buttons and language badges */
+  .copy-button,
+  .code-language-badge {
+    display: none !important;
   }
 }

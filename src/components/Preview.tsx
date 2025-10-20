@@ -210,16 +210,23 @@ export const Preview = () => {
   );
 
   return (
-    <div 
-      ref={previewRef}
-      className="h-full w-full overflow-auto bg-preview-bg p-8 cursor-text"
-      onClick={handleClick}
-      role="document"
-      aria-label="Markdown preview"
-    >
-      <article className="prose prose-slate dark:prose-invert max-w-none preview-content">
-        {markdownContent}
-      </article>
+    <div className="h-full w-full flex flex-col overflow-hidden">
+      <div className="px-4 py-2 bg-muted/30 border-b border-border flex-shrink-0 no-print">
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+          Preview
+        </h2>
+      </div>
+      <div 
+        ref={previewRef}
+        className="flex-1 overflow-auto bg-preview-bg p-8 cursor-text preview-content"
+        onClick={handleClick}
+        role="document"
+        aria-label="Markdown preview"
+      >
+        <article className="prose prose-slate dark:prose-invert max-w-none">
+          {markdownContent}
+        </article>
+      </div>
     </div>
   );
 };

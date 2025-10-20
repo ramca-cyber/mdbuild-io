@@ -227,13 +227,19 @@ export const Editor = () => {
   return (
     <div 
       ref={editorRef} 
-      className="h-full w-full overflow-hidden relative"
+      className="h-full w-full overflow-hidden relative flex flex-col no-print"
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <SearchReplace />
+      <div className="px-4 py-2 bg-muted/30 border-b border-border flex-shrink-0">
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+          Markdown Editor
+        </h2>
+      </div>
+      <div className="flex-1 overflow-hidden relative">
+        <SearchReplace />
       
       {isDragging && (
         <div className="absolute inset-0 z-40 bg-background/80 backdrop-blur-sm flex items-center justify-center border-2 border-dashed border-primary animate-fade-in">
@@ -244,33 +250,34 @@ export const Editor = () => {
           </div>
         </div>
       )}
-      <CodeMirror
-        value={content}
-        height="100%"
-        theme={theme === 'dark' ? oneDark : 'light'}
-        extensions={[markdown()]}
-        onChange={onChange}
-        onCreateEditor={(view) => {
-          viewRef.current = view;
-        }}
-        className="h-full text-base"
-        basicSetup={{
-          lineNumbers: lineNumbers,
-          highlightActiveLineGutter: true,
-          highlightActiveLine: true,
-          foldGutter: true,
-          dropCursor: true,
-          indentOnInput: true,
-          bracketMatching: true,
-          closeBrackets: true,
-          autocompletion: true,
-          highlightSelectionMatches: true,
-        }}
-        style={{
-          fontSize: `${fontSize}px`,
-          height: '100%',
-        }}
-      />
+        <CodeMirror
+          value={content}
+          height="100%"
+          theme={theme === 'dark' ? oneDark : 'light'}
+          extensions={[markdown()]}
+          onChange={onChange}
+          onCreateEditor={(view) => {
+            viewRef.current = view;
+          }}
+          className="h-full text-base"
+          basicSetup={{
+            lineNumbers: lineNumbers,
+            highlightActiveLineGutter: true,
+            highlightActiveLine: true,
+            foldGutter: true,
+            dropCursor: true,
+            indentOnInput: true,
+            bracketMatching: true,
+            closeBrackets: true,
+            autocompletion: true,
+            highlightSelectionMatches: true,
+          }}
+          style={{
+            fontSize: `${fontSize}px`,
+            height: '100%',
+          }}
+        />
+      </div>
     </div>
   );
 };
