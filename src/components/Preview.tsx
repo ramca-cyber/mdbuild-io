@@ -10,6 +10,19 @@ import rehypeRaw from 'rehype-raw';
 import { useEditorStore } from '@/store/editorStore';
 import { useToast } from '@/hooks/use-toast';
 import { MermaidDiagram } from '@/components/MermaidDiagram';
+import { visit } from 'unist-util-visit';
+
+// Custom rehype plugin to add line number data attributes
+const rehypeAddLineNumbers = () => {
+  return (tree: any) => {
+    visit(tree, 'element', (node: any) => {
+      if (node.position?.start?.line) {
+        node.properties = node.properties || {};
+        node.properties.dataLine = node.position.start.line;
+      }
+    });
+  };
+};
 
 export const Preview = () => {
   const { content, syncScroll } = useEditorStore();
@@ -118,15 +131,15 @@ export const Preview = () => {
     const root = previewRef.current;
     let el = e.target as HTMLElement | null;
 
-    // Walk up to find element with data-sourcepos from react-markdown
+    // Walk up to find element with data-line attribute
     while (el && el !== root) {
-      const sp = (el as HTMLElement).dataset?.sourcepos;
-      if (sp) {
-        // format: "startLine:startCol-endLine:endCol"
-        const m = /^(\d+):(\d+)-(\d+):(\d+)$/.exec(sp);
-        const startLine = m ? parseInt(m[1], 10) : parseInt(sp.split(':')[0], 10) || 1;
-        window.dispatchEvent(new CustomEvent('preview-click', { detail: startLine }));
-        return;
+      const lineAttr = (el as HTMLElement).dataset?.line;
+      if (lineAttr) {
+        const line = parseInt(lineAttr, 10);
+        if (!isNaN(line)) {
+          window.dispatchEvent(new CustomEvent('preview-click', { detail: line }));
+          return;
+        }
       }
       el = el.parentElement;
     }
@@ -150,9 +163,9 @@ export const Preview = () => {
       onClick={handleClick}
     >
       <article className="prose prose-slate dark:prose-invert max-w-none preview-content">
-        <ReactMarkdown {...({ sourcePos: true } as any)}
+        <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkMath, remarkEmoji, remarkFrontmatter]}
-          rehypePlugins={[rehypeRaw, rehypeKatex, rehypeHighlight]}
+          rehypePlugins={[rehypeRaw, rehypeKatex, rehypeHighlight, rehypeAddLineNumbers]}
           components={{
           code({ className, children, ...props }: any) {
               const match = /language-(\w+)/.exec(className || '');
