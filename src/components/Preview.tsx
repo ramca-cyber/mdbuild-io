@@ -96,43 +96,52 @@ export const Preview = () => {
   const makeTaskListsInteractive = useCallback(() => {
     if (!previewRef.current) return;
     
-    const checkboxes = previewRef.current.querySelectorAll('input[type="checkbox"].task-list-item-checkbox');
+    // Find all checkboxes in task lists
+    const checkboxes = previewRef.current.querySelectorAll('input[type="checkbox"]');
+    
     checkboxes.forEach((checkbox) => {
+      const input = checkbox as HTMLInputElement;
+      
       // Skip if already interactive
-      if (checkbox.hasAttribute('data-interactive')) return;
+      if (input.hasAttribute('data-interactive')) return;
       
-      checkbox.setAttribute('data-interactive', 'true');
-      (checkbox as HTMLInputElement).style.cursor = 'pointer';
+      // Remove disabled attribute to make it clickable
+      input.removeAttribute('disabled');
+      input.setAttribute('data-interactive', 'true');
+      input.style.cursor = 'pointer';
       
-      checkbox.addEventListener('click', (e) => {
-        e.preventDefault();
-        const input = e.target as HTMLInputElement;
-        const isChecked = input.checked;
+      // Find the parent list item
+      const listItem = input.closest('li');
+      if (!listItem) return;
+      
+      input.addEventListener('click', (e) => {
+        const clickedInput = e.target as HTMLInputElement;
+        const newCheckedState = clickedInput.checked;
         
-        // Find the parent list item
-        let listItem = input.closest('li');
-        if (!listItem) return;
+        // Get all task list items (only those with checkboxes)
+        const allTaskListItems = Array.from(previewRef.current!.querySelectorAll('li')).filter(li => 
+          li.querySelector('input[type="checkbox"]')
+        );
+        const taskIndex = allTaskListItems.indexOf(listItem);
         
-        // Get all list items to find the index
-        const allListItems = Array.from(previewRef.current!.querySelectorAll('li'));
-        const listItemIndex = allListItems.indexOf(listItem);
+        if (taskIndex === -1) return;
         
         // Parse content to find and toggle the checkbox
         const lines = content.split('\n');
-        let currentListItemCount = -1;
+        let currentTaskCount = -1;
         
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i];
-          // Match task list items: - [ ] or - [x] or - [X]
+          // Match task list items: - [ ] or - [x] or - [X] with optional indentation
           const taskMatch = line.match(/^(\s*[-*+])\s+\[([ xX])\]\s+(.*)$/);
           
           if (taskMatch) {
-            currentListItemCount++;
+            currentTaskCount++;
             
-            if (currentListItemCount === listItemIndex) {
-              // Toggle the checkbox
+            if (currentTaskCount === taskIndex) {
+              // Toggle the checkbox state
               const indent = taskMatch[1];
-              const newState = isChecked ? 'x' : ' ';
+              const newState = newCheckedState ? 'x' : ' ';
               const text = taskMatch[3];
               lines[i] = `${indent} [${newState}] ${text}`;
               
@@ -141,7 +150,7 @@ export const Preview = () => {
               setContent(newContent);
               
               toast({
-                title: isChecked ? 'Task completed!' : 'Task unchecked',
+                title: newCheckedState ? 'Task completed! ✓' : 'Task unchecked',
                 description: text.length > 50 ? text.substring(0, 50) + '...' : text,
               });
               
