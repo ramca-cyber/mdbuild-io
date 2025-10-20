@@ -34,7 +34,7 @@ const rehypeAddLineNumbers = () => {
 };
 
 export const Preview = () => {
-  const { content, syncScroll } = useEditorStore();
+  const { content, syncScroll, setContent } = useEditorStore();
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const syncScrollRef = useRef(syncScroll);
@@ -92,12 +92,74 @@ export const Preview = () => {
     });
   }, [toast]);
 
-  // Handle content changes - add copy buttons after render (optimized)
+  // Make task list checkboxes interactive
+  const makeTaskListsInteractive = useCallback(() => {
+    if (!previewRef.current) return;
+    
+    const checkboxes = previewRef.current.querySelectorAll('input[type="checkbox"].task-list-item-checkbox');
+    checkboxes.forEach((checkbox) => {
+      // Skip if already interactive
+      if (checkbox.hasAttribute('data-interactive')) return;
+      
+      checkbox.setAttribute('data-interactive', 'true');
+      (checkbox as HTMLInputElement).style.cursor = 'pointer';
+      
+      checkbox.addEventListener('click', (e) => {
+        e.preventDefault();
+        const input = e.target as HTMLInputElement;
+        const isChecked = input.checked;
+        
+        // Find the parent list item
+        let listItem = input.closest('li');
+        if (!listItem) return;
+        
+        // Get all list items to find the index
+        const allListItems = Array.from(previewRef.current!.querySelectorAll('li'));
+        const listItemIndex = allListItems.indexOf(listItem);
+        
+        // Parse content to find and toggle the checkbox
+        const lines = content.split('\n');
+        let currentListItemCount = -1;
+        
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          // Match task list items: - [ ] or - [x] or - [X]
+          const taskMatch = line.match(/^(\s*[-*+])\s+\[([ xX])\]\s+(.*)$/);
+          
+          if (taskMatch) {
+            currentListItemCount++;
+            
+            if (currentListItemCount === listItemIndex) {
+              // Toggle the checkbox
+              const indent = taskMatch[1];
+              const newState = isChecked ? 'x' : ' ';
+              const text = taskMatch[3];
+              lines[i] = `${indent} [${newState}] ${text}`;
+              
+              // Update content
+              const newContent = lines.join('\n');
+              setContent(newContent);
+              
+              toast({
+                title: isChecked ? 'Task completed!' : 'Task unchecked',
+                description: text.length > 50 ? text.substring(0, 50) + '...' : text,
+              });
+              
+              break;
+            }
+          }
+        }
+      });
+    });
+  }, [content, setContent, toast]);
+
+  // Handle content changes - add copy buttons and make checkboxes interactive after render
   useEffect(() => {
     requestAnimationFrame(() => {
       addCopyButtons();
+      makeTaskListsInteractive();
     });
-  }, [content, addCopyButtons]);
+  }, [content, addCopyButtons, makeTaskListsInteractive]);
 
   // Track syncScroll changes without re-rendering diagrams
   useEffect(() => {

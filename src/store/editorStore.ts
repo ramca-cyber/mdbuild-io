@@ -223,6 +223,8 @@ pie title Project Time Distribution
 
 ## ✅ Task Lists
 
+> **New Feature!** Task lists are now interactive - click checkboxes in the preview to toggle them! 🎉
+
 ### Today's Tasks
 - [x] Learn markdown basics
 - [x] Try out code blocks

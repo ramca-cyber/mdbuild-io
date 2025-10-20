@@ -6,7 +6,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { 
   FileText, GitBranch, Sigma, Code, Download, Keyboard, 
   BookOpen, ExternalLink, Home, Zap, Layout, Search, 
-  Edit3, FileCode, Settings, Moon, Save, Copy, Eye, Zap as ZapIcon, Lock, Edit, Eye as EyeIcon, AlertCircle
+  Edit3, FileCode, Settings, Moon, Save, Copy, Eye, Zap as ZapIcon, Lock, Edit, Eye as EyeIcon, AlertCircle, CheckSquare
 } from "lucide-react";
 
 const Help = () => {
@@ -129,6 +129,48 @@ const Help = () => {
                     </a>
                   </li>
                 </ul>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Interactive Task Lists */}
+          <AccordionItem value="tasklists" className="border rounded-lg px-6">
+            <AccordionTrigger className="hover:no-underline">
+              <div className="flex items-center gap-2">
+                <CheckSquare className="h-5 w-5 text-primary" />
+                <span className="text-lg font-semibold">Interactive Task Lists</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="space-y-4 pt-4">
+              <p className="text-sm text-muted-foreground">
+                Create interactive checklists that you can check and uncheck directly in the preview! The markdown source updates automatically when you click checkboxes.
+              </p>
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm">How to Use:</h4>
+                <ol className="space-y-2 text-sm list-decimal list-inside">
+                  <li>Type a task list using the syntax: <code className="px-2 py-1 bg-muted rounded text-xs">- [ ] Task item</code></li>
+                  <li>View the rendered checkbox in the preview pane</li>
+                  <li>Click the checkbox to toggle between checked and unchecked</li>
+                  <li>The markdown source updates automatically!</li>
+                </ol>
+                <div className="bg-muted p-3 rounded text-xs space-y-2">
+                  <p className="font-semibold">Example Syntax:</p>
+                  <pre className="overflow-x-auto">{`- [ ] Unchecked task
+- [x] Checked task
+- [ ] Another task to do
+
+### Project Tasks
+- [x] Setup project
+- [x] Design UI
+- [ ] Implement features
+- [ ] Write tests`}</pre>
+                </div>
+                <div className="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-3 rounded">
+                  <p className="text-sm font-semibold text-blue-700 dark:text-blue-400 mb-1">💡 Pro Tip</p>
+                  <p className="text-sm text-muted-foreground">
+                    Use task lists for project planning, meeting notes, or personal to-do lists. They're perfect for tracking progress!
+                  </p>
+                </div>
               </div>
             </AccordionContent>
           </AccordionItem>
