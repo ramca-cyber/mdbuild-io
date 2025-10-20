@@ -1,18 +1,57 @@
-import { useMemo } from 'react';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { useMemo, useEffect, useState } from 'react';
+import { ChevronUp, ChevronDown, CheckCircle2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { calculateStatistics } from '@/lib/statisticsUtils';
 import { useEditorStore } from '@/store/editorStore';
 
 export const StatisticsPanel = () => {
-  const { content, statisticsExpanded, setStatisticsExpanded } = useEditorStore();
+  const { content, statisticsExpanded, setStatisticsExpanded, hasUnsavedChanges, autoSave } = useEditorStore();
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (!hasUnsavedChanges && autoSave) {
+      setLastSaved(new Date());
+      setIsSaving(false);
+    } else if (hasUnsavedChanges && autoSave) {
+      setIsSaving(true);
+    }
+  }, [hasUnsavedChanges, autoSave]);
 
   const stats = useMemo(() => calculateStatistics(content), [content]);
+
+  const formatTime = (date: Date) => {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffSecs = Math.floor(diffMs / 1000);
+    
+    if (diffSecs < 60) return 'just now';
+    if (diffSecs < 3600) return `${Math.floor(diffSecs / 60)}m ago`;
+    if (diffSecs < 86400) return `${Math.floor(diffSecs / 3600)}h ago`;
+    return date.toLocaleDateString();
+  };
 
   return (
     <div className="border-t bg-background">
       <div className="flex items-center justify-between px-4 py-2 text-sm">
         <div className="flex items-center gap-4 flex-wrap">
+          {autoSave && (
+            <span className="flex items-center gap-1.5 text-muted-foreground">
+              {isSaving ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                  <span className="text-primary">Saving...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-500" />
+                  <span className="text-green-600 dark:text-green-500">
+                    Saved {lastSaved ? formatTime(lastSaved) : ''}
+                  </span>
+                </>
+              )}
+            </span>
+          )}
           <span className="text-muted-foreground">
             Words: <span className="font-medium text-foreground">{stats.words}</span>
           </span>

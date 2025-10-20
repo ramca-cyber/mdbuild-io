@@ -38,13 +38,14 @@ export const SettingsSheet = () => {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="theme">Theme</Label>
-              <Select value={theme} onValueChange={(value: 'light' | 'dark') => setTheme(value)}>
+              <Select value={theme} onValueChange={(value: 'light' | 'dark' | 'sepia') => setTheme(value)}>
                 <SelectTrigger id="theme">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="light">Light</SelectItem>
                   <SelectItem value="dark">Dark</SelectItem>
+                  <SelectItem value="sepia">Sepia</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { SearchOptions, SearchResult } from '@/types/editor';
 
-export type Theme = 'light' | 'dark';
+export type Theme = 'light' | 'dark' | 'sepia';
 
 export interface SavedDocument {
   id: string;

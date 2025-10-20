@@ -63,10 +63,11 @@ const Index = () => {
   }, [focusMode, setFocusMode]);
 
   useEffect(() => {
+    document.documentElement.classList.remove('dark', 'sepia');
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    } else if (theme === 'sepia') {
+      document.documentElement.classList.add('sepia');
     }
   }, [theme]);
 
@@ -174,11 +175,12 @@ const Index = () => {
                   variant="ghost" 
                   className="justify-start"
                   onClick={() => {
-                    setTheme(theme === 'light' ? 'dark' : 'light');
+                    const nextTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'sepia' : 'light';
+                    setTheme(nextTheme);
                   }}
                 >
-                  {theme === 'light' ? <Moon className="h-4 w-4 mr-2" /> : <Sun className="h-4 w-4 mr-2" />}
-                  Theme
+                  {theme === 'light' ? <Moon className="h-4 w-4 mr-2" /> : theme === 'dark' ? <Sun className="h-4 w-4 mr-2" /> : <Sun className="h-4 w-4 mr-2" />}
+                  Theme ({theme === 'light' ? 'Light' : theme === 'dark' ? 'Dark' : 'Sepia'})
                 </Button>
                 
                 <Button 
@@ -242,13 +244,16 @@ const Index = () => {
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                onClick={() => {
+                  const nextTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'sepia' : 'light';
+                  setTheme(nextTheme);
+                }}
               >
-                {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                {theme === 'light' ? <Moon className="h-4 w-4" /> : theme === 'dark' ? <Sun className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Toggle Theme</p>
+              <p>Toggle Theme (Light/Dark/Sepia)</p>
             </TooltipContent>
           </Tooltip>
           

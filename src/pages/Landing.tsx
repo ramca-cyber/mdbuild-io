@@ -86,7 +86,7 @@ const Landing = () => {
         </div>
       </section>
       
-      {/* Feature Showcase */}
+      {/* Feature Comparison Table */}
       <section id="features" className="py-20 px-4 bg-muted/30">
         <div className="container max-w-6xl mx-auto">
           <div className="text-center mb-12">
@@ -96,24 +96,114 @@ const Landing = () => {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6">
-            <FeatureCard
-              icon={GitBranch}
-              title="Mermaid Diagrams"
-              description="Create flowcharts, sequence diagrams, and more using simple text syntax"
-              example="graph TD; A-->B; B-->C;"
-            />
-            <FeatureCard
-              icon={Sigma}
-              title="Math Equations"
-              description="Write beautiful mathematical formulas with KaTeX/LaTeX support"
-              example="E = mc^2"
-            />
-            <FeatureCard
-              icon={FileText}
-              title="Live Preview"
-              description="See your rendered markdown in real-time as you type"
-            />
+          <div className="bg-card border rounded-lg overflow-hidden shadow-lg">
+            <table className="w-full">
+              <thead className="bg-muted/50 border-b">
+                <tr>
+                  <th className="text-left py-4 px-6 font-semibold">Feature</th>
+                  <th className="text-left py-4 px-6 font-semibold hidden md:table-cell">Description</th>
+                  <th className="text-center py-4 px-6 font-semibold">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                <tr className="hover:bg-muted/30 transition-colors">
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-primary" />
+                      <span className="font-medium">Markdown + GFM</span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6 text-sm text-muted-foreground hidden md:table-cell">
+                    Full GitHub-flavored Markdown support with tables, strikethrough, task lists
+                  </td>
+                  <td className="py-4 px-6 text-center">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">
+                      <span className="text-green-600 dark:text-green-500 text-lg">✓</span>
+                    </span>
+                  </td>
+                </tr>
+                <tr className="hover:bg-muted/30 transition-colors">
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-2">
+                      <GitBranch className="h-5 w-5 text-primary" />
+                      <span className="font-medium">Mermaid Diagrams</span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6 text-sm text-muted-foreground hidden md:table-cell">
+                    Flowchart, sequence, class, Gantt, pie charts and more
+                  </td>
+                  <td className="py-4 px-6 text-center">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">
+                      <span className="text-green-600 dark:text-green-500 text-lg">✓</span>
+                    </span>
+                  </td>
+                </tr>
+                <tr className="hover:bg-muted/30 transition-colors">
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-2">
+                      <Sigma className="h-5 w-5 text-primary" />
+                      <span className="font-medium">Math (KaTeX)</span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6 text-sm text-muted-foreground hidden md:table-cell">
+                    Inline and block math equations with LaTeX syntax
+                  </td>
+                  <td className="py-4 px-6 text-center">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">
+                      <span className="text-green-600 dark:text-green-500 text-lg">✓</span>
+                    </span>
+                  </td>
+                </tr>
+                <tr className="hover:bg-muted/30 transition-colors">
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-2">
+                      <Download className="h-5 w-5 text-primary" />
+                      <span className="font-medium">Export</span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6 text-sm text-muted-foreground hidden md:table-cell">
+                    Export to MD, HTML, PDF, DOCX, and PNG formats
+                  </td>
+                  <td className="py-4 px-6 text-center">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">
+                      <span className="text-green-600 dark:text-green-500 text-lg">✓</span>
+                    </span>
+                  </td>
+                </tr>
+                <tr className="hover:bg-muted/30 transition-colors">
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-2">
+                      <Lock className="h-5 w-5 text-primary" />
+                      <span className="font-medium">Offline & Private</span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6 text-sm text-muted-foreground hidden md:table-cell">
+                    100% browser-based, all data stored locally
+                  </td>
+                  <td className="py-4 px-6 text-center">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">
+                      <span className="text-green-600 dark:text-green-500 text-lg">✓</span>
+                    </span>
+                  </td>
+                </tr>
+                <tr className="hover:bg-muted/30 transition-colors">
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-5 w-5 text-primary" />
+                      <span className="font-medium">PWA Ready</span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6 text-sm text-muted-foreground hidden md:table-cell">
+                    Install as desktop or mobile app for offline use
+                  </td>
+                  <td className="py-4 px-6 text-center">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">
+                      <span className="text-green-600 dark:text-green-500 text-lg">✓</span>
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>

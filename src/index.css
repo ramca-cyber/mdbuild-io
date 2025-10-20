@@ -88,6 +88,46 @@ All colors MUST be HSL.
     --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.3), 0 2px 4px -1px hsl(0 0% 0% / 0.2);
     --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -2px hsl(0 0% 0% / 0.3);
   }
+
+  .sepia {
+    --background: 40 30% 92%;
+    --foreground: 30 20% 20%;
+
+    --card: 38 35% 96%;
+    --card-foreground: 30 20% 20%;
+
+    --popover: 38 35% 96%;
+    --popover-foreground: 30 20% 20%;
+
+    --primary: 25 75% 47%;
+    --primary-foreground: 40 30% 98%;
+
+    --secondary: 40 25% 88%;
+    --secondary-foreground: 30 20% 20%;
+
+    --muted: 40 25% 88%;
+    --muted-foreground: 30 15% 45%;
+
+    --accent: 25 75% 47%;
+    --accent-foreground: 40 30% 98%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 40 30% 98%;
+
+    --border: 38 20% 82%;
+    --input: 38 20% 82%;
+    --ring: 25 75% 47%;
+    
+    --editor-bg: 40 30% 94%;
+    --preview-bg: 38 35% 96%;
+    --toolbar-bg: 40 28% 90%;
+    
+    --gradient-primary: linear-gradient(135deg, hsl(25 75% 47%), hsl(35 70% 55%));
+    --gradient-subtle: linear-gradient(180deg, hsl(40 30% 92%), hsl(40 28% 88%));
+    
+    --shadow-md: 0 4px 6px -1px hsl(30 20% 20% / 0.12), 0 2px 4px -1px hsl(30 20% 20% / 0.08);
+    --shadow-lg: 0 10px 15px -3px hsl(30 20% 20% / 0.15), 0 4px 6px -2px hsl(30 20% 20% / 0.1);
+  }
 }
 
 @layer base {
