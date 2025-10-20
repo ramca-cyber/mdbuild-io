@@ -12,8 +12,9 @@ import { SavedDocuments } from '@/components/SavedDocuments';
 import { StatisticsPanel } from '@/components/StatisticsPanel';
 import { useEditorStore } from '@/store/editorStore';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, FileText, Settings, BookTemplate, List, Home } from 'lucide-react';
+import { Menu, FileText, Settings, BookTemplate, List, Home, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const Index = () => {
   const { theme, viewMode, showOutline, focusMode, setFocusMode } = useEditorStore();
@@ -193,6 +194,25 @@ const Index = () => {
 
       {/* Footer with Enhanced Statistics */}
       {!focusMode && <StatisticsPanel />}
+
+      {/* Focus Mode Exit Button */}
+      {focusMode && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setFocusMode(false)}
+              className="no-print fixed top-4 right-4 z-50 bg-background/80 backdrop-blur-sm border-border shadow-lg hover:bg-accent transition-all"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Exit Focus Mode (ESC)</p>
+          </TooltipContent>
+        </Tooltip>
+      )}
 
       {/* Mobile Sheets */}
       <Sheet open={mobilePanel === 'documents'} onOpenChange={(open) => !open && setMobilePanel(null)}>
