@@ -12,6 +12,13 @@ export const HeroSection = ({ onStartWriting, onSeeFeatures }: HeroSectionProps)
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10 -z-10" />
       
       <div className="container max-w-6xl mx-auto text-center space-y-8">
+        {/* Logo */}
+        <div className="flex justify-center animate-fade-in">
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
+            <span className="text-primary-foreground font-bold text-4xl">M</span>
+          </div>
+        </div>
+        
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium animate-fade-in">
           <Sparkles className="h-4 w-4" />
           <span>Free • Private • No Sign-up Required</span>

@@ -39,6 +39,24 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen">
+      {/* Header with Logo */}
+      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-lg">M</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-bold text-lg leading-none">MDBuild.io</span>
+              <span className="text-xs text-muted-foreground hidden sm:inline">Modern Markdown Editor</span>
+            </div>
+          </div>
+          <Button onClick={handleStartWriting} size="sm">
+            Start Writing
+          </Button>
+        </div>
+      </header>
+      
       <HeroSection onStartWriting={handleStartWriting} onSeeFeatures={handleSeeFeatures} />
       
       {/* Editor Preview */}
@@ -220,7 +238,12 @@ const Landing = () => {
         <div className="container max-w-6xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="font-semibold mb-4">MDBuild.io</h3>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-6 h-6 rounded-md bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-sm">M</span>
+                </div>
+                <h3 className="font-semibold">MDBuild.io</h3>
+              </div>
               <p className="text-sm text-muted-foreground">
                 Modern Markdown Editor with live preview, diagrams, and math support.
               </p>
