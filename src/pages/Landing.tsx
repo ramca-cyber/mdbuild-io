@@ -59,6 +59,96 @@ const Landing = () => {
       
       <HeroSection onStartWriting={handleStartWriting} onSeeFeatures={handleSeeFeatures} />
       
+      {/* Demo Video Section */}
+      <section className="py-16 px-4 bg-gradient-to-b from-background via-muted/30 to-background">
+        <div className="container max-w-5xl mx-auto">
+          <div className="text-center mb-8 animate-fade-in">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+              <Zap className="h-4 w-4" />
+              <span>See It In Action</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              From Markdown to Beautiful Documents
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Watch how easy it is to create professional documentation with diagrams, math equations, and instant preview
+            </p>
+          </div>
+          
+          <div className="relative group">
+            {/* Demo placeholder - replace with actual video/GIF */}
+            <div className="relative rounded-xl overflow-hidden border-2 border-border hover:border-primary transition-all duration-300 shadow-2xl bg-card">
+              <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-primary/5 via-accent/5 to-primary/5">
+                <div className="text-center p-8">
+                  <div className="flex items-center justify-center gap-4 mb-6">
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-background border animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                      <FileText className="h-5 w-5 text-primary" />
+                      <span className="font-medium">Type Markdown</span>
+                    </div>
+                    <div className="text-2xl text-muted-foreground animate-fade-in" style={{ animationDelay: '0.3s' }}>→</div>
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-background border animate-fade-in" style={{ animationDelay: '0.5s' }}>
+                      <GitBranch className="h-5 w-5 text-primary" />
+                      <span className="font-medium">Add Diagrams</span>
+                    </div>
+                    <div className="text-2xl text-muted-foreground animate-fade-in" style={{ animationDelay: '0.7s' }}>→</div>
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-background border animate-fade-in" style={{ animationDelay: '0.9s' }}>
+                      <Sigma className="h-5 w-5 text-primary" />
+                      <span className="font-medium">Math Equations</span>
+                    </div>
+                    <div className="text-2xl text-muted-foreground animate-fade-in" style={{ animationDelay: '1.1s' }}>→</div>
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-background border animate-fade-in" style={{ animationDelay: '1.3s' }}>
+                      <Download className="h-5 w-5 text-primary" />
+                      <span className="font-medium">Export PDF</span>
+                    </div>
+                  </div>
+                  <div className="space-y-3 max-w-2xl mx-auto">
+                    <div className="bg-background/80 backdrop-blur-sm border rounded-lg p-4 text-left animate-fade-in" style={{ animationDelay: '1.5s' }}>
+                      <div className="flex items-start gap-3">
+                        <div className="w-2 h-2 rounded-full bg-primary mt-2" />
+                        <div>
+                          <p className="font-medium mb-1">Write naturally with Markdown</p>
+                          <code className="text-sm text-muted-foreground">## Heading, **bold**, *italic*</code>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-background/80 backdrop-blur-sm border rounded-lg p-4 text-left animate-fade-in" style={{ animationDelay: '1.7s' }}>
+                      <div className="flex items-start gap-3">
+                        <div className="w-2 h-2 rounded-full bg-primary mt-2" />
+                        <div>
+                          <p className="font-medium mb-1">Create diagrams with Mermaid</p>
+                          <code className="text-sm text-muted-foreground">```mermaid graph TD; A--&gt;B; ```</code>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-background/80 backdrop-blur-sm border rounded-lg p-4 text-left animate-fade-in" style={{ animationDelay: '1.9s' }}>
+                      <div className="flex items-start gap-3">
+                        <div className="w-2 h-2 rounded-full bg-primary mt-2" />
+                        <div>
+                          <p className="font-medium mb-1">Add math equations with LaTeX</p>
+                          <code className="text-sm text-muted-foreground">$E = mc^2$</code>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <Button 
+                    size="lg" 
+                    className="mt-8 animate-fade-in" 
+                    style={{ animationDelay: '2.1s' }}
+                    onClick={handleStartWriting}
+                  >
+                    Try It Yourself
+                    <Eye className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <p className="text-center mt-4 text-sm text-muted-foreground">
+              ⚡ Real-time preview • No installation required • Works offline
+            </p>
+          </div>
+        </div>
+      </section>
+      
       {/* Editor Preview */}
       <section className="py-12 px-4 bg-muted/50">
         <div className="container max-w-6xl mx-auto">

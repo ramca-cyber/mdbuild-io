@@ -132,7 +132,8 @@ export const Toolbar = () => {
   return (
     <div className="flex items-center gap-2 px-2 sm:px-4 py-2 bg-toolbar-bg border-b border-border overflow-x-auto no-print">
       {/* LEFT SIDE: Content Formatting - Always visible on desktop */}
-      <div className="hidden sm:flex items-center gap-1">
+      <div className="hidden sm:flex items-center gap-1 bg-muted/30 rounded-md px-2 py-1 border border-border/50">
+        <span className="text-xs font-semibold text-muted-foreground mr-1 hidden md:inline">Format</span>
         <Button
           variant="ghost"
           size="icon"
@@ -171,10 +172,11 @@ export const Toolbar = () => {
         </Button>
       </div>
 
-      <Separator orientation="vertical" className="h-6 hidden sm:block" />
+      <Separator orientation="vertical" className="h-6 hidden sm:block mx-1" />
 
       {/* Headings */}
-      <div className="hidden sm:flex items-center gap-1">
+      <div className="hidden sm:flex items-center gap-1 bg-muted/30 rounded-md px-2 py-1 border border-border/50">
+        <span className="text-xs font-semibold text-muted-foreground mr-1 hidden md:inline">Structure</span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" title="Insert Heading" aria-label="Insert heading">
@@ -211,10 +213,11 @@ export const Toolbar = () => {
         </DropdownMenu>
       </div>
 
-      <Separator orientation="vertical" className="h-6 hidden sm:block" />
+      <Separator orientation="vertical" className="h-6 hidden sm:block mx-1" />
 
       {/* Link & Image */}
-      <div className="hidden sm:flex items-center gap-1">
+      <div className="hidden sm:flex items-center gap-1 bg-muted/30 rounded-md px-2 py-1 border border-border/50">
+        <span className="text-xs font-semibold text-muted-foreground mr-1 hidden md:inline">Media</span>
         <Button
           variant="ghost"
           size="icon"
@@ -235,10 +238,11 @@ export const Toolbar = () => {
         </Button>
       </div>
 
-      <Separator orientation="vertical" className="h-6 hidden sm:block" />
+      <Separator orientation="vertical" className="h-6 hidden sm:block mx-1" />
 
       {/* Lists Dropdown */}
-      <div className="hidden sm:flex items-center gap-1">
+      <div className="hidden sm:flex items-center gap-1 bg-muted/30 rounded-md px-2 py-1 border border-border/50">
+        <span className="text-xs font-semibold text-muted-foreground mr-1 hidden md:inline">Lists</span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" title="Insert List" aria-label="Insert list">
@@ -263,10 +267,11 @@ export const Toolbar = () => {
         </DropdownMenu>
       </div>
 
-      <Separator orientation="vertical" className="h-6 hidden sm:block" />
+      <Separator orientation="vertical" className="h-6 hidden sm:block mx-1" />
 
       {/* Insert Elements Dropdown */}
-      <div className="hidden sm:flex items-center gap-1">
+      <div className="hidden sm:flex items-center gap-1 bg-muted/30 rounded-md px-2 py-1 border border-border/50">
+        <span className="text-xs font-semibold text-muted-foreground mr-1 hidden md:inline">Insert</span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" title="Insert Elements" aria-label="Insert elements menu">
@@ -444,7 +449,9 @@ export const Toolbar = () => {
       <div className="flex-1" />
 
       {/* RIGHT SIDE: View & Settings */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 bg-muted/30 rounded-md px-2 py-1 border border-border/50">
+        <span className="text-xs font-semibold text-muted-foreground mr-1 hidden md:inline">Tools</span>
+        
         <Toggle
           pressed={showOutline}
           onPressedChange={setShowOutline}
@@ -466,37 +473,6 @@ export const Toolbar = () => {
         >
           <Link className="h-4 w-4" />
         </Toggle>
-
-        <Separator orientation="vertical" className="h-6" />
-
-        {/* View Mode Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" title="View Mode">
-              {viewMode === 'split' && <SplitSquareHorizontal className="h-4 w-4" />}
-              {viewMode === 'editor' && <Eye className="h-4 w-4" />}
-              {viewMode === 'preview' && <Eye className="h-4 w-4" />}
-              <ChevronDown className="h-3 w-3 -ml-1" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-popover">
-            <DropdownMenuItem onClick={() => handleViewMode('split')}>
-              <SplitSquareHorizontal className="h-4 w-4 mr-2" />
-              Split View
-              {viewMode === 'split' && <Check className="h-4 w-4 ml-auto" />}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleViewMode('editor')}>
-              <Eye className="h-4 w-4 mr-2" />
-              Editor Only
-              {viewMode === 'editor' && <Check className="h-4 w-4 ml-auto" />}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleViewMode('preview')}>
-              <Eye className="h-4 w-4 mr-2" />
-              Preview Only
-              {viewMode === 'preview' && <Check className="h-4 w-4 ml-auto" />}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
 
         <Separator orientation="vertical" className="h-6" />
 

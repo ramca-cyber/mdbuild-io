@@ -11,6 +11,7 @@ import { SettingsSheet } from '@/components/SettingsSheet';
 import { SavedDocuments } from '@/components/SavedDocuments';
 import { StatisticsPanel } from '@/components/StatisticsPanel';
 import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog';
+import { ViewModeSwitcher } from '@/components/ViewModeSwitcher';
 import { useEditorStore } from '@/store/editorStore';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, FileText, Settings, BookTemplate, List, Home, X, Moon, Sun, Keyboard } from 'lucide-react';
@@ -19,7 +20,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { calculateStatistics } from '@/lib/statisticsUtils';
 
 const Index = () => {
-  const { theme, setTheme, viewMode, showOutline, focusMode, setFocusMode, content } = useEditorStore();
+  const { theme, setTheme, viewMode, setViewMode, showOutline, focusMode, setFocusMode, content } = useEditorStore();
   const [mobilePanel, setMobilePanel] = useState<'documents' | 'templates' | 'settings' | 'outline' | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
@@ -46,7 +47,7 @@ const Index = () => {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [setTheme]);
 
-  // Handle ESC key to exit focus mode
+  // Handle ESC key to exit focus mode and view mode shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && focusMode) {
@@ -56,11 +57,24 @@ const Index = () => {
         e.preventDefault();
         setFocusMode(!focusMode);
       }
+      // View mode shortcuts
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'e') {
+          e.preventDefault();
+          setViewMode('editor');
+        } else if (e.key === 'd') {
+          e.preventDefault();
+          setViewMode('split');
+        } else if (e.key === 'p') {
+          e.preventDefault();
+          setViewMode('preview');
+        }
+      }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [focusMode, setFocusMode]);
+  }, [focusMode, setFocusMode, setViewMode]);
 
   useEffect(() => {
     document.documentElement.classList.remove('dark', 'sepia');
@@ -280,6 +294,9 @@ const Index = () => {
       
       {/* Toolbar */}
       {!focusMode && <Toolbar />}
+
+      {/* View Mode Switcher - Floating */}
+      {!focusMode && <ViewModeSwitcher />}
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
