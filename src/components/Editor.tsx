@@ -65,7 +65,7 @@ export const Editor = () => {
     return () => window.removeEventListener('preview-click', handlePreviewClick);
   }, []);
 
-  // Optimized scroll sync with RAF and better throttling
+  // Smooth scroll sync with RAF - no artificial delays
   useEffect(() => {
     if (!syncScroll || !editorRef.current) return;
 
@@ -78,36 +78,31 @@ export const Editor = () => {
         return;
       }
 
-      let isScrolling = false;
-      let scrollTimeout: NodeJS.Timeout;
+      let lastScrollTime = 0;
       let rafId: number | null = null;
 
       const handleScroll = () => {
-        if (isScrolling) return;
+        const now = performance.now();
         
-        clearTimeout(scrollTimeout);
+        // Debounce: only process if > 16ms since last scroll (1 frame at 60fps)
+        if (now - lastScrollTime < 16) return;
+        lastScrollTime = now;
         
-        // Throttle with RAF for smoother performance
-        scrollTimeout = setTimeout(() => {
-          if (rafId) cancelAnimationFrame(rafId);
-          
-          rafId = requestAnimationFrame(() => {
-            const maxScroll = editorScroll.scrollHeight - editorScroll.clientHeight;
-            if (maxScroll > 0) {
-              const scrollPercentage = editorScroll.scrollTop / maxScroll;
-              window.dispatchEvent(new CustomEvent('editor-scroll', { detail: scrollPercentage }));
-            }
-            rafId = null;
-          });
-        }, 16); // ~60fps
+        if (rafId) cancelAnimationFrame(rafId);
+        
+        rafId = requestAnimationFrame(() => {
+          const maxScroll = editorScroll.scrollHeight - editorScroll.clientHeight;
+          if (maxScroll > 0) {
+            const scrollPercentage = editorScroll.scrollTop / maxScroll;
+            window.dispatchEvent(new CustomEvent('editor-scroll', { detail: scrollPercentage }));
+          }
+          rafId = null;
+        });
       };
 
       const handlePreviewScroll = (e: Event) => {
-        if (isScrolling) return;
-        
         const customEvent = e as CustomEvent;
         const scrollPercentage = customEvent.detail;
-        isScrolling = true;
         
         if (rafId) cancelAnimationFrame(rafId);
         
@@ -115,9 +110,8 @@ export const Editor = () => {
           const maxScroll = editorScroll.scrollHeight - editorScroll.clientHeight;
           editorScroll.scrollTop = scrollPercentage * maxScroll;
           
-          setTimeout(() => {
-            isScrolling = false;
-          }, 50);
+          // Mark as handled to prevent feedback loop
+          lastScrollTime = performance.now();
           rafId = null;
         });
       };
@@ -127,7 +121,6 @@ export const Editor = () => {
       
       // Cleanup function
       return () => {
-        clearTimeout(scrollTimeout);
         if (rafId) cancelAnimationFrame(rafId);
         editorScroll.removeEventListener('scroll', handleScroll);
         window.removeEventListener('preview-scroll', handlePreviewScroll);

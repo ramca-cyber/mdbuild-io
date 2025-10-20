@@ -102,47 +102,58 @@ export const Preview = () => {
     syncScrollRef.current = syncScroll;
   }, [syncScroll]);
 
-  // Synchronized scrolling - setup once
+  // Smooth synchronized scrolling with RAF - no artificial delays
   useEffect(() => {
     if (!previewRef.current) return;
 
     const preview = previewRef.current;
-    let isScrolling = false;
-    let scrollTimeout: NodeJS.Timeout;
+    let lastScrollTime = 0;
+    let rafId: number | null = null;
 
     const handleEditorScroll = (e: Event) => {
-      if (!syncScrollRef.current || isScrolling) return;
+      if (!syncScrollRef.current) return;
       
       const customEvent = e as CustomEvent;
       const scrollPercentage = customEvent.detail;
-      isScrolling = true;
       
-      const maxScroll = preview.scrollHeight - preview.clientHeight;
-      preview.scrollTop = maxScroll * scrollPercentage;
+      if (rafId) cancelAnimationFrame(rafId);
       
-      setTimeout(() => {
-        isScrolling = false;
-      }, 50);
+      rafId = requestAnimationFrame(() => {
+        const maxScroll = preview.scrollHeight - preview.clientHeight;
+        preview.scrollTop = maxScroll * scrollPercentage;
+        
+        // Mark as handled to prevent feedback loop
+        lastScrollTime = performance.now();
+        rafId = null;
+      });
     };
 
     const handlePreviewScroll = () => {
-      if (!syncScrollRef.current || isScrolling) return;
+      if (!syncScrollRef.current) return;
       
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
+      const now = performance.now();
+      
+      // Debounce: only process if > 16ms since last scroll (1 frame at 60fps)
+      if (now - lastScrollTime < 16) return;
+      lastScrollTime = now;
+      
+      if (rafId) cancelAnimationFrame(rafId);
+      
+      rafId = requestAnimationFrame(() => {
         const maxScroll = preview.scrollHeight - preview.clientHeight;
         if (maxScroll > 0) {
           const scrollPercentage = preview.scrollTop / maxScroll;
           window.dispatchEvent(new CustomEvent('preview-scroll', { detail: scrollPercentage }));
         }
-      }, 10);
+        rafId = null;
+      });
     };
 
     window.addEventListener('editor-scroll', handleEditorScroll);
-    preview.addEventListener('scroll', handlePreviewScroll);
+    preview.addEventListener('scroll', handlePreviewScroll, { passive: true });
     
     return () => {
-      clearTimeout(scrollTimeout);
+      if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener('editor-scroll', handleEditorScroll);
       preview.removeEventListener('scroll', handlePreviewScroll);
     };
