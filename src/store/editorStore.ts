@@ -264,8 +264,6 @@ Express yourself with emojis! :tada: :rocket: :sparkles:
 ---
 
 **Happy Writing!** ✨
-
-*Built with ❤️ for developers and writers.*
 `;
 
 export const getDefaultContent = () => defaultContent;
