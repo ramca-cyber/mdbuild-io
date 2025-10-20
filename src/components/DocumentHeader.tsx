@@ -26,11 +26,14 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { FileText, Plus, Save, Trash2, Database, Menu, Clock, FolderOpen, Edit2, X, Check, FileUp, FileDown, FileType, Code, Image as ImageIcon, BookTemplate, Copy, Eraser, Files } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { FileText, Plus, Save, Trash2, Database, Menu, Clock, FolderOpen, Edit2, X, Check, FileUp, FileDown, FileType, Code, Image as ImageIcon, BookTemplate, Copy, Eraser, Files, Github } from 'lucide-react';
 import { toast } from 'sonner';
 import { calculateStorageUsage, formatStorageSize } from '@/lib/storageUtils';
 import { SaveAsDialog } from './SaveAsDialog';
 import { OpenDocumentDialog } from './OpenDocumentDialog';
+import { GitHubFileBrowser } from './GitHubFileBrowser';
+import { GitHubCommitDialog } from './GitHubCommitDialog';
 import { templates } from '@/lib/templates';
 
 export function DocumentHeader() {
@@ -47,6 +50,9 @@ export function DocumentHeader() {
     saveDocumentAs,
     content,
     hasUnsavedChanges,
+    githubConnected,
+    currentGithubFile,
+    saveToGitHub,
   } = useEditorStore();
   
   const [isEditing, setIsEditing] = useState(false);
@@ -57,6 +63,8 @@ export function DocumentHeader() {
   const [saveAsOpen, setSaveAsOpen] = useState(false);
   const [openDocOpen, setOpenDocOpen] = useState(false);
   const [storageDialogOpen, setStorageDialogOpen] = useState(false);
+  const [githubBrowserOpen, setGithubBrowserOpen] = useState(false);
+  const [githubCommitOpen, setGithubCommitOpen] = useState(false);
 
   const currentDoc = savedDocuments.find((doc) => doc.id === currentDocId);
 
@@ -328,6 +336,16 @@ export function DocumentHeader() {
     }
   };
 
+  const handleGitHubCommit = async (message: string) => {
+    try {
+      await saveToGitHub(message);
+      toast.success('Changes committed to GitHub');
+    } catch (error: any) {
+      console.error('Failed to commit to GitHub:', error);
+      toast.error(error.message || 'Failed to commit to GitHub');
+    }
+  };
+
   return (
     <>
       <div className="h-12 border-b bg-background flex items-center justify-between px-4 gap-4 no-print">
@@ -405,6 +423,36 @@ export function DocumentHeader() {
                 <Files className="h-4 w-4 mr-2" />
                 Duplicate Document
               </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              
+              <DropdownMenuLabel>GitHub</DropdownMenuLabel>
+              
+              {githubConnected && (
+                <DropdownMenuItem onClick={() => setGithubBrowserOpen(true)} className="cursor-pointer">
+                  <Github className="h-4 w-4 mr-2" />
+                  Open from GitHub...
+                </DropdownMenuItem>
+              )}
+              
+              {githubConnected && currentGithubFile && (
+                <DropdownMenuItem 
+                  onClick={() => setGithubCommitOpen(true)} 
+                  className="cursor-pointer"
+                  disabled={!hasUnsavedChanges}
+                >
+                  <Github className="h-4 w-4 mr-2" />
+                  Commit to GitHub
+                  {hasUnsavedChanges && <span className="ml-1 text-primary">•</span>}
+                </DropdownMenuItem>
+              )}
+              
+              {!githubConnected && (
+                <DropdownMenuItem disabled className="text-muted-foreground">
+                  <Github className="h-4 w-4 mr-2" />
+                  Connect GitHub in Settings
+                </DropdownMenuItem>
+              )}
               
               <DropdownMenuSeparator />
               
@@ -492,8 +540,16 @@ export function DocumentHeader() {
           </DropdownMenu>
         </div>
 
-        {/* CENTER: Document Name (inline editable) */}
+        {/* CENTER: Document Name (inline editable) + GitHub Badge */}
         <div className="flex-1 flex items-center justify-center gap-2">
+          {currentGithubFile && (
+            <Badge variant="outline" className="gap-1 flex-shrink-0">
+              <Github className="h-3 w-3" />
+              <span className="text-xs truncate max-w-[150px]">
+                {currentGithubFile.owner}/{currentGithubFile.repo}
+              </span>
+            </Badge>
+          )}
           {isEditing ? (
             <div className="flex items-center gap-2 max-w-md w-full">
               <Input
@@ -636,58 +692,32 @@ export function DocumentHeader() {
                 <span>{formatStorageSize(storageInfo.bytes)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="font-medium">Total Available:</span>
-                <span>4 MB</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="font-medium">Percentage:</span>
-                <span className={storageInfo.isCritical ? 'text-destructive font-semibold' : storageInfo.isNearLimit ? 'text-yellow-600 dark:text-yellow-500 font-semibold' : ''}>
-                  {storageInfo.percentage.toFixed(1)}%
-                </span>
-              </div>
-            </div>
-            
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div 
-                className={`h-full transition-all ${
-                  storageInfo.isCritical 
-                    ? 'bg-destructive' 
-                    : storageInfo.isNearLimit 
-                    ? 'bg-yellow-500' 
-                    : 'bg-primary'
-                }`}
-                style={{ width: `${Math.min(storageInfo.percentage, 100)}%` }}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="font-medium">Saved Documents:</span>
+                <span className="font-medium">Documents:</span>
                 <span>{savedDocuments.length}</span>
               </div>
+              <div className="text-xs text-muted-foreground mt-4">
+                Storage is saved in your browser's local storage. Clearing browser data will remove your documents.
+              </div>
             </div>
-
-            {storageInfo.isNearLimit && (
-              <div className="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-md p-3">
-                <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  ⚠️ Storage is running low. Consider deleting old documents or exporting them to free up space.
-                </p>
-              </div>
-            )}
-
-            {storageInfo.isCritical && (
-              <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
-                <p className="text-sm text-destructive">
-                  🚨 Critical storage level! Delete documents immediately to avoid data loss.
-                </p>
-              </div>
-            )}
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel>Close</AlertDialogCancel>
+            <AlertDialogAction>Close</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* GitHub Dialogs */}
+      <GitHubFileBrowser 
+        open={githubBrowserOpen} 
+        onOpenChange={setGithubBrowserOpen} 
+      />
+      
+      <GitHubCommitDialog
+        open={githubCommitOpen}
+        onOpenChange={setGithubCommitOpen}
+        onCommit={handleGitHubCommit}
+        fileName={currentGithubFile?.path}
+      />
     </>
   );
 }
