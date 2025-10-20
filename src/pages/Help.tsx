@@ -6,7 +6,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { 
   FileText, GitBranch, Sigma, Code, Download, Keyboard, 
   BookOpen, ExternalLink, Home, Zap, Layout, Search, 
-  Edit3, FileCode, Settings, Moon, Save, Copy, Eye, Zap as ZapIcon, Lock, Edit, Eye as EyeIcon
+  Edit3, FileCode, Settings, Moon, Save, Copy, Eye, Zap as ZapIcon, Lock, Edit, Eye as EyeIcon, AlertCircle
 } from "lucide-react";
 
 const Help = () => {
@@ -126,6 +126,64 @@ const Help = () => {
                   <li>
                     <a href="https://github.github.com/gfm/" target="_blank" rel="noopener noreferrer" className={externalLinkClass}>
                       GitHub Flavored Markdown <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* GitHub Alerts */}
+          <AccordionItem value="alerts" className="border rounded-lg px-6">
+            <AccordionTrigger className="hover:no-underline">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-primary" />
+                <span className="text-lg font-semibold">GitHub Alerts & Admonitions</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="space-y-4 pt-4">
+              <p className="text-sm text-muted-foreground">
+                Create highlighted callouts and alerts using GitHub's special blockquote syntax. Perfect for emphasizing important information.
+              </p>
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm">Available Alert Types:</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-start gap-2">
+                    <code className="px-2 py-1 bg-muted rounded text-xs">[!NOTE]</code>
+                    <span className="text-muted-foreground">Useful information that users should know</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <code className="px-2 py-1 bg-muted rounded text-xs">[!TIP]</code>
+                    <span className="text-muted-foreground">Helpful advice for doing things better or more easily</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <code className="px-2 py-1 bg-muted rounded text-xs">[!IMPORTANT]</code>
+                    <span className="text-muted-foreground">Key information users need to know to succeed</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <code className="px-2 py-1 bg-muted rounded text-xs">[!WARNING]</code>
+                    <span className="text-muted-foreground">Urgent info that needs immediate attention</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <code className="px-2 py-1 bg-muted rounded text-xs">[!CAUTION]</code>
+                    <span className="text-muted-foreground">Advises about risks or negative outcomes</span>
+                  </div>
+                </div>
+                <div className="bg-muted p-3 rounded text-xs">
+                  <p className="font-semibold mb-2">Example Syntax:</p>
+                  <pre className="overflow-x-auto">{`> [!NOTE]
+> This is a note alert. Useful for highlighting information!
+
+> [!WARNING]
+> Be careful with this operation!`}</pre>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold text-sm mb-2">Learn More:</h4>
+                <ul className="space-y-1 text-sm">
+                  <li>
+                    <a href="https://github.com/orgs/community/discussions/16925" target="_blank" rel="noopener noreferrer" className={externalLinkClass}>
+                      GitHub Alerts Documentation <ExternalLink className="h-3 w-3" />
                     </a>
                   </li>
                 </ul>

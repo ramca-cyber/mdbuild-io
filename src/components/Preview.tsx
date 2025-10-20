@@ -4,6 +4,8 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkEmoji from 'remark-emoji';
 import remarkFrontmatter from 'remark-frontmatter';
+import remarkDirective from 'remark-directive';
+import remarkGithubBlockquoteAlert from 'remark-github-blockquote-alert';
 import rehypeKatex from 'rehype-katex';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
@@ -190,7 +192,7 @@ export const Preview = () => {
   const markdownContent = useMemo(
     () => (
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath, remarkEmoji, remarkFrontmatter]}
+        remarkPlugins={[remarkGfm, remarkMath, remarkEmoji, remarkFrontmatter, remarkDirective, remarkGithubBlockquoteAlert]}
         rehypePlugins={[rehypeRaw, rehypeKatex, rehypeHighlight, rehypeAddLineNumbers]}
         components={{
           code({ className, children, ...props }: CodeProps) {
