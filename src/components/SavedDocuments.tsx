@@ -1,11 +1,24 @@
+import { useState, useMemo } from 'react';
 import { useEditorStore } from '@/store/editorStore';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileText, Trash2 } from 'lucide-react';
+import { FileText, Trash2, Search } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 export const SavedDocuments = () => {
   const { savedDocuments, currentDocId, loadDocument, deleteDocument } = useEditorStore();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredDocuments = useMemo(() => {
+    if (!searchQuery.trim()) return savedDocuments;
+    
+    const query = searchQuery.toLowerCase();
+    return savedDocuments.filter(doc => 
+      doc.name.toLowerCase().includes(query) ||
+      doc.content.toLowerCase().includes(query)
+    );
+  }, [savedDocuments, searchQuery]);
 
   if (savedDocuments.length === 0) {
     return (
@@ -19,9 +32,33 @@ export const SavedDocuments = () => {
 
   return (
     <ScrollArea className="h-full">
-      <div className="p-4 space-y-2">
-        <h3 className="font-semibold mb-3 text-sm text-foreground">Saved Documents</h3>
-        {savedDocuments.map((doc) => (
+      <div className="p-4 space-y-3">
+        <div className="space-y-2">
+          <h3 className="font-semibold text-sm text-foreground">Saved Documents</h3>
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search documents..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-9"
+            />
+          </div>
+          {searchQuery && (
+            <p className="text-xs text-muted-foreground">
+              {filteredDocuments.length} of {savedDocuments.length} document{savedDocuments.length !== 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
+        {filteredDocuments.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-muted-foreground text-center">
+            <Search className="w-8 h-8 mb-2 opacity-20" />
+            <p className="text-sm">No documents found</p>
+            <p className="text-xs mt-1">Try a different search term</p>
+          </div>
+        ) : (
+          filteredDocuments.map((doc) => (
           <div
             key={doc.id}
             className={`p-3 rounded-lg border transition-colors ${
@@ -48,7 +85,8 @@ export const SavedDocuments = () => {
               </Button>
             </div>
           </div>
-        ))}
+          ))
+        )}
       </div>
     </ScrollArea>
   );

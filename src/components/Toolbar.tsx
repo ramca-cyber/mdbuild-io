@@ -24,6 +24,9 @@ import {
   Strikethrough,
   Heading,
   ChevronDown,
+  Printer,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
@@ -48,6 +51,8 @@ export const Toolbar = () => {
     setContent, 
     showOutline,
     setShowOutline,
+    focusMode,
+    setFocusMode,
     syncScroll,
     setSyncScroll,
     forceRefreshPreview,
@@ -97,6 +102,10 @@ export const Toolbar = () => {
       }
     };
     input.click();
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   return (
@@ -259,6 +268,26 @@ export const Toolbar = () => {
 
       {/* View & Settings */}
       <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handlePrint}
+          title="Print (Ctrl+P)"
+        >
+          <Printer className="h-4 w-4" />
+        </Button>
+        
+        <Button
+          variant={focusMode ? "default" : "ghost"}
+          size="icon"
+          onClick={() => setFocusMode(!focusMode)}
+          title={focusMode ? "Exit Focus Mode (Esc)" : "Focus Mode (F11)"}
+        >
+          {focusMode ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+        </Button>
+
+        <Separator orientation="vertical" className="h-6" />
+        
         <Button
           variant="ghost"
           size="icon"

@@ -18,6 +18,7 @@ interface EditorState {
   lineWrap: boolean;
   viewMode: 'split' | 'editor' | 'preview';
   showOutline: boolean;
+  focusMode: boolean;
   lineNumbers: boolean;
   autoSave: boolean;
   syncScroll: boolean;
@@ -43,6 +44,7 @@ interface EditorState {
   setLineWrap: (wrap: boolean) => void;
   setViewMode: (mode: 'split' | 'editor' | 'preview') => void;
   setShowOutline: (show: boolean) => void;
+  setFocusMode: (mode: boolean) => void;
   setLineNumbers: (show: boolean) => void;
   setAutoSave: (enabled: boolean) => void;
   setSyncScroll: (enabled: boolean) => void;
@@ -300,6 +302,7 @@ export const useEditorStore = create<EditorState>()(
       lineWrap: true,
       viewMode: 'split',
       showOutline: false,
+      focusMode: false,
       lineNumbers: true,
       autoSave: true,
       syncScroll: true,
@@ -380,6 +383,7 @@ export const useEditorStore = create<EditorState>()(
       setLineWrap: (wrap) => set({ lineWrap: wrap }),
       setViewMode: (mode) => set({ viewMode: mode }),
       setShowOutline: (show) => set({ showOutline: show }),
+      setFocusMode: (mode) => set({ focusMode: mode }),
       setLineNumbers: (show) => set({ lineNumbers: show }),
       setAutoSave: (enabled) => set({ autoSave: enabled }),
       setSyncScroll: (enabled) => set({ syncScroll: enabled }),

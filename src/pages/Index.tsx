@@ -16,12 +16,28 @@ import { Menu, FileText, Settings, BookTemplate, List, Home } from 'lucide-react
 import { Button } from '@/components/ui/button';
 
 const Index = () => {
-  const { theme, viewMode, showOutline } = useEditorStore();
+  const { theme, viewMode, showOutline, focusMode, setFocusMode } = useEditorStore();
   const [mobilePanel, setMobilePanel] = useState<'documents' | 'templates' | 'settings' | 'outline' | null>(null);
   
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Handle ESC key to exit focus mode
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && focusMode) {
+        setFocusMode(false);
+      }
+      if (e.key === 'F11') {
+        e.preventDefault();
+        setFocusMode(!focusMode);
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [focusMode, setFocusMode]);
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -40,6 +56,7 @@ const Index = () => {
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-background">
       {/* Header */}
+      {!focusMode && (
       <header className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border bg-gradient-to-r from-primary/10 to-accent/10">
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-2">
@@ -100,12 +117,13 @@ const Index = () => {
           </Sheet>
         </div>
       </header>
+      )}
 
       {/* Document Header */}
-      <DocumentHeader />
+      {!focusMode && <DocumentHeader />}
       
       {/* Toolbar */}
-      <Toolbar />
+      {!focusMode && <Toolbar />}
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
@@ -138,7 +156,7 @@ const Index = () => {
         </main>
 
         {/* Desktop Side Panels */}
-        {showOutline && (
+        {!focusMode && showOutline && (
           <SidePanel>
             <OutlinePanel />
           </SidePanel>
@@ -146,7 +164,7 @@ const Index = () => {
       </div>
 
       {/* Footer with Enhanced Statistics */}
-      <StatisticsPanel />
+      {!focusMode && <StatisticsPanel />}
 
       {/* Mobile Sheets */}
       <Sheet open={mobilePanel === 'documents'} onOpenChange={(open) => !open && setMobilePanel(null)}>

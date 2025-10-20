@@ -204,3 +204,70 @@ All colors MUST be HSL.
     }
   }
 }
+
+/* Print Styles */
+@media print {
+  /* Hide all UI elements */
+  header,
+  nav,
+  button,
+  .no-print,
+  [role="toolbar"],
+  [role="navigation"],
+  footer {
+    display: none !important;
+  }
+
+  /* Clean page layout */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Show only the preview content */
+  .markdown-body {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Optimize for printing */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Page breaks */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+
+  img {
+    page-break-inside: avoid;
+    max-width: 100% !important;
+  }
+
+  pre, blockquote {
+    page-break-inside: avoid;
+    border: 1px solid #999 !important;
+    page-break-before: avoid;
+  }
+
+  table {
+    page-break-inside: avoid;
+  }
+
+  /* Links */
+  a {
+    text-decoration: underline;
+    color: #000;
+  }
+
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+  }
+}
