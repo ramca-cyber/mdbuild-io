@@ -301,7 +301,7 @@ export function DocumentHeader() {
 
   const handleClearAll = () => {
     try {
-      useEditorStore.getState().setContent(getDefaultContent());
+      useEditorStore.getState().setContent('');
       setClearAllConfirm(false);
       toast.success('Document cleared');
     } catch (error) {
@@ -608,7 +608,7 @@ export function DocumentHeader() {
           <AlertDialogHeader>
             <AlertDialogTitle>Clear All Content</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to clear all content? This will reset the document to the default template. 
+              Are you sure you want to clear all content? This will completely empty the editor. 
               {hasUnsavedChanges && " You have unsaved changes that will be lost."}
             </AlertDialogDescription>
           </AlertDialogHeader>
