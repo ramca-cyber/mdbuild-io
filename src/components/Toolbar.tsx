@@ -21,6 +21,9 @@ import {
   ListTree,
   Link,
   RefreshCw,
+  Strikethrough,
+  Heading,
+  ChevronDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
@@ -28,6 +31,12 @@ import { Separator } from '@/components/ui/separator';
 import { useEditorStore } from '@/store/editorStore';
 import { toast } from 'sonner';
 import React from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export const Toolbar = () => {
   const { 
@@ -113,6 +122,14 @@ export const Toolbar = () => {
         <Button
           variant="ghost"
           size="icon"
+          onClick={() => insertText('~~', '~~', 'strikethrough')}
+          title="Strikethrough"
+        >
+          <Strikethrough className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => insertText('`', '`', 'code')}
           title="Code"
         >
@@ -123,22 +140,40 @@ export const Toolbar = () => {
       <Separator orientation="vertical" className="h-6" />
 
       <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => insertText('# ', '', 'Heading 1')}
-          title="Heading 1"
-        >
-          <Heading1 className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => insertText('## ', '', 'Heading 2')}
-          title="Heading 2"
-        >
-          <Heading2 className="h-4 w-4" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" title="Headings">
+              <Heading className="h-4 w-4" />
+              <ChevronDown className="h-3 w-3 -ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="bg-popover">
+            <DropdownMenuItem onClick={() => insertText('# ', '', 'Heading 1')}>
+              <Heading1 className="h-4 w-4 mr-2" />
+              Heading 1
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => insertText('## ', '', 'Heading 2')}>
+              <Heading2 className="h-4 w-4 mr-2" />
+              Heading 2
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => insertText('### ', '', 'Heading 3')}>
+              <Heading className="h-4 w-4 mr-2" />
+              Heading 3
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => insertText('#### ', '', 'Heading 4')}>
+              <Heading className="h-4 w-4 mr-2" />
+              Heading 4
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => insertText('##### ', '', 'Heading 5')}>
+              <Heading className="h-4 w-4 mr-2" />
+              Heading 5
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => insertText('###### ', '', 'Heading 6')}>
+              <Heading className="h-4 w-4 mr-2" />
+              Heading 6
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <Separator orientation="vertical" className="h-6" />

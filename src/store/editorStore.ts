@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { SearchOptions, SearchResult } from '@/types/editor';
 
 export type Theme = 'light' | 'dark';
 
@@ -27,6 +28,15 @@ interface EditorState {
   hasUnsavedChanges: boolean;
   autoSaveTimeoutId: ReturnType<typeof setTimeout> | null;
   previewRefreshKey: number;
+  
+  // Search & Replace
+  showSearchReplace: boolean;
+  searchQuery: string;
+  replaceQuery: string;
+  searchResults: SearchResult[];
+  currentSearchIndex: number;
+  searchOptions: SearchOptions;
+  
   setContent: (content: string) => void;
   setTheme: (theme: Theme) => void;
   setFontSize: (size: number) => void;
@@ -47,6 +57,19 @@ interface EditorState {
   restoreVersion: (index: number) => void;
   createNewDocument: () => void;
   resetToDefaults: () => void;
+  
+  // Search & Replace actions
+  setShowSearchReplace: (show: boolean) => void;
+  setSearchQuery: (query: string) => void;
+  setReplaceQuery: (query: string) => void;
+  setSearchResults: (results: SearchResult[]) => void;
+  setCurrentSearchIndex: (index: number) => void;
+  setSearchOptions: (options: SearchOptions) => void;
+  performSearch: (query: string) => void;
+  findNext: () => void;
+  findPrevious: () => void;
+  replaceOne: () => void;
+  replaceAll: () => void;
 }
 
 const defaultContent = `# Welcome to MDBuild.io 🚀
@@ -287,6 +310,19 @@ export const useEditorStore = create<EditorState>()(
       hasUnsavedChanges: false,
       autoSaveTimeoutId: null,
       previewRefreshKey: 0,
+      
+      // Search & Replace initial state
+      showSearchReplace: false,
+      searchQuery: '',
+      replaceQuery: '',
+      searchResults: [],
+      currentSearchIndex: 0,
+      searchOptions: {
+        caseSensitive: false,
+        wholeWord: false,
+        useRegex: false,
+      },
+      
       setContent: (content) => {
         const state = get();
         const hasChanges = content !== state.lastSavedContent;
@@ -467,6 +503,112 @@ export const useEditorStore = create<EditorState>()(
           showOutline: false,
           viewMode: 'split',
         });
+      },
+      
+      // Search & Replace methods
+      setShowSearchReplace: (show) => set({ showSearchReplace: show }),
+      setSearchQuery: (query) => {
+        set({ searchQuery: query });
+        get().performSearch(query);
+      },
+      setReplaceQuery: (query) => set({ replaceQuery: query }),
+      setSearchResults: (results) => set({ searchResults: results }),
+      setCurrentSearchIndex: (index) => set({ currentSearchIndex: index }),
+      setSearchOptions: (options) => {
+        set({ searchOptions: options });
+        get().performSearch(get().searchQuery);
+      },
+      
+      performSearch: (query: string) => {
+        const { content, searchOptions } = get();
+        if (!query) {
+          set({ searchResults: [], currentSearchIndex: 0 });
+          return;
+        }
+
+        const results: SearchResult[] = [];
+        const lines = content.split('\n');
+        
+        try {
+          let searchPattern: RegExp;
+          
+          if (searchOptions.useRegex) {
+            searchPattern = new RegExp(query, searchOptions.caseSensitive ? 'g' : 'gi');
+          } else {
+            const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const pattern = searchOptions.wholeWord ? `\\b${escapedQuery}\\b` : escapedQuery;
+            searchPattern = new RegExp(pattern, searchOptions.caseSensitive ? 'g' : 'gi');
+          }
+
+          lines.forEach((line, lineIndex) => {
+            let match;
+            const regex = new RegExp(searchPattern.source, searchPattern.flags);
+            while ((match = regex.exec(line)) !== null) {
+              results.push({
+                line: lineIndex + 1,
+                column: match.index,
+                length: match[0].length,
+                text: match[0],
+              });
+            }
+          });
+
+          set({ searchResults: results, currentSearchIndex: results.length > 0 ? 0 : 0 });
+        } catch (error) {
+          set({ searchResults: [], currentSearchIndex: 0 });
+        }
+      },
+      
+      findNext: () => {
+        const { searchResults, currentSearchIndex } = get();
+        if (searchResults.length === 0) return;
+        const nextIndex = (currentSearchIndex + 1) % searchResults.length;
+        set({ currentSearchIndex: nextIndex });
+      },
+      
+      findPrevious: () => {
+        const { searchResults, currentSearchIndex } = get();
+        if (searchResults.length === 0) return;
+        const prevIndex = currentSearchIndex === 0 ? searchResults.length - 1 : currentSearchIndex - 1;
+        set({ currentSearchIndex: prevIndex });
+      },
+      
+      replaceOne: () => {
+        const { content, searchResults, currentSearchIndex, replaceQuery } = get();
+        if (searchResults.length === 0) return;
+        
+        const result = searchResults[currentSearchIndex];
+        const lines = content.split('\n');
+        const line = lines[result.line - 1];
+        const newLine = line.substring(0, result.column) + replaceQuery + line.substring(result.column + result.length);
+        lines[result.line - 1] = newLine;
+        
+        const newContent = lines.join('\n');
+        set({ content: newContent });
+        get().performSearch(get().searchQuery);
+      },
+      
+      replaceAll: () => {
+        const { content, searchQuery, replaceQuery, searchOptions } = get();
+        if (!searchQuery) return;
+        
+        try {
+          let searchPattern: RegExp;
+          
+          if (searchOptions.useRegex) {
+            searchPattern = new RegExp(searchQuery, searchOptions.caseSensitive ? 'g' : 'gi');
+          } else {
+            const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const pattern = searchOptions.wholeWord ? `\\b${escapedQuery}\\b` : escapedQuery;
+            searchPattern = new RegExp(pattern, searchOptions.caseSensitive ? 'g' : 'gi');
+          }
+
+          const newContent = content.replace(searchPattern, replaceQuery);
+          set({ content: newContent });
+          get().performSearch(searchQuery);
+        } catch (error) {
+          // Invalid regex
+        }
       },
     }),
     {

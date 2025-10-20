@@ -9,23 +9,19 @@ import { OutlinePanel } from '@/components/OutlinePanel';
 import { TemplatesDrawer } from '@/components/TemplatesDrawer';
 import { SettingsSheet } from '@/components/SettingsSheet';
 import { SavedDocuments } from '@/components/SavedDocuments';
+import { StatisticsPanel } from '@/components/StatisticsPanel';
 import { useEditorStore } from '@/store/editorStore';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, FileText, Settings, BookTemplate, List, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Index = () => {
-  const { theme, viewMode, content, showOutline } = useEditorStore();
+  const { theme, viewMode, showOutline } = useEditorStore();
   const [mobilePanel, setMobilePanel] = useState<'documents' | 'templates' | 'settings' | 'outline' | null>(null);
   
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  
-  // Calculate stats
-  const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
-  const charCount = content.length;
-  const readingTime = Math.ceil(wordCount / 200);
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -149,21 +145,8 @@ const Index = () => {
         )}
       </div>
 
-      {/* Footer with Stats */}
-      <footer className="px-4 sm:px-6 py-2 border-t border-border bg-muted/50 text-xs text-muted-foreground flex items-center justify-between">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <span>Ready</span>
-          <span className="hidden sm:inline">
-            {viewMode === 'split' ? 'Split View' : viewMode === 'editor' ? 'Editor Only' : 'Preview Only'}
-          </span>
-        </div>
-        <div className="flex items-center gap-3 sm:gap-4">
-          <span className="hidden sm:inline">Words: {wordCount}</span>
-          <span className="hidden md:inline">Chars: {charCount}</span>
-          <span className="hidden lg:inline">{readingTime} min read</span>
-          <span>Lines: {content.split('\n').length}</span>
-        </div>
-      </footer>
+      {/* Footer with Enhanced Statistics */}
+      <StatisticsPanel />
 
       {/* Mobile Sheets */}
       <Sheet open={mobilePanel === 'documents'} onOpenChange={(open) => !open && setMobilePanel(null)}>
