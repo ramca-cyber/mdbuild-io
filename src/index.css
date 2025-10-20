@@ -138,16 +138,6 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
-  
-  /* Smooth scrolling for editor and preview sync */
-  .preview-content {
-    scroll-behavior: smooth;
-  }
-  
-  .cm-scroller {
-    scroll-behavior: smooth;
-  }
-  
   /* Enhanced focus styles for accessibility */
   *:focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;

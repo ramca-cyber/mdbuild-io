@@ -65,31 +65,24 @@ export const Editor = () => {
     return () => window.removeEventListener('preview-click', handlePreviewClick);
   }, []);
 
-  // Smooth scroll sync with RAF - no artificial delays
+  // Robust scroll sync using RAF + lock to prevent feedback loops
   useEffect(() => {
     if (!syncScroll || !editorRef.current) return;
 
-    // Wait for CodeMirror to fully render
     const setupScrollSync = () => {
-      const editorScroll = editorRef.current?.querySelector('.cm-scroller');
+      const editorScroll = editorRef.current?.querySelector('.cm-scroller') as HTMLElement | null;
       if (!editorScroll) {
-        // Retry if not ready
         requestAnimationFrame(setupScrollSync);
         return;
       }
 
-      let lastScrollTime = 0;
+      let isSyncing = false;
       let rafId: number | null = null;
 
       const handleScroll = () => {
-        const now = performance.now();
-        
-        // Debounce: only process if > 16ms since last scroll (1 frame at 60fps)
-        if (now - lastScrollTime < 16) return;
-        lastScrollTime = now;
-        
+        if (!syncScroll || isSyncing) return;
+
         if (rafId) cancelAnimationFrame(rafId);
-        
         rafId = requestAnimationFrame(() => {
           const maxScroll = editorScroll.scrollHeight - editorScroll.clientHeight;
           if (maxScroll > 0) {
@@ -103,23 +96,24 @@ export const Editor = () => {
       const handlePreviewScroll = (e: Event) => {
         const customEvent = e as CustomEvent;
         const scrollPercentage = customEvent.detail;
-        
+
+        isSyncing = true;
         if (rafId) cancelAnimationFrame(rafId);
-        
         rafId = requestAnimationFrame(() => {
           const maxScroll = editorScroll.scrollHeight - editorScroll.clientHeight;
           editorScroll.scrollTop = scrollPercentage * maxScroll;
-          
-          // Mark as handled to prevent feedback loop
-          lastScrollTime = performance.now();
+
+          // Release the lock on the next frame (after the scroll event fires)
+          requestAnimationFrame(() => {
+            isSyncing = false;
+          });
           rafId = null;
         });
       };
 
       editorScroll.addEventListener('scroll', handleScroll, { passive: true });
       window.addEventListener('preview-scroll', handlePreviewScroll);
-      
-      // Cleanup function
+
       return () => {
         if (rafId) cancelAnimationFrame(rafId);
         editorScroll.removeEventListener('scroll', handleScroll);

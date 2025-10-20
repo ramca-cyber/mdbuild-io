@@ -102,43 +102,38 @@ export const Preview = () => {
     syncScrollRef.current = syncScroll;
   }, [syncScroll]);
 
-  // Smooth synchronized scrolling with RAF - no artificial delays
+  // Robust synchronized scrolling using RAF + lock to prevent feedback loops
   useEffect(() => {
     if (!previewRef.current) return;
 
     const preview = previewRef.current;
-    let lastScrollTime = 0;
+    let isSyncing = false;
     let rafId: number | null = null;
 
     const handleEditorScroll = (e: Event) => {
       if (!syncScrollRef.current) return;
-      
+
       const customEvent = e as CustomEvent;
       const scrollPercentage = customEvent.detail;
-      
+
+      isSyncing = true;
       if (rafId) cancelAnimationFrame(rafId);
-      
       rafId = requestAnimationFrame(() => {
         const maxScroll = preview.scrollHeight - preview.clientHeight;
         preview.scrollTop = maxScroll * scrollPercentage;
-        
-        // Mark as handled to prevent feedback loop
-        lastScrollTime = performance.now();
+
+        // Release the lock on the next frame after the scroll event fires
+        requestAnimationFrame(() => {
+          isSyncing = false;
+        });
         rafId = null;
       });
     };
 
     const handlePreviewScroll = () => {
-      if (!syncScrollRef.current) return;
-      
-      const now = performance.now();
-      
-      // Debounce: only process if > 16ms since last scroll (1 frame at 60fps)
-      if (now - lastScrollTime < 16) return;
-      lastScrollTime = now;
-      
+      if (!syncScrollRef.current || isSyncing) return;
+
       if (rafId) cancelAnimationFrame(rafId);
-      
       rafId = requestAnimationFrame(() => {
         const maxScroll = preview.scrollHeight - preview.clientHeight;
         if (maxScroll > 0) {
