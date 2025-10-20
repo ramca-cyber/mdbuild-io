@@ -15,31 +15,32 @@ import {
   Moon,
   Sun,
   Eye,
-  EyeOff,
   SplitSquareHorizontal,
-  Settings,
   ListTree,
   Link,
-  RefreshCw,
   Strikethrough,
   Heading,
   ChevronDown,
   Printer,
   Maximize2,
   Minimize2,
+  Plus,
+  MoreHorizontal,
+  Check,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
 import { Separator } from '@/components/ui/separator';
 import { useEditorStore } from '@/store/editorStore';
 import { toast } from 'sonner';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 export const Toolbar = () => {
   const { 
@@ -55,8 +56,9 @@ export const Toolbar = () => {
     setFocusMode,
     syncScroll,
     setSyncScroll,
-    forceRefreshPreview,
   } = useEditorStore();
+
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
 
   const insertText = (before: string, after: string = '', placeholder: string = 'text') => {
     const textarea = document.querySelector('textarea');
@@ -78,11 +80,8 @@ export const Toolbar = () => {
     setTheme(theme === 'light' ? 'dark' : 'light');
   };
 
-  const cycleViewMode = () => {
-    const modes: Array<'split' | 'editor' | 'preview'> = ['split', 'editor', 'preview'];
-    const currentIndex = modes.indexOf(viewMode);
-    const nextIndex = (currentIndex + 1) % modes.length;
-    setViewMode(modes[nextIndex]);
+  const handleViewMode = (mode: 'split' | 'editor' | 'preview') => {
+    setViewMode(mode);
   };
 
   const handleImageUpload = () => {
@@ -110,8 +109,8 @@ export const Toolbar = () => {
 
   return (
     <div className="flex items-center gap-2 px-2 sm:px-4 py-2 bg-toolbar-bg border-b border-border overflow-x-auto no-print">
-      {/* Formatting */}
-      <div className="flex items-center gap-1">
+      {/* LEFT SIDE: Content Formatting - Always visible on desktop */}
+      <div className="hidden sm:flex items-center gap-1">
         <Button
           variant="ghost"
           size="icon"
@@ -146,9 +145,10 @@ export const Toolbar = () => {
         </Button>
       </div>
 
-      <Separator orientation="vertical" className="h-6" />
+      <Separator orientation="vertical" className="h-6 hidden sm:block" />
 
-      <div className="flex items-center gap-1">
+      {/* Headings */}
+      <div className="hidden sm:flex items-center gap-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" title="Headings">
@@ -185,9 +185,10 @@ export const Toolbar = () => {
         </DropdownMenu>
       </div>
 
-      <Separator orientation="vertical" className="h-6" />
+      <Separator orientation="vertical" className="h-6 hidden sm:block" />
 
-      <div className="flex items-center gap-1">
+      {/* Link & Image */}
+      <div className="hidden sm:flex items-center gap-1">
         <Button
           variant="ghost"
           size="icon"
@@ -206,110 +207,216 @@ export const Toolbar = () => {
         </Button>
       </div>
 
-      <Separator orientation="vertical" className="h-6" />
+      <Separator orientation="vertical" className="h-6 hidden sm:block" />
 
-      <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => insertText('- ', '', 'list item')}
-          title="Bullet List"
-        >
-          <List className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => insertText('1. ', '', 'list item')}
-          title="Numbered List"
-        >
-          <ListOrdered className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => insertText('- [ ] ', '', 'task')}
-          title="Task List"
-        >
-          <CheckSquare className="h-4 w-4" />
-        </Button>
+      {/* Lists Dropdown */}
+      <div className="hidden sm:flex items-center gap-1">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" title="Lists">
+              <List className="h-4 w-4" />
+              <ChevronDown className="h-3 w-3 -ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="bg-popover">
+            <DropdownMenuItem onClick={() => insertText('- ', '', 'list item')}>
+              <List className="h-4 w-4 mr-2" />
+              Bullet List
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => insertText('1. ', '', 'list item')}>
+              <ListOrdered className="h-4 w-4 mr-2" />
+              Numbered List
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => insertText('- [ ] ', '', 'task')}>
+              <CheckSquare className="h-4 w-4 mr-2" />
+              Task List
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      <Separator orientation="vertical" className="h-6" />
+      <Separator orientation="vertical" className="h-6 hidden sm:block" />
 
-      <div className="flex items-center gap-1">
+      {/* Insert Elements Dropdown */}
+      <div className="hidden sm:flex items-center gap-1">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" title="Insert">
+              <Plus className="h-4 w-4" />
+              <ChevronDown className="h-3 w-3 -ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="bg-popover">
+            <DropdownMenuItem onClick={() => insertText('> ', '', 'quote')}>
+              <Quote className="h-4 w-4 mr-2" />
+              Quote
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => insertBlock('| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |')}>
+              <Table className="h-4 w-4 mr-2" />
+              Table
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => insertBlock('---')}>
+              <Minus className="h-4 w-4 mr-2" />
+              Horizontal Rule
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => insertBlock('```\ncode\n```')}>
+              <Code className="h-4 w-4 mr-2" />
+              Code Block
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Mobile: Essential buttons + More menu */}
+      <div className="flex sm:hidden items-center gap-1">
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => insertText('> ', '', 'quote')}
-          title="Quote"
+          onClick={() => insertText('**', '**', 'bold')}
+          title="Bold"
         >
-          <Quote className="h-4 w-4" />
+          <Bold className="h-4 w-4" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => insertBlock('| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |')}
-          title="Table"
+          onClick={() => insertText('*', '*', 'italic')}
+          title="Italic"
         >
-          <Table className="h-4 w-4" />
+          <Italic className="h-4 w-4" />
         </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" title="Headings">
+              <Heading className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="bg-popover">
+            <DropdownMenuItem onClick={() => insertText('# ', '', 'Heading 1')}>
+              <Heading1 className="h-4 w-4 mr-2" />
+              Heading 1
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => insertText('## ', '', 'Heading 2')}>
+              <Heading2 className="h-4 w-4 mr-2" />
+              Heading 2
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => insertText('### ', '', 'Heading 3')}>
+              <Heading className="h-4 w-4 mr-2" />
+              Heading 3
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => insertBlock('---')}
-          title="Horizontal Rule"
+          onClick={() => insertText('[', '](url)', 'link text')}
+          title="Link"
         >
-          <Minus className="h-4 w-4" />
+          <Link2 className="h-4 w-4" />
         </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" title="Lists">
+              <List className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="bg-popover">
+            <DropdownMenuItem onClick={() => insertText('- ', '', 'list item')}>
+              <List className="h-4 w-4 mr-2" />
+              Bullet List
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => insertText('1. ', '', 'list item')}>
+              <ListOrdered className="h-4 w-4 mr-2" />
+              Numbered List
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Sheet open={mobileMoreOpen} onOpenChange={setMobileMoreOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" title="More">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="h-[400px]">
+            <SheetHeader>
+              <SheetTitle>More Formatting</SheetTitle>
+            </SheetHeader>
+            <div className="grid grid-cols-2 gap-2 mt-4">
+              <Button
+                variant="outline"
+                className="h-16 flex-col gap-1"
+                onClick={() => {
+                  insertText('~~', '~~', 'strikethrough');
+                  setMobileMoreOpen(false);
+                }}
+              >
+                <Strikethrough className="h-5 w-5" />
+                <span className="text-xs">Strikethrough</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-16 flex-col gap-1"
+                onClick={() => {
+                  insertText('`', '`', 'code');
+                  setMobileMoreOpen(false);
+                }}
+              >
+                <Code className="h-5 w-5" />
+                <span className="text-xs">Code</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-16 flex-col gap-1"
+                onClick={() => {
+                  handleImageUpload();
+                  setMobileMoreOpen(false);
+                }}
+              >
+                <ImageIcon className="h-5 w-5" />
+                <span className="text-xs">Image</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-16 flex-col gap-1"
+                onClick={() => {
+                  insertText('> ', '', 'quote');
+                  setMobileMoreOpen(false);
+                }}
+              >
+                <Quote className="h-5 w-5" />
+                <span className="text-xs">Quote</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-16 flex-col gap-1"
+                onClick={() => {
+                  insertBlock('| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |');
+                  setMobileMoreOpen(false);
+                }}
+              >
+                <Table className="h-5 w-5" />
+                <span className="text-xs">Table</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-16 flex-col gap-1"
+                onClick={() => {
+                  insertText('- [ ] ', '', 'task');
+                  setMobileMoreOpen(false);
+                }}
+              >
+                <CheckSquare className="h-5 w-5" />
+                <span className="text-xs">Task List</span>
+              </Button>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
 
       <div className="flex-1" />
 
-      {/* View & Settings */}
+      {/* RIGHT SIDE: View & Settings */}
       <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handlePrint}
-          title="Print (Ctrl+P)"
-        >
-          <Printer className="h-4 w-4" />
-        </Button>
-        
-        <Button
-          variant={focusMode ? "default" : "ghost"}
-          size="icon"
-          onClick={() => setFocusMode(!focusMode)}
-          title={focusMode ? "Exit Focus Mode (Esc)" : "Focus Mode (F11)"}
-        >
-          {focusMode ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-        </Button>
-
-        <Separator orientation="vertical" className="h-6" />
-        
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            forceRefreshPreview();
-            toast.success('Preview refreshed');
-          }}
-          title="Force Refresh Preview"
-        >
-          <RefreshCw className="h-4 w-4" />
-        </Button>
-        
-        <Toggle
-          pressed={syncScroll}
-          onPressedChange={setSyncScroll}
-          aria-label="Toggle Synced Scrolling"
-          title="Toggle Synced Scrolling"
-          size="sm"
-        >
-          <Link className="h-4 w-4" />
-        </Toggle>
-        
         <Toggle
           pressed={showOutline}
           onPressedChange={setShowOutline}
@@ -320,6 +427,48 @@ export const Toolbar = () => {
         >
           <ListTree className="h-4 w-4" />
         </Toggle>
+        
+        <Toggle
+          pressed={syncScroll}
+          onPressedChange={setSyncScroll}
+          aria-label="Toggle Synced Scrolling"
+          title="Toggle Synced Scrolling"
+          size="sm"
+          className={syncScroll ? "bg-primary/20" : ""}
+        >
+          <Link className="h-4 w-4" />
+        </Toggle>
+
+        <Separator orientation="vertical" className="h-6" />
+
+        {/* View Mode Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" title="View Mode">
+              {viewMode === 'split' && <SplitSquareHorizontal className="h-4 w-4" />}
+              {viewMode === 'editor' && <Eye className="h-4 w-4" />}
+              {viewMode === 'preview' && <Eye className="h-4 w-4" />}
+              <ChevronDown className="h-3 w-3 -ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-popover">
+            <DropdownMenuItem onClick={() => handleViewMode('split')}>
+              <SplitSquareHorizontal className="h-4 w-4 mr-2" />
+              Split View
+              {viewMode === 'split' && <Check className="h-4 w-4 ml-auto" />}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleViewMode('editor')}>
+              <Eye className="h-4 w-4 mr-2" />
+              Editor Only
+              {viewMode === 'editor' && <Check className="h-4 w-4 ml-auto" />}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleViewMode('preview')}>
+              <Eye className="h-4 w-4 mr-2" />
+              Preview Only
+              {viewMode === 'preview' && <Check className="h-4 w-4 ml-auto" />}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <Separator orientation="vertical" className="h-6" />
 
@@ -331,15 +480,23 @@ export const Toolbar = () => {
         >
           {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
         </Button>
+
+        <Button
+          variant={focusMode ? "default" : "ghost"}
+          size="icon"
+          onClick={() => setFocusMode(!focusMode)}
+          title={focusMode ? "Exit Focus Mode (Esc)" : "Focus Mode (F11)"}
+        >
+          {focusMode ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+        </Button>
+
         <Button
           variant="ghost"
           size="icon"
-          onClick={cycleViewMode}
-          title={`View: ${viewMode}`}
+          onClick={handlePrint}
+          title="Print (Ctrl+P)"
         >
-          {viewMode === 'split' && <SplitSquareHorizontal className="h-4 w-4" />}
-          {viewMode === 'editor' && <Eye className="h-4 w-4" />}
-          {viewMode === 'preview' && <EyeOff className="h-4 w-4" />}
+          <Printer className="h-4 w-4" />
         </Button>
       </div>
     </div>

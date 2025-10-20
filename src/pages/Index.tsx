@@ -88,30 +88,62 @@ const Index = () => {
               MDBuild.io
             </h1>
           </div>
-          <span className="text-xs text-muted-foreground hidden sm:inline">
-            Modern Markdown Editor
-          </span>
         </div>
 
-        {/* Mobile menu */}
-        <div className="lg:hidden flex items-center gap-1">
-          <Button variant="ghost" size="icon" asChild>
-            <Link to="/landing">
-              <Home className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Button variant="ghost" size="icon" onClick={() => setMobilePanel('documents')}>
-            <FileText className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={() => setMobilePanel('templates')}>
-            <BookTemplate className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={() => setMobilePanel('outline')}>
-            <List className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={() => setMobilePanel('settings')}>
-            <Settings className="h-4 w-4" />
-          </Button>
+        {/* Mobile menu - Consolidated */}
+        <div className="lg:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-64">
+              <SheetHeader>
+                <SheetTitle>Menu</SheetTitle>
+              </SheetHeader>
+              <div className="flex flex-col gap-2 mt-6">
+                <Button variant="ghost" className="justify-start" asChild>
+                  <Link to="/landing">
+                    <Home className="h-4 w-4 mr-2" />
+                    Home
+                  </Link>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="justify-start"
+                  onClick={() => setMobilePanel('documents')}
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Documents
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="justify-start"
+                  onClick={() => setMobilePanel('templates')}
+                >
+                  <BookTemplate className="h-4 w-4 mr-2" />
+                  Templates
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="justify-start"
+                  onClick={() => setMobilePanel('outline')}
+                >
+                  <List className="h-4 w-4 mr-2" />
+                  Outline
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="justify-start"
+                  onClick={() => setMobilePanel('settings')}
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Settings
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
 
         {/* Desktop menu */}

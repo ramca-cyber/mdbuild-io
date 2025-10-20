@@ -281,6 +281,40 @@ export function DocumentHeader() {
                 <DropdownMenuShortcut>Ctrl+N</DropdownMenuShortcut>
               </DropdownMenuItem>
               
+              {savedDocuments.length > 0 && (
+                <DropdownMenuItem onClick={() => setOpenDocOpen(true)} className="cursor-pointer">
+                  <FolderOpen className="h-4 w-4 mr-2" />
+                  Open Document...
+                </DropdownMenuItem>
+              )}
+              
+              {savedDocuments.length > 0 && (
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <Clock className="h-4 w-4 mr-2" />
+                    Recent Documents
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="w-56">
+                    {getRecentDocuments().map((doc) => (
+                      <DropdownMenuItem
+                        key={doc.id}
+                        onClick={() => {
+                          loadDocument(doc.id);
+                          toast.success(`Opened "${doc.name}"`);
+                        }}
+                        className={`cursor-pointer ${doc.id === currentDocId ? 'bg-accent' : ''}`}
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        <span className="truncate">{doc.name}</span>
+                        {doc.id === currentDocId && <span className="ml-auto text-primary">✓</span>}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+              )}
+              
+              <DropdownMenuSeparator />
+              
               <DropdownMenuItem 
                 onClick={handleQuickSave} 
                 className="cursor-pointer"
@@ -300,6 +334,28 @@ export function DocumentHeader() {
               )}
               
               <DropdownMenuSeparator />
+              
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <BookTemplate className="h-4 w-4 mr-2" />
+                  Templates
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent className="w-56">
+                  {templates.map((template) => (
+                    <DropdownMenuItem
+                      key={template.name}
+                      onClick={() => {
+                        useEditorStore.getState().setContent(template.content);
+                        toast.success(`Applied ${template.name} template`);
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <template.icon className="h-4 w-4 mr-2" />
+                      {template.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
               
               <DropdownMenuItem onClick={handleImport} className="cursor-pointer">
                 <FileUp className="h-4 w-4 mr-2" />
@@ -332,64 +388,6 @@ export function DocumentHeader() {
               </DropdownMenuSub>
               
               <DropdownMenuSeparator />
-              
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <BookTemplate className="h-4 w-4 mr-2" />
-                  Templates
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent className="w-56">
-                  {templates.map((template) => (
-                    <DropdownMenuItem
-                      key={template.name}
-                      onClick={() => {
-                        useEditorStore.getState().setContent(template.content);
-                        toast.success(`Applied ${template.name} template`);
-                      }}
-                      className="cursor-pointer"
-                    >
-                      <template.icon className="h-4 w-4 mr-2" />
-                      {template.name}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-              
-              <DropdownMenuSeparator />
-              
-              {savedDocuments.length > 0 && (
-                <>
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>
-                      <Clock className="h-4 w-4 mr-2" />
-                      Recent Documents
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent className="w-56">
-                      {getRecentDocuments().map((doc) => (
-                        <DropdownMenuItem
-                          key={doc.id}
-                          onClick={() => {
-                            loadDocument(doc.id);
-                            toast.success(`Opened "${doc.name}"`);
-                          }}
-                          className={`cursor-pointer ${doc.id === currentDocId ? 'bg-accent' : ''}`}
-                        >
-                          <FileText className="h-4 w-4 mr-2" />
-                          <span className="truncate">{doc.name}</span>
-                          {doc.id === currentDocId && <span className="ml-auto text-primary">✓</span>}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuSubContent>
-                  </DropdownMenuSub>
-                  
-                  <DropdownMenuItem onClick={() => setOpenDocOpen(true)} className="cursor-pointer">
-                    <FolderOpen className="h-4 w-4 mr-2" />
-                    Open Document...
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuSeparator />
-                </>
-              )}
               
               {currentDoc && (
                 <DropdownMenuItem
