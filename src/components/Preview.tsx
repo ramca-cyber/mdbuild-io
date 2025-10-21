@@ -180,11 +180,15 @@ export const Preview = () => {
     if (!previewRef.current) return;
     const root = previewRef.current;
 
-    // Build anchors map from preview content
+    // Build anchors map from preview content, accounting for zoom
     const rebuildAnchors = () => {
       const nodes = Array.from(root.querySelectorAll('[data-line]')) as HTMLElement[];
+      const zoomScale = previewSettings.previewZoom / 100;
       const anchors = nodes
-        .map((el) => ({ line: parseInt(el.getAttribute('data-line') || '0', 10) || 0, top: el.offsetTop }))
+        .map((el) => ({ 
+          line: parseInt(el.getAttribute('data-line') || '0', 10) || 0, 
+          top: el.offsetTop * zoomScale 
+        }))
         .filter((a) => a.line > 0)
         .sort((a, b) => a.line - b.line);
       anchorsRef.current = anchors;
@@ -230,7 +234,7 @@ export const Preview = () => {
       resizeObserver.disconnect();
       window.removeEventListener('resize', emitCurrent);
     };
-  }, [content]);
+  }, [content, previewSettings.previewZoom]);
 
   // Robust synchronized scrolling using RAF + lock to prevent feedback loops
   useEffect(() => {
