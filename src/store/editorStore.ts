@@ -56,8 +56,8 @@ interface EditorState {
   customWordLimit: number | null;
   customCharLimit: number | null;
   
-  // Print Settings
-  printSettings: {
+  // Document Settings (for preview, export, and print)
+  documentSettings: {
     paperSize: 'A4' | 'Letter' | 'Legal';
     orientation: 'portrait' | 'landscape';
     margins: 'normal' | 'narrow' | 'wide';
@@ -127,8 +127,8 @@ interface EditorState {
   setCustomWordLimit: (limit: number | null) => void;
   setCustomCharLimit: (limit: number | null) => void;
   
-  // Print Settings actions
-  setPrintSettings: (settings: Partial<EditorState['printSettings']>) => void;
+  // Document Settings actions
+  setDocumentSettings: (settings: Partial<EditorState['documentSettings']>) => void;
 }
 
 const defaultContent = `# Welcome to MDBuild.io 🚀
@@ -475,8 +475,8 @@ export const useEditorStore = create<EditorState>()(
       customWordLimit: null,
       customCharLimit: null,
       
-      // Print Settings initial state
-      printSettings: {
+      // Document Settings initial state
+      documentSettings: {
         paperSize: 'A4',
         orientation: 'portrait',
         margins: 'normal',
@@ -832,9 +832,9 @@ export const useEditorStore = create<EditorState>()(
       setCustomWordLimit: (limit) => set({ customWordLimit: limit }),
       setCustomCharLimit: (limit) => set({ customCharLimit: limit }),
       
-      // Print Settings methods
-      setPrintSettings: (settings) => set({ 
-        printSettings: { ...get().printSettings, ...settings } 
+      // Document Settings methods
+      setDocumentSettings: (settings) => set({ 
+        documentSettings: { ...get().documentSettings, ...settings } 
       }),
     }),
     {

@@ -139,13 +139,37 @@ interface ContentSection {
 export const createDocxFromPreview = async (
   previewElement: HTMLElement,
   fileName: string,
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
+  documentSettings?: any
 ): Promise<Blob> => {
   onProgress?.(10);
   await waitForContentToRender();
   onProgress?.(20);
 
   const sections: any[] = [];
+  
+  // Get document settings from store if not provided
+  if (!documentSettings) {
+    const { useEditorStore } = await import('@/store/editorStore');
+    documentSettings = useEditorStore.getState().documentSettings;
+  }
+  
+  // Map settings to DOCX values
+  const paperSizeMap: any = {
+    A4: { width: 11906, height: 16838 }, // A4 in twips
+    Letter: { width: 12240, height: 15840 }, // Letter in twips
+    Legal: { width: 12240, height: 20160 } // Legal in twips
+  };
+  
+  const marginMap: any = {
+    narrow: 720,  // 0.5 inch in twips
+    normal: 1440, // 1 inch in twips
+    wide: 2160    // 1.5 inch in twips
+  };
+  
+  const pageSize = paperSizeMap[documentSettings.paperSize] || paperSizeMap.Letter;
+  const pageMargin = marginMap[documentSettings.margins] || marginMap.normal;
+  const orientation = documentSettings.orientation === 'landscape' ? 'landscape' : 'portrait';
 
   // Process all child elements
   const processElement = async (element: Element): Promise<any[]> => {
@@ -417,23 +441,22 @@ export const createDocxFromPreview = async (
   }
   onProgress?.(85);
 
-  // Create the document with letter size (8.5" x 11")
+  // Create the document with configured settings
   const doc = new Document({
     sections: [
       {
         properties: {
           page: {
             size: {
-              // Letter size in twips (1/1440 inch)
-              // 8.5" = 12240 twips, 11" = 15840 twips
-              width: 12240,
-              height: 15840,
+              width: orientation === 'landscape' ? pageSize.height : pageSize.width,
+              height: orientation === 'landscape' ? pageSize.width : pageSize.height,
+              orientation: orientation === 'landscape' ? 'landscape' : 'portrait',
             },
             margin: {
-              top: 1440,    // 1 inch
-              right: 1440,  // 1 inch
-              bottom: 1440, // 1 inch
-              left: 1440,   // 1 inch
+              top: pageMargin,
+              right: pageMargin,
+              bottom: pageMargin,
+              left: pageMargin,
             },
           },
         },
@@ -455,13 +478,21 @@ export const createDocxFromPreview = async (
 export const exportToPdfWithRendering = async (
   previewElement: HTMLElement,
   fileName: string,
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
+  documentSettings?: any
 ): Promise<void> => {
   onProgress?.(10);
   const { jsPDF } = await import('jspdf');
   const html2canvas = (await import('html2canvas')).default;
 
   onProgress?.(20);
+  
+  // Get document settings from store if not provided
+  if (!documentSettings) {
+    const { useEditorStore } = await import('@/store/editorStore');
+    documentSettings = useEditorStore.getState().documentSettings;
+  }
+  
   // Wait for all content to render
   await waitForContentToRender();
   onProgress?.(30);
@@ -482,15 +513,24 @@ export const exportToPdfWithRendering = async (
   onProgress?.(60);
 
   const imgData = canvas.toDataURL('image/png');
+  
+  // Use document settings for PDF
+  const format = documentSettings.paperSize === 'A4' ? 'a4' : documentSettings.paperSize === 'Legal' ? 'legal' : 'letter';
+  const orientation = documentSettings.orientation === 'landscape' ? 'landscape' : 'portrait';
+  
   const pdf = new jsPDF({
-    orientation: 'portrait',
+    orientation,
     unit: 'mm',
-    format: 'letter', // US Letter size (8.5" x 11" / 215.9mm x 279.4mm)
+    format,
   });
 
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 15;
+  
+  // Apply margin from document settings
+  const marginMap: any = { narrow: 13, normal: 25, wide: 38 }; // in mm
+  const margin = marginMap[documentSettings.margins] || marginMap.normal;
+  
   const availableWidth = pageWidth - margin * 2;
   
   // Convert pixels to mm properly (assuming 96 DPI)

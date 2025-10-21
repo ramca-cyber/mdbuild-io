@@ -36,11 +36,48 @@ const rehypeAddLineNumbers = () => {
 };
 
 export const Preview = () => {
-  const { content, syncScroll } = useEditorStore();
+  const { content, syncScroll, documentSettings } = useEditorStore();
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const syncScrollRef = useRef(syncScroll);
   const anchorsRef = useRef<{ line: number; top: number }[]>([]);
+  
+  // Apply document settings to preview
+  useEffect(() => {
+    if (!previewRef.current) return;
+    
+    const article = previewRef.current.querySelector('article');
+    if (!article) return;
+    
+    const htmlArticle = article as HTMLElement;
+    
+    // Apply margins
+    const marginPx = documentSettings.margins === 'narrow' ? '0.5in' : documentSettings.margins === 'wide' ? '1.5in' : '1in';
+    htmlArticle.style.padding = marginPx;
+    
+    // Apply font size
+    const fontSizeMap = { small: '14px', medium: '16px', large: '18px' };
+    htmlArticle.style.fontSize = fontSizeMap[documentSettings.fontSize];
+    
+    // Apply color mode
+    if (documentSettings.colorMode === 'grayscale') {
+      htmlArticle.style.filter = 'grayscale(100%)';
+    } else if (documentSettings.colorMode === 'blackwhite') {
+      htmlArticle.style.filter = 'grayscale(100%) contrast(200%)';
+    } else {
+      htmlArticle.style.filter = 'none';
+    }
+    
+    // Apply two-column layout
+    if (documentSettings.columns === 'two') {
+      htmlArticle.style.columnCount = '2';
+      htmlArticle.style.columnGap = '2rem';
+    } else {
+      htmlArticle.style.columnCount = 'unset';
+      htmlArticle.style.columnGap = 'unset';
+    }
+  }, [documentSettings]);
+  
   // Optimized copy buttons with proper cleanup and memoization
   const addCopyButtons = useCallback(() => {
     if (!previewRef.current) return;
@@ -265,11 +302,25 @@ export const Preview = () => {
   }, [content]);
 
   // Memoize ReactMarkdown to prevent unnecessary re-renders
+  const remarkPlugins = useMemo(() => {
+    const plugins: any[] = [remarkGfm, remarkMath, remarkEmoji, remarkFrontmatter, remarkDirective, remarkGithubBlockquoteAlert, remarkFootnotes];
+    return plugins;
+  }, []);
+  
+  const rehypePlugins = useMemo(() => {
+    const plugins: any[] = [rehypeRaw, rehypeKatex, rehypeAddLineNumbers];
+    // Conditionally add syntax highlighting based on document settings
+    if (documentSettings.syntaxHighlighting) {
+      plugins.push(rehypeHighlight);
+    }
+    return plugins;
+  }, [documentSettings.syntaxHighlighting]);
+
   const markdownContent = useMemo(
     () => (
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath, remarkEmoji, remarkFrontmatter, remarkDirective, remarkGithubBlockquoteAlert, remarkFootnotes]}
-        rehypePlugins={[rehypeRaw, rehypeKatex, rehypeHighlight, rehypeAddLineNumbers]}
+        remarkPlugins={remarkPlugins}
+        rehypePlugins={rehypePlugins}
         components={{
           code({ className, children, ...props }: CodeProps) {
             const match = /language-(\w+)/.exec(className || '');

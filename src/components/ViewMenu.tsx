@@ -30,7 +30,7 @@ import {
   Settings2,
 } from 'lucide-react';
 import { useEditorStore } from '@/store/editorStore';
-import { PrintSettingsDialog } from '@/components/PrintSettingsDialog';
+import { DocumentSettingsDialog } from '@/components/DocumentSettingsDialog';
 
 export function ViewMenu() {
   const {
@@ -50,7 +50,7 @@ export function ViewMenu() {
     resetZoom,
   } = useEditorStore();
   
-  const [showPrintSettings, setShowPrintSettings] = useState(false);
+  const [showDocumentSettings, setShowDocumentSettings] = useState(false);
 
   const handlePrint = () => {
     window.print();
@@ -177,9 +177,9 @@ export function ViewMenu() {
           <MenubarSeparator />
 
           {/* Print Options */}
-          <MenubarItem onClick={() => setShowPrintSettings(true)}>
+          <MenubarItem onClick={() => setShowDocumentSettings(true)}>
             <Settings2 className="h-4 w-4 mr-2" />
-            Print Settings...
+            Document Settings...
           </MenubarItem>
 
           <MenubarItem onClick={handlePrintPreview}>
@@ -195,9 +195,9 @@ export function ViewMenu() {
         </MenubarContent>
       </MenubarMenu>
       
-      <PrintSettingsDialog 
-        open={showPrintSettings} 
-        onOpenChange={setShowPrintSettings}
+      <DocumentSettingsDialog 
+        open={showDocumentSettings} 
+        onOpenChange={setShowDocumentSettings}
       />
     </Menubar>
   );

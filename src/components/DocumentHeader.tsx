@@ -183,6 +183,7 @@ export function DocumentHeader() {
       const toastId = toast.loading('Exporting HTML...');
       
       const { exportToHtmlWithInlineStyles } = await import('@/lib/exportUtils');
+      const { documentSettings } = useEditorStore.getState();
       
       await exportToHtmlWithInlineStyles(
         previewElement as HTMLElement, 
@@ -212,12 +213,15 @@ export function DocumentHeader() {
       const toastId = toast.loading('Generating PDF...');
       
       const { exportToPdfWithRendering } = await import('@/lib/exportUtils');
+      const { documentSettings } = useEditorStore.getState();
+      
       await exportToPdfWithRendering(
         previewElement as HTMLElement, 
         fileName,
         (progress) => {
           toast.loading(`Generating PDF... ${progress}%`, { id: toastId });
-        }
+        },
+        documentSettings
       );
       
       toast.success('Exported as PDF', { id: toastId });
@@ -240,12 +244,15 @@ export function DocumentHeader() {
       const toastId = toast.loading('Preparing DOCX export...');
       
       const { createDocxFromPreview } = await import('@/lib/exportUtils');
+      const { documentSettings } = useEditorStore.getState();
+      
       const blob = await createDocxFromPreview(
         previewElement as HTMLElement, 
         fileName,
         (progress) => {
           toast.loading(`Preparing DOCX... ${progress}%`, { id: toastId });
-        }
+        },
+        documentSettings
       );
       
       const url = URL.createObjectURL(blob);

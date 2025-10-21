@@ -9,23 +9,27 @@ import { Input } from '@/components/ui/input';
 import { useEditorStore } from '@/store/editorStore';
 import { Printer, FileText, Settings2, Layout } from 'lucide-react';
 
-interface PrintSettingsDialogProps {
+interface DocumentSettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export const PrintSettingsDialog = ({ open, onOpenChange }: PrintSettingsDialogProps) => {
-  const { printSettings, setPrintSettings, viewMode, setViewMode } = useEditorStore();
+export const DocumentSettingsDialog = ({ open, onOpenChange }: DocumentSettingsDialogProps) => {
+  const { documentSettings, setDocumentSettings, viewMode, setViewMode } = useEditorStore();
   
-  const [localSettings, setLocalSettings] = useState(printSettings);
+  const [localSettings, setLocalSettings] = useState(documentSettings);
 
   const handlePrint = () => {
-    setPrintSettings(localSettings);
+    setDocumentSettings(localSettings);
     onOpenChange(false);
     
-    // Set to preview mode and trigger print
+    // Apply settings and trigger print
     const originalMode = viewMode;
     setViewMode('preview');
+    
+    // Apply document settings as CSS variables
+    applyDocumentSettingsToPrint(localSettings);
+    
     setTimeout(() => {
       window.print();
       setViewMode(originalMode);
@@ -33,7 +37,23 @@ export const PrintSettingsDialog = ({ open, onOpenChange }: PrintSettingsDialogP
   };
 
   const handleSaveDefault = () => {
-    setPrintSettings(localSettings);
+    setDocumentSettings(localSettings);
+  };
+  
+  // Helper to apply settings before printing
+  const applyDocumentSettingsToPrint = (settings: typeof documentSettings) => {
+    const root = document.documentElement;
+    
+    // Apply margin CSS variable
+    const marginValue = settings.margins === 'narrow' ? '0.5in' : settings.margins === 'wide' ? '1.5in' : '1in';
+    root.style.setProperty('--print-margin', marginValue);
+    
+    // Apply font size CSS variable
+    const fontSizeValue = settings.fontSize === 'small' ? '10pt' : settings.fontSize === 'large' ? '14pt' : '12pt';
+    root.style.setProperty('--print-font-size', fontSizeValue);
+    
+    // Apply color mode
+    root.style.setProperty('--print-color-mode', settings.colorMode === 'grayscale' ? 'grayscale(100%)' : settings.colorMode === 'blackwhite' ? 'grayscale(100%) contrast(200%)' : 'none');
   };
 
   return (
@@ -41,11 +61,11 @@ export const PrintSettingsDialog = ({ open, onOpenChange }: PrintSettingsDialogP
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Printer className="h-5 w-5" />
-            Print Settings
+            <Settings2 className="h-5 w-5" />
+            Document Settings
           </DialogTitle>
           <DialogDescription>
-            Customize how your document will be printed
+            Customize document layout for preview, print, and export
           </DialogDescription>
         </DialogHeader>
 

@@ -401,7 +401,7 @@ All colors MUST be HSL.
   }
 }
 
-/* Print Styles */
+/* Print Styles with CSS Variables */
 @media print {
   /* Hide specific UI elements */
   .no-print {
@@ -454,12 +454,12 @@ All colors MUST be HSL.
     visibility: visible !important;
   }
 
-  /* Format preview content for print */
+  /* Format preview content for print with CSS variables */
   .preview-content {
     max-width: 100% !important;
     width: 100% !important;
     height: auto !important;
-    padding: 1rem !important;
+    padding: var(--print-margin, 1in) !important;
     margin: 0 !important;
     overflow: visible !important;
     background: white !important;
@@ -470,6 +470,8 @@ All colors MUST be HSL.
     max-width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
+    font-size: var(--print-font-size, 12pt) !important;
+    filter: var(--print-color-mode, none) !important;
   }
 
   /* Optimize for printing */
