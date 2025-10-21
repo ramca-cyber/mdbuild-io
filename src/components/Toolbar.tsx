@@ -40,6 +40,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ViewModeSwitcher } from '@/components/ViewModeSwitcher';
+import { EmojiPicker } from '@/components/EmojiPicker';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export const Toolbar = () => {
   const [mobileMoreOpen, setMobileMoreOpen] = React.useState(false);
@@ -87,47 +89,70 @@ export const Toolbar = () => {
     }
   };
 
+  const handleEmojiInsert = (emoji: string) => {
+    dispatchWrap('', '', emoji);
+    toast.success('Emoji inserted');
+  };
+
   return (
-    <div className="flex items-center gap-2 px-2 sm:px-4 py-2 bg-toolbar-bg border-b border-border overflow-x-auto no-print">
+    <TooltipProvider>
+      <div className="flex items-center gap-2 px-2 sm:px-4 py-2 bg-toolbar-bg border-b border-border overflow-x-auto no-print">
       {/* LEFT SIDE: Content Formatting - Always visible on desktop */}
       <div className="hidden sm:flex items-center gap-1 bg-muted/30 rounded-md px-2 py-1 border border-border/50">
         <span className="text-xs font-semibold text-muted-foreground mr-1 hidden md:inline">Format</span>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => dispatchWrap('**', '**', 'bold')}
-          title="Bold (Ctrl+B)"
-          aria-label="Bold formatting"
-        >
-          <Bold className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => dispatchWrap('*', '*', 'italic')}
-          title="Italic (Ctrl+I)"
-          aria-label="Italic formatting"
-        >
-          <Italic className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => dispatchWrap('~~', '~~', 'strikethrough')}
-          title="Strikethrough"
-          aria-label="Strikethrough formatting"
-        >
-          <Strikethrough className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => dispatchWrap('`', '`', 'code')}
-          title="Inline Code"
-          aria-label="Inline code formatting"
-        >
-          <Code className="h-4 w-4" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => dispatchWrap('**', '**', 'bold')}
+              aria-label="Bold formatting"
+            >
+              <Bold className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Bold (Ctrl+B)</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => dispatchWrap('*', '*', 'italic')}
+              aria-label="Italic formatting"
+            >
+              <Italic className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Italic (Ctrl+I)</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => dispatchWrap('~~', '~~', 'strikethrough')}
+              aria-label="Strikethrough formatting"
+            >
+              <Strikethrough className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Strikethrough</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => dispatchWrap('`', '`', 'code')}
+              aria-label="Inline code formatting"
+            >
+              <Code className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Inline Code</TooltipContent>
+        </Tooltip>
+        <EmojiPicker onEmojiSelect={handleEmojiInsert} />
       </div>
 
       <Separator orientation="vertical" className="h-6 hidden sm:block mx-1" />
@@ -135,40 +160,45 @@ export const Toolbar = () => {
       {/* Headings */}
       <div className="hidden sm:flex items-center gap-1 bg-muted/30 rounded-md px-2 py-1 border border-border/50">
         <span className="text-xs font-semibold text-muted-foreground mr-1 hidden md:inline">Structure</span>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" title="Insert Heading" aria-label="Insert heading">
-              <Heading className="h-4 w-4" />
-              <ChevronDown className="h-3 w-3 -ml-1" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="bg-popover">
-            <DropdownMenuItem onClick={() => dispatchWrap('# ', '', 'Heading 1')}>
-              <Heading1 className="h-4 w-4 mr-2" />
-              Heading 1
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => dispatchWrap('## ', '', 'Heading 2')}>
-              <Heading2 className="h-4 w-4 mr-2" />
-              Heading 2
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => dispatchWrap('### ', '', 'Heading 3')}>
-              <Heading className="h-4 w-4 mr-2" />
-              Heading 3
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => dispatchWrap('#### ', '', 'Heading 4')}>
-              <Heading className="h-4 w-4 mr-2" />
-              Heading 4
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => dispatchWrap('##### ', '', 'Heading 5')}>
-              <Heading className="h-4 w-4 mr-2" />
-              Heading 5
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => dispatchWrap('###### ', '', 'Heading 6')}>
-              <Heading className="h-4 w-4 mr-2" />
-              Heading 6
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Tooltip>
+          <DropdownMenu>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Insert heading">
+                  <Heading className="h-4 w-4" />
+                  <ChevronDown className="h-3 w-3 -ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>Insert Heading</TooltipContent>
+            <DropdownMenuContent align="start" className="bg-popover z-50">
+              <DropdownMenuItem onClick={() => dispatchWrap('# ', '', 'Heading 1')}>
+                <Heading1 className="h-4 w-4 mr-2" />
+                Heading 1
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => dispatchWrap('## ', '', 'Heading 2')}>
+                <Heading2 className="h-4 w-4 mr-2" />
+                Heading 2
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => dispatchWrap('### ', '', 'Heading 3')}>
+                <Heading className="h-4 w-4 mr-2" />
+                Heading 3
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => dispatchWrap('#### ', '', 'Heading 4')}>
+                <Heading className="h-4 w-4 mr-2" />
+                Heading 4
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => dispatchWrap('##### ', '', 'Heading 5')}>
+                <Heading className="h-4 w-4 mr-2" />
+                Heading 5
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => dispatchWrap('###### ', '', 'Heading 6')}>
+                <Heading className="h-4 w-4 mr-2" />
+                Heading 6
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </Tooltip>
       </div>
 
       <Separator orientation="vertical" className="h-6 hidden sm:block mx-1" />
@@ -394,5 +424,6 @@ export const Toolbar = () => {
         <ViewModeSwitcher />
       </div>
     </div>
+    </TooltipProvider>
   );
 };

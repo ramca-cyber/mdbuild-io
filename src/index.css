@@ -595,3 +595,42 @@ All colors MUST be HSL.
     display: none !important;
   }
 }
+
+/* Footnotes styling */
+.footnotes {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid hsl(var(--border));
+  font-size: 0.875rem;
+}
+
+.footnotes ol {
+  margin: 0;
+  padding-left: 1.5rem;
+  list-style: decimal;
+}
+
+.footnotes li {
+  margin-bottom: 0.5rem;
+}
+
+.footnote-ref {
+  text-decoration: none;
+  font-weight: 600;
+  color: hsl(var(--primary));
+}
+
+.footnote-ref:hover {
+  text-decoration: underline;
+}
+
+.footnote-backref {
+  margin-left: 0.5rem;
+  text-decoration: none;
+  color: hsl(var(--muted-foreground));
+}
+
+.footnote-backref:hover {
+  color: hsl(var(--primary));
+}
+

@@ -48,6 +48,9 @@ interface EditorState {
   currentSearchIndex: number;
   searchOptions: SearchOptions;
   
+  // Save state
+  isSaving: boolean;
+  
   // Word/Character Limit Warnings
   wordLimitWarningsEnabled: boolean;
   customWordLimit: number | null;
@@ -85,6 +88,7 @@ interface EditorState {
   setCurrentDocId: (id: string | null) => void;
   forceRefreshPreview: () => void;
   setStatisticsExpanded: (expanded: boolean) => void;
+  setIsSaving: (isSaving: boolean) => void;
   saveDocument: (name: string) => void;
   saveDocumentAs: (name: string) => void;
   loadDocument: (id: string) => void;
@@ -426,6 +430,9 @@ export const useEditorStore = create<EditorState>()(
         useRegex: false,
       },
       
+      // Save state
+      isSaving: false,
+      
       // Word/Character Limit Warnings initial state
       wordLimitWarningsEnabled: false,
       customWordLimit: null,
@@ -514,41 +521,58 @@ export const useEditorStore = create<EditorState>()(
       setCurrentDocId: (id) => set({ currentDocId: id }),
       forceRefreshPreview: () => set({ previewRefreshKey: get().previewRefreshKey + 1 }),
       setStatisticsExpanded: (expanded) => set({ statisticsExpanded: expanded }),
+      setIsSaving: (isSaving) => set({ isSaving }),
       saveDocument: (name) => {
         const state = get();
         
-        if (state.currentDocId) {
-          const docIndex = state.savedDocuments.findIndex(
-            (d) => d.id === state.currentDocId
-          );
+        // Prevent race conditions
+        if (state.isSaving) {
+          console.warn('Save already in progress');
+          return;
+        }
+        
+        try {
+          set({ isSaving: true });
           
-          if (docIndex !== -1) {
-            const updatedDocs = [...state.savedDocuments];
-            updatedDocs[docIndex] = {
-              ...updatedDocs[docIndex],
+          if (state.currentDocId) {
+            const docIndex = state.savedDocuments.findIndex(
+              (d) => d.id === state.currentDocId
+            );
+            
+            if (docIndex !== -1) {
+              const updatedDocs = [...state.savedDocuments];
+              updatedDocs[docIndex] = {
+                ...updatedDocs[docIndex],
+                name,
+                content: state.content,
+                timestamp: Date.now(),
+              };
+              set({ 
+                savedDocuments: updatedDocs,
+                lastSavedContent: state.content,
+                hasUnsavedChanges: false,
+                isSaving: false
+              });
+            }
+          } else {
+            const newDoc: SavedDocument = {
+              id: Date.now().toString(),
               name,
               content: state.content,
               timestamp: Date.now(),
             };
-            set({ 
-              savedDocuments: updatedDocs,
+            set({
+              savedDocuments: [...state.savedDocuments, newDoc],
+              currentDocId: newDoc.id,
               lastSavedContent: state.content,
-              hasUnsavedChanges: false
+              hasUnsavedChanges: false,
+              isSaving: false
             });
           }
-        } else {
-          const newDoc: SavedDocument = {
-            id: Date.now().toString(),
-            name,
-            content: state.content,
-            timestamp: Date.now(),
-          };
-          set({
-            savedDocuments: [...state.savedDocuments, newDoc],
-            currentDocId: newDoc.id,
-            lastSavedContent: state.content,
-            hasUnsavedChanges: false
-          });
+        } catch (error) {
+          console.error('Error saving document:', error);
+          set({ isSaving: false });
+          throw error;
         }
       },
       saveDocumentAs: (name) => {
@@ -677,8 +701,17 @@ export const useEditorStore = create<EditorState>()(
         try {
           let searchPattern: RegExp;
           
+          // Validate regex before creating pattern
           if (searchOptions.useRegex) {
-            searchPattern = new RegExp(query, searchOptions.caseSensitive ? 'g' : 'gi');
+            try {
+              // Test if the regex is valid
+              new RegExp(query);
+              searchPattern = new RegExp(query, searchOptions.caseSensitive ? 'g' : 'gi');
+            } catch (regexError) {
+              console.error('Invalid regex pattern:', regexError);
+              set({ searchResults: [], currentSearchIndex: 0 });
+              return;
+            }
           } else {
             const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const pattern = searchOptions.wholeWord ? `\\b${escapedQuery}\\b` : escapedQuery;
@@ -700,6 +733,7 @@ export const useEditorStore = create<EditorState>()(
 
           set({ searchResults: results, currentSearchIndex: results.length > 0 ? 0 : 0 });
         } catch (error) {
+          console.error('Search error:', error);
           set({ searchResults: [], currentSearchIndex: 0 });
         }
       },

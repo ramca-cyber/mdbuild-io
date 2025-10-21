@@ -6,12 +6,14 @@ import remarkEmoji from 'remark-emoji';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkDirective from 'remark-directive';
 import remarkGithubBlockquoteAlert from 'remark-github-blockquote-alert';
+import { remarkFootnotes } from '@/lib/remarkFootnotes';
 import rehypeKatex from 'rehype-katex';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
 import { useEditorStore } from '@/store/editorStore';
 import { useToast } from '@/hooks/use-toast';
 import { MermaidDiagram } from '@/components/MermaidDiagram';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { visit } from 'unist-util-visit';
 
 // TypeScript interfaces
@@ -266,7 +268,7 @@ export const Preview = () => {
   const markdownContent = useMemo(
     () => (
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath, remarkEmoji, remarkFrontmatter, remarkDirective, remarkGithubBlockquoteAlert]}
+        remarkPlugins={[remarkGfm, remarkMath, remarkEmoji, remarkFrontmatter, remarkDirective, remarkGithubBlockquoteAlert, remarkFootnotes]}
         rehypePlugins={[rehypeRaw, rehypeKatex, rehypeHighlight, rehypeAddLineNumbers]}
         components={{
           code({ className, children, ...props }: CodeProps) {
@@ -274,7 +276,15 @@ export const Preview = () => {
             const isInline = !match;
             
             if (!isInline && match?.[1] === 'mermaid') {
-              return <MermaidDiagram code={String(children)} />;
+              return (
+                <ErrorBoundary fallback={
+                  <div className="p-4 border border-destructive rounded bg-destructive/10 text-destructive">
+                    <strong>Diagram Error:</strong> Failed to render Mermaid diagram
+                  </div>
+                }>
+                  <MermaidDiagram code={String(children)} />
+                </ErrorBoundary>
+              );
             }
 
             return (
