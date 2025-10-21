@@ -32,15 +32,23 @@ export const OutlinePanel = () => {
   }, [content]);
 
   const scrollToHeading = (text: string) => {
-    const previewElement = document.querySelector('.preview-content');
-    if (previewElement) {
-      const headingElements = previewElement.querySelectorAll('h1, h2, h3, h4, h5, h6');
-      const target = Array.from(headingElements).find(
-        (el) => el.textContent?.trim() === text
-      );
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const preview = document.querySelector('.preview-content') as HTMLElement | null;
+    if (!preview) return;
+
+    const headingElements = preview.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    const target = Array.from(headingElements).find(
+      (el) => el.textContent?.trim() === text
+    ) as HTMLElement | undefined;
+
+    if (target) {
+      // Compute unscaled offset relative to the scroll container
+      let top = 0;
+      let node: HTMLElement | null = target;
+      while (node && node !== preview) {
+        top += node.offsetTop;
+        node = node.offsetParent as HTMLElement | null;
       }
+      preview.scrollTo({ top, behavior: 'smooth' });
     }
   };
 

@@ -201,11 +201,10 @@ export const Preview = () => {
     // Build anchors map from preview content, accounting for zoom
     const rebuildAnchors = () => {
       const nodes = Array.from(root.querySelectorAll('[data-line]')) as HTMLElement[];
-      const zoomScale = previewSettings.previewZoom / 100;
       const anchors = nodes
         .map((el) => ({ 
           line: parseInt(el.getAttribute('data-line') || '0', 10) || 0, 
-          top: el.offsetTop * zoomScale 
+          top: el.offsetTop 
         }))
         .filter((a) => a.line > 0)
         .sort((a, b) => a.line - b.line);
