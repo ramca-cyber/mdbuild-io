@@ -1,3 +1,8 @@
+# Allow all search engines
+User-agent: *
+Allow: /
+
+# Specific bots
 User-agent: Googlebot
 Allow: /
 
@@ -10,7 +15,8 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
-Allow: /
+# Crawl delay
+Crawl-delay: 0
 
+# Sitemap
 Sitemap: https://mdbuild.io/sitemap.xml

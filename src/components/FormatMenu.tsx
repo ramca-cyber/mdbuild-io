@@ -11,11 +11,59 @@ import {
   MenubarSubTrigger,
   MenubarTrigger,
 } from '@/components/ui/menubar';
-import { WrapText, Hash, ZoomIn, ZoomOut, RotateCcw, Type, Eraser } from 'lucide-react';
+import { 
+  WrapText, Hash, ZoomIn, ZoomOut, RotateCcw, Type, Eraser,
+  Bold, Italic, Strikethrough, Code, Heading, Heading1, Heading2,
+  List, ListOrdered, CheckSquare, Link2, Image as ImageIcon,
+  Quote, Table, Minus
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 export function FormatMenu() {
   const { lineWrap, setLineWrap, lineNumbers, setLineNumbers, content, setContent, zoomIn, zoomOut, resetZoom } = useEditorStore();
+
+  // Dispatch wrap insertion (for inline formatting)
+  const dispatchWrap = (before: string, after: string = '', placeholder: string = 'text') => {
+    window.dispatchEvent(new CustomEvent('editor-insert', { 
+      detail: { kind: 'wrap', before, after, placeholder } 
+    }));
+  };
+
+  // Dispatch block insertion (for block elements)
+  const dispatchBlock = (block: string) => {
+    window.dispatchEvent(new CustomEvent('editor-insert', { 
+      detail: { kind: 'block', block } 
+    }));
+  };
+
+  const handleLinkInsert = () => {
+    try {
+      const url = prompt('Enter link URL:', 'https://');
+      if (url && url.trim()) {
+        const linkText = prompt('Enter link text (or leave empty to use URL):', '');
+        const text = linkText?.trim() || url.trim();
+        dispatchWrap('[', `](${url.trim()})`, text);
+        toast.success('Link inserted successfully');
+      }
+    } catch (error) {
+      console.error('Error inserting link:', error);
+      toast.error('Failed to insert link. Please try again.');
+    }
+  };
+
+  const handleImageUpload = () => {
+    try {
+      const url = prompt('Enter image URL:', 'https://');
+      if (url && url.trim()) {
+        const altText = prompt('Enter image description (optional):', 'image');
+        dispatchBlock(`![${altText || 'image'}](${url.trim()})`);
+        toast.success('Image inserted successfully');
+      }
+    } catch (error) {
+      console.error('Error inserting image:', error);
+      toast.error('Failed to insert image. Please try again.');
+    }
+  };
 
   const handleConvertCase = (caseType: 'upper' | 'lower' | 'title') => {
     window.dispatchEvent(
@@ -64,6 +112,119 @@ export function FormatMenu() {
             <Hash className="h-4 w-4 mr-2" />
             Line Numbers {lineNumbers && '✓'}
           </MenubarItem>
+          
+          <MenubarSeparator />
+          
+          <MenubarItem onClick={() => dispatchWrap('**', '**', 'bold')}>
+            <Bold className="h-4 w-4 mr-2" />
+            Bold
+            <MenubarShortcut>{modKey}+B</MenubarShortcut>
+          </MenubarItem>
+          <MenubarItem onClick={() => dispatchWrap('*', '*', 'italic')}>
+            <Italic className="h-4 w-4 mr-2" />
+            Italic
+            <MenubarShortcut>{modKey}+I</MenubarShortcut>
+          </MenubarItem>
+          <MenubarItem onClick={() => dispatchWrap('~~', '~~', 'strikethrough')}>
+            <Strikethrough className="h-4 w-4 mr-2" />
+            Strikethrough
+          </MenubarItem>
+          <MenubarItem onClick={() => dispatchWrap('`', '`', 'code')}>
+            <Code className="h-4 w-4 mr-2" />
+            Inline Code
+          </MenubarItem>
+          
+          <MenubarSeparator />
+          
+          <MenubarSub>
+            <MenubarSubTrigger>
+              <Heading className="h-4 w-4 mr-2" />
+              Heading
+            </MenubarSubTrigger>
+            <MenubarSubContent>
+              <MenubarItem onClick={() => dispatchWrap('# ', '', 'Heading 1')}>
+                <Heading1 className="h-4 w-4 mr-2" />
+                Heading 1
+                <MenubarShortcut>{modKey}+1</MenubarShortcut>
+              </MenubarItem>
+              <MenubarItem onClick={() => dispatchWrap('## ', '', 'Heading 2')}>
+                <Heading2 className="h-4 w-4 mr-2" />
+                Heading 2
+                <MenubarShortcut>{modKey}+2</MenubarShortcut>
+              </MenubarItem>
+              <MenubarItem onClick={() => dispatchWrap('### ', '', 'Heading 3')}>
+                <Heading className="h-4 w-4 mr-2" />
+                Heading 3
+              </MenubarItem>
+              <MenubarItem onClick={() => dispatchWrap('#### ', '', 'Heading 4')}>
+                <Heading className="h-4 w-4 mr-2" />
+                Heading 4
+              </MenubarItem>
+              <MenubarItem onClick={() => dispatchWrap('##### ', '', 'Heading 5')}>
+                <Heading className="h-4 w-4 mr-2" />
+                Heading 5
+              </MenubarItem>
+              <MenubarItem onClick={() => dispatchWrap('###### ', '', 'Heading 6')}>
+                <Heading className="h-4 w-4 mr-2" />
+                Heading 6
+              </MenubarItem>
+            </MenubarSubContent>
+          </MenubarSub>
+          
+          <MenubarSub>
+            <MenubarSubTrigger>
+              <List className="h-4 w-4 mr-2" />
+              Lists
+            </MenubarSubTrigger>
+            <MenubarSubContent>
+              <MenubarItem onClick={() => dispatchWrap('- ', '', 'list item')}>
+                <List className="h-4 w-4 mr-2" />
+                Bullet List
+              </MenubarItem>
+              <MenubarItem onClick={() => dispatchWrap('1. ', '', 'list item')}>
+                <ListOrdered className="h-4 w-4 mr-2" />
+                Numbered List
+              </MenubarItem>
+              <MenubarItem onClick={() => dispatchWrap('- [ ] ', '', 'task')}>
+                <CheckSquare className="h-4 w-4 mr-2" />
+                Task List
+              </MenubarItem>
+            </MenubarSubContent>
+          </MenubarSub>
+          
+          <MenubarSub>
+            <MenubarSubTrigger>
+              <ImageIcon className="h-4 w-4 mr-2" />
+              Insert
+            </MenubarSubTrigger>
+            <MenubarSubContent>
+              <MenubarItem onClick={handleLinkInsert}>
+                <Link2 className="h-4 w-4 mr-2" />
+                Link
+                <MenubarShortcut>{modKey}+K</MenubarShortcut>
+              </MenubarItem>
+              <MenubarItem onClick={handleImageUpload}>
+                <ImageIcon className="h-4 w-4 mr-2" />
+                Image
+              </MenubarItem>
+              <MenubarItem onClick={() => dispatchWrap('> ', '', 'quote')}>
+                <Quote className="h-4 w-4 mr-2" />
+                Quote
+              </MenubarItem>
+              <MenubarItem onClick={() => dispatchBlock('| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |')}>
+                <Table className="h-4 w-4 mr-2" />
+                Table
+              </MenubarItem>
+              <MenubarItem onClick={() => dispatchBlock('---')}>
+                <Minus className="h-4 w-4 mr-2" />
+                Horizontal Rule
+              </MenubarItem>
+              <MenubarItem onClick={() => dispatchBlock('```\ncode\n```')}>
+                <Code className="h-4 w-4 mr-2" />
+                Code Block
+              </MenubarItem>
+            </MenubarSubContent>
+          </MenubarSub>
           
           <MenubarSeparator />
           

@@ -12,6 +12,41 @@ import {
 const Help = () => {
   const externalLinkClass = "inline-flex items-center gap-1 text-primary hover:underline";
 
+  const breadcrumb = [
+    { name: "Home", url: "https://mdbuild.io" },
+    { name: "Help", url: "https://mdbuild.io/help" }
+  ];
+
+  const faqItems = [
+    {
+      question: "How do I use GitHub Alerts?",
+      answer: "Create highlighted callouts using GitHub's special blockquote syntax. Start a blockquote with [!NOTE], [!TIP], [!IMPORTANT], [!WARNING], or [!CAUTION] to create beautiful, semantic alerts."
+    },
+    {
+      question: "How do I create Mermaid diagrams?",
+      answer: "Create flowcharts, sequence diagrams, Gantt charts, and more using simple text syntax. Use code blocks with 'mermaid' language identifier and write your diagram syntax inside."
+    },
+    {
+      question: "How do I write math equations?",
+      answer: "Write beautiful math equations using LaTeX syntax, powered by KaTeX. Use $ for inline math and $$ for block math equations."
+    },
+    {
+      question: "What keyboard shortcuts are available?",
+      answer: "Use Ctrl+N for new document, Ctrl+S to save, Ctrl+B for bold, Ctrl+I for italic, Ctrl+E for editor view, and Ctrl+P for preview mode."
+    },
+    {
+      question: "How do I export my documents?",
+      answer: "Export your documents to PDF, HTML, DOCX, PNG, or Markdown format using the export menu. All exports preserve formatting, diagrams, and math equations."
+    }
+  ];
+
+  const articleData = {
+    headline: "Help & Documentation - MDBuild.io Markdown Editor",
+    datePublished: "2025-01-01",
+    dateModified: "2025-01-20",
+    author: "MDBuild.io"
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <SEO 
@@ -19,6 +54,9 @@ const Help = () => {
         description="Complete guide to using MDBuild.io markdown editor. Learn about GitHub Alerts, Markdown syntax, Mermaid diagrams, KaTeX math equations, interactive task lists, keyboard shortcuts, and export options."
         keywords="markdown help, github alerts tutorial, markdown admonitions guide, mermaid tutorial, katex guide, markdown shortcuts, interactive task lists, technical documentation, markdown editor guide, markdown to png"
         canonicalUrl="https://mdbuild.io/help"
+        breadcrumb={breadcrumb}
+        faqItems={faqItems}
+        articleData={articleData}
       />
 
       {/* Header */}

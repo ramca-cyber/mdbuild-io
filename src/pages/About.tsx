@@ -12,6 +12,19 @@ const About = () => {
     "url": "https://mdbuild.io/about"
   };
 
+  const breadcrumb = [
+    { name: "Home", url: "https://mdbuild.io" },
+    { name: "About", url: "https://mdbuild.io/about" }
+  ];
+
+  const articleData = {
+    headline: "About MDBuild.io - Modern Markdown Editor",
+    datePublished: "2025-01-01",
+    dateModified: "2025-01-20",
+    author: "MDBuild.io",
+    image: "https://mdbuild.io/og-image.png"
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <SEO 
@@ -20,6 +33,8 @@ const About = () => {
         keywords="about mdbuild, markdown editor features, privacy-focused editor, open source markdown"
         canonicalUrl="https://mdbuild.io/about"
         structuredData={aboutStructuredData}
+        breadcrumb={breadcrumb}
+        articleData={articleData}
       />
       <header className="border-b">
         <div className="container max-w-4xl mx-auto px-4 py-4">

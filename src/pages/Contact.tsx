@@ -13,6 +13,11 @@ const Contact = () => {
     "url": "https://mdbuild.io/contact"
   };
 
+  const breadcrumb = [
+    { name: "Home", url: "https://mdbuild.io" },
+    { name: "Contact", url: "https://mdbuild.io/contact" }
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <SEO 
@@ -21,6 +26,7 @@ const Contact = () => {
         keywords="contact mdbuild, markdown editor support, feedback, bug report"
         canonicalUrl="https://mdbuild.io/contact"
         structuredData={contactStructuredData}
+        breadcrumb={breadcrumb}
       />
       <header className="border-b">
         <div className="container max-w-4xl mx-auto px-4 py-4">
