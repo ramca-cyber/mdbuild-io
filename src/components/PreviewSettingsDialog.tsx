@@ -5,6 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Slider } from '@/components/ui/slider';
 
 interface PreviewSettingsDialogProps {
   open: boolean;
@@ -112,14 +113,47 @@ export const PreviewSettingsDialog = ({ open, onOpenChange }: PreviewSettingsDia
                   </Select>
                 </div>
 
-              </div>
             </div>
+          </div>
 
-            <Separator />
+          <Separator />
 
-            {/* Advanced Options */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Advanced</h3>
+          {/* Preview Scale */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Preview Scale</h3>
+            <div className="space-y-4">
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="preview-zoom">Preview Content Size</Label>
+                  <span className="text-sm text-muted-foreground">
+                    {previewSettings.previewZoom}%
+                  </span>
+                </div>
+                <Slider
+                  id="preview-zoom"
+                  min={80}
+                  max={200}
+                  step={10}
+                  value={[previewSettings.previewZoom]}
+                  onValueChange={([value]) => 
+                    setPreviewSettings({ previewZoom: value })
+                  }
+                  className="w-full"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Adjust the size of rendered content in the preview pane (80% - 200%)
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Advanced Options */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Advanced</h3>
               <div className="space-y-4">
                 
                 <div className="flex items-center justify-between">

@@ -125,6 +125,12 @@ export const Preview = () => {
     // Apply max image width
     article.setAttribute('data-image-width', previewSettings.maxImageWidth);
     
+    // Apply preview zoom
+    const zoomScale = previewSettings.previewZoom / 100;
+    article.style.transform = `scale(${zoomScale})`;
+    article.style.transformOrigin = 'top left';
+    article.style.width = `${100 / zoomScale}%`;
+    
     // Apply lazy loading to images
     const images = article.querySelectorAll('img');
     images.forEach((img) => {
