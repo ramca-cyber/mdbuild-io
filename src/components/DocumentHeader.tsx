@@ -33,8 +33,8 @@ import { SaveAsDialog } from './SaveAsDialog';
 import { OpenDocumentDialog } from './OpenDocumentDialog';
 import { templates } from '@/lib/templates';
 import { EditMenu } from './EditMenu';
-import { FormatMenu } from './FormatMenu';
 import { ViewMenu } from './ViewMenu';
+import { SettingsMenu } from './SettingsMenu';
 import { DocumentSettingsDialog } from './DocumentSettingsDialog';
 
 export function DocumentHeader() {
@@ -493,11 +493,6 @@ export function DocumentHeader() {
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
               
-              <DropdownMenuItem onClick={() => setShowDocumentSettings(true)} className="cursor-pointer">
-                <Settings2 className="h-4 w-4 mr-2" />
-                Document Settings...
-              </DropdownMenuItem>
-              
               <DropdownMenuSeparator />
               
               {currentDoc && (
@@ -514,9 +509,9 @@ export function DocumentHeader() {
           
           <EditMenu />
           
-          <FormatMenu />
-          
           <ViewMenu />
+          
+          <SettingsMenu />
         </div>
 
         {/* CENTER: Document Name (inline editable) */}

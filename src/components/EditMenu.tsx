@@ -14,6 +14,10 @@ import {
   ArrowDown,
   Layers,
   Eraser,
+  Type,
+  Square,
+  Trash,
+  FileBarChart,
 } from 'lucide-react';
 import {
   Menubar,
@@ -23,6 +27,9 @@ import {
   MenubarSeparator,
   MenubarShortcut,
   MenubarTrigger,
+  MenubarSub,
+  MenubarSubTrigger,
+  MenubarSubContent,
 } from '@/components/ui/menubar';
 import { useEditorStore } from '@/store/editorStore';
 import { toast } from 'sonner';
@@ -37,7 +44,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { PreferencesMenu } from './PreferencesMenu';
 
 export const EditMenu = () => {
   const { content, setContent, setShowSearchReplace } = useEditorStore();
@@ -60,28 +66,48 @@ export const EditMenu = () => {
 
   const handleUndo = () => {
     window.dispatchEvent(new CustomEvent('editor-undo'));
+    toast.success('Undone');
   };
 
   const handleRedo = () => {
     window.dispatchEvent(new CustomEvent('editor-redo'));
+    toast.success('Redone');
   };
 
-  const handleCut = () => {
-    document.execCommand('cut');
-    toast.success('Cut to clipboard');
+  const handleCut = async () => {
+    try {
+      await navigator.clipboard.writeText(window.getSelection()?.toString() || '');
+      document.execCommand('cut');
+      toast.success('Cut to clipboard');
+    } catch (error) {
+      toast.error('Failed to cut');
+    }
   };
 
-  const handleCopy = () => {
-    document.execCommand('copy');
-    toast.success('Copied to clipboard');
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(window.getSelection()?.toString() || '');
+      toast.success('Copied to clipboard');
+    } catch (error) {
+      toast.error('Failed to copy');
+    }
   };
 
-  const handlePaste = () => {
-    document.execCommand('paste');
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      window.dispatchEvent(new CustomEvent('editor-insert', { 
+        detail: { kind: 'text', text } 
+      }));
+      toast.success('Pasted from clipboard');
+    } catch (error) {
+      toast.error('Failed to paste');
+    }
   };
 
   const handleSelectAll = () => {
     window.dispatchEvent(new CustomEvent('editor-select-all'));
+    toast.success('Selected all');
   };
 
   const handleCopyAll = async () => {
@@ -89,8 +115,7 @@ export const EditMenu = () => {
       await navigator.clipboard.writeText(content);
       toast.success('All content copied to clipboard');
     } catch (error) {
-      console.error('Failed to copy:', error);
-      toast.error('Failed to copy to clipboard');
+      toast.error('Failed to copy all content');
     }
   };
 
@@ -100,56 +125,72 @@ export const EditMenu = () => {
 
   const handleInsertDateTime = () => {
     const now = new Date();
-    const formatted = now.toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    window.dispatchEvent(
-      new CustomEvent('editor-insert', {
-        detail: { kind: 'wrap', before: formatted, after: '', placeholder: '' },
-      })
-    );
+    const dateTime = now.toLocaleString();
+    window.dispatchEvent(new CustomEvent('editor-insert', { 
+      detail: { kind: 'text', text: dateTime } 
+    }));
     toast.success('Date/time inserted');
   };
 
   const handleWordCount = () => {
-    const words = content.trim().split(/\s+/).filter(Boolean).length;
+    const words = content.trim().split(/\s+/).filter(word => word.length > 0).length;
     const chars = content.length;
-    const charsNoSpaces = content.replace(/\s/g, '').length;
     const lines = content.split('\n').length;
-    const paragraphs = content.split(/\n\s*\n/).filter(Boolean).length;
-
-    toast.info(
-      `📊 Statistics:\n${words} words • ${chars} characters (${charsNoSpaces} no spaces)\n${lines} lines • ${paragraphs} paragraphs`,
-      { duration: 5000 }
-    );
+    toast.success(`Words: ${words} | Characters: ${chars} | Lines: ${lines}`);
   };
-  
+
   const handleDeleteLine = () => {
     window.dispatchEvent(new CustomEvent('editor-delete-line'));
   };
-  
+
   const handleDuplicateLine = () => {
     window.dispatchEvent(new CustomEvent('editor-duplicate-line'));
   };
-  
+
   const handleSelectLine = () => {
     window.dispatchEvent(new CustomEvent('editor-select-line'));
   };
-  
+
   const handleMoveLineUp = () => {
     window.dispatchEvent(new CustomEvent('editor-move-line-up'));
   };
-  
+
   const handleMoveLineDown = () => {
     window.dispatchEvent(new CustomEvent('editor-move-line-down'));
   };
 
   const handleClearContent = () => {
     setShowClearDialog(true);
+  };
+
+  const handleConvertCase = (caseType: 'upper' | 'lower' | 'title') => {
+    window.dispatchEvent(
+      new CustomEvent('editor-convert-case', {
+        detail: { caseType },
+      })
+    );
+  };
+
+  const handleTextCleanup = (cleanupType: 'trailing' | 'empty' | 'trim') => {
+    const { content, setContent } = useEditorStore.getState();
+    let newContent = content;
+    
+    switch (cleanupType) {
+      case 'trailing':
+        newContent = content.split('\n').map(line => line.trimEnd()).join('\n');
+        toast.success('Removed trailing spaces');
+        break;
+      case 'empty':
+        newContent = content.split('\n').filter(line => line.trim() !== '').join('\n');
+        toast.success('Removed empty lines');
+        break;
+      case 'trim':
+        newContent = content.split('\n').map(line => line.trim()).join('\n');
+        toast.success('Trimmed whitespace');
+        break;
+    }
+    
+    setContent(newContent);
   };
 
   const confirmClear = () => {
@@ -163,10 +204,12 @@ export const EditMenu = () => {
 
   return (
     <>
-      <Menubar className="border-0 bg-transparent">
+      <Menubar className="border-0 bg-transparent p-0 h-auto">
         <MenubarMenu>
-          <MenubarTrigger className="cursor-pointer">Edit</MenubarTrigger>
-          <MenubarContent className="bg-popover z-50">
+          <MenubarTrigger className="cursor-pointer px-3 py-1.5 text-sm font-medium">
+            Edit
+          </MenubarTrigger>
+          <MenubarContent>
             <MenubarItem onClick={handleUndo} disabled={!canUndo}>
               <Undo className="h-4 w-4 mr-2" />
               Undo
@@ -175,7 +218,7 @@ export const EditMenu = () => {
             <MenubarItem onClick={handleRedo} disabled={!canRedo}>
               <Redo className="h-4 w-4 mr-2" />
               Redo
-              <MenubarShortcut>{modKey}+Shift+Z</MenubarShortcut>
+              <MenubarShortcut>{modKey}+Y</MenubarShortcut>
             </MenubarItem>
 
             <MenubarSeparator />
@@ -199,7 +242,7 @@ export const EditMenu = () => {
             <MenubarSeparator />
 
             <MenubarItem onClick={handleSelectAll}>
-              <AlignLeft className="h-4 w-4 mr-2" />
+              <Square className="h-4 w-4 mr-2" />
               Select All
               <MenubarShortcut>{modKey}+A</MenubarShortcut>
             </MenubarItem>
@@ -209,32 +252,40 @@ export const EditMenu = () => {
             </MenubarItem>
 
             <MenubarSeparator />
-            
-            <MenubarItem onClick={handleDeleteLine}>
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete Line
-              <MenubarShortcut>{modKey}+Shift+K</MenubarShortcut>
-            </MenubarItem>
-            <MenubarItem onClick={handleDuplicateLine}>
-              <CopyPlus className="h-4 w-4 mr-2" />
-              Duplicate Line
-              <MenubarShortcut>{modKey}+Shift+D</MenubarShortcut>
-            </MenubarItem>
-            <MenubarItem onClick={handleSelectLine}>
-              <Layers className="h-4 w-4 mr-2" />
-              Select Line
-              <MenubarShortcut>{modKey}+L</MenubarShortcut>
-            </MenubarItem>
-            <MenubarItem onClick={handleMoveLineUp}>
-              <ArrowUp className="h-4 w-4 mr-2" />
-              Move Line Up
-              <MenubarShortcut>Alt+↑</MenubarShortcut>
-            </MenubarItem>
-            <MenubarItem onClick={handleMoveLineDown}>
-              <ArrowDown className="h-4 w-4 mr-2" />
-              Move Line Down
-              <MenubarShortcut>Alt+↓</MenubarShortcut>
-            </MenubarItem>
+
+            <MenubarSub>
+              <MenubarSubTrigger>
+                <FileText className="h-4 w-4 mr-2" />
+                Line Operations
+              </MenubarSubTrigger>
+              <MenubarSubContent>
+                <MenubarItem onClick={handleDeleteLine}>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Line
+                  <MenubarShortcut>{modKey}+D</MenubarShortcut>
+                </MenubarItem>
+                <MenubarItem onClick={handleDuplicateLine}>
+                  <Copy className="h-4 w-4 mr-2" />
+                  Duplicate Line
+                  <MenubarShortcut>{modKey}+Shift+D</MenubarShortcut>
+                </MenubarItem>
+                <MenubarItem onClick={handleSelectLine}>
+                  <Square className="h-4 w-4 mr-2" />
+                  Select Line
+                  <MenubarShortcut>{modKey}+L</MenubarShortcut>
+                </MenubarItem>
+                <MenubarItem onClick={handleMoveLineUp}>
+                  <ArrowUp className="h-4 w-4 mr-2" />
+                  Move Line Up
+                  <MenubarShortcut>Alt+↑</MenubarShortcut>
+                </MenubarItem>
+                <MenubarItem onClick={handleMoveLineDown}>
+                  <ArrowDown className="h-4 w-4 mr-2" />
+                  Move Line Down
+                  <MenubarShortcut>Alt+↓</MenubarShortcut>
+                </MenubarItem>
+              </MenubarSubContent>
+            </MenubarSub>
 
             <MenubarSeparator />
 
@@ -246,23 +297,57 @@ export const EditMenu = () => {
             <MenubarItem onClick={handleInsertDateTime}>
               <Calendar className="h-4 w-4 mr-2" />
               Insert Date/Time
-              <MenubarShortcut>Alt+D</MenubarShortcut>
             </MenubarItem>
             <MenubarItem onClick={handleWordCount}>
-              <FileText className="h-4 w-4 mr-2" />
+              <FileBarChart className="h-4 w-4 mr-2" />
               Word Count
+              <MenubarShortcut>{modKey}+Shift+W</MenubarShortcut>
             </MenubarItem>
+
+            <MenubarSeparator />
+
+            <MenubarSub>
+              <MenubarSubTrigger>
+                <Type className="h-4 w-4 mr-2" />
+                Convert Case
+              </MenubarSubTrigger>
+              <MenubarSubContent>
+                <MenubarItem onClick={() => handleConvertCase('upper')}>
+                  UPPERCASE
+                </MenubarItem>
+                <MenubarItem onClick={() => handleConvertCase('lower')}>
+                  lowercase
+                </MenubarItem>
+                <MenubarItem onClick={() => handleConvertCase('title')}>
+                  Title Case
+                </MenubarItem>
+              </MenubarSubContent>
+            </MenubarSub>
+
+            <MenubarSub>
+              <MenubarSubTrigger>
+                <Eraser className="h-4 w-4 mr-2" />
+                Text Cleanup
+              </MenubarSubTrigger>
+              <MenubarSubContent>
+                <MenubarItem onClick={() => handleTextCleanup('trailing')}>
+                  Remove Trailing Spaces
+                </MenubarItem>
+                <MenubarItem onClick={() => handleTextCleanup('empty')}>
+                  Remove Empty Lines
+                </MenubarItem>
+                <MenubarItem onClick={() => handleTextCleanup('trim')}>
+                  Trim Whitespace
+                </MenubarItem>
+              </MenubarSubContent>
+            </MenubarSub>
 
             <MenubarSeparator />
 
             <MenubarItem onClick={handleClearContent} className="text-destructive">
-              <Eraser className="h-4 w-4 mr-2" />
+              <Trash className="h-4 w-4 mr-2" />
               Clear Content
             </MenubarItem>
-            
-            <MenubarSeparator />
-            
-            <PreferencesMenu />
           </MenubarContent>
         </MenubarMenu>
       </Menubar>

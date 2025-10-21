@@ -1,5 +1,5 @@
 import { useEditorStore } from '@/store/editorStore';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
@@ -11,12 +11,12 @@ import { Input } from '@/components/ui/input';
 import { RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
-interface EditorPreferencesDialogProps {
+interface EditorSettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export const EditorPreferencesDialog = ({ open, onOpenChange }: EditorPreferencesDialogProps) => {
+export const EditorSettingsDialog = ({ open, onOpenChange }: EditorSettingsDialogProps) => {
   const {
     fontSize,
     theme,
@@ -40,7 +40,10 @@ export const EditorPreferencesDialog = ({ open, onOpenChange }: EditorPreference
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[80vh]">
         <DialogHeader>
-          <DialogTitle>Editor Preferences</DialogTitle>
+          <DialogTitle>Editor Settings</DialogTitle>
+          <DialogDescription>
+            Customize your editing experience
+          </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-full max-h-[60vh]">
           <div className="p-4 space-y-6">
@@ -133,9 +136,9 @@ export const EditorPreferencesDialog = ({ open, onOpenChange }: EditorPreference
             <Separator />
 
             <div>
-              <h4 className="text-sm font-semibold mb-2">Reset Preferences</h4>
+              <h4 className="text-sm font-semibold mb-2">Reset Settings</h4>
               <p className="text-xs text-muted-foreground mb-3">
-                Restore editor preferences to their default values. This will not affect your saved documents.
+                Restore editor settings to their default values. This will not affect your saved documents.
               </p>
               <Button 
                 variant="destructive" 

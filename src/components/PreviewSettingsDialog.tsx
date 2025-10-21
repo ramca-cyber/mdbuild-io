@@ -1,24 +1,27 @@
 import { useEditorStore } from '@/store/editorStore';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 
-interface PreviewPreferencesDialogProps {
+interface PreviewSettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export const PreviewPreferencesDialog = ({ open, onOpenChange }: PreviewPreferencesDialogProps) => {
-  const { previewPreferences, setPreviewPreferences } = useEditorStore();
+export const PreviewSettingsDialog = ({ open, onOpenChange }: PreviewSettingsDialogProps) => {
+  const { previewSettings, setPreviewSettings } = useEditorStore();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[80vh]">
         <DialogHeader>
-          <DialogTitle>Preview Preferences</DialogTitle>
+          <DialogTitle>Preview Settings</DialogTitle>
+          <DialogDescription>
+            Customize how your content is displayed
+          </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-full max-h-[60vh]">
           <div className="p-4 space-y-6">
@@ -34,9 +37,9 @@ export const PreviewPreferencesDialog = ({ open, onOpenChange }: PreviewPreferen
                   </Label>
                   <Switch
                     id="smooth-scroll"
-                    checked={previewPreferences.enableSmoothScroll}
+                    checked={previewSettings.enableSmoothScroll}
                     onCheckedChange={(checked) => 
-                      setPreviewPreferences({ enableSmoothScroll: checked })
+                      setPreviewSettings({ enableSmoothScroll: checked })
                     }
                   />
                 </div>
@@ -47,9 +50,9 @@ export const PreviewPreferencesDialog = ({ open, onOpenChange }: PreviewPreferen
                   </Label>
                   <Switch
                     id="compact-headings"
-                    checked={previewPreferences.compactHeadings}
+                    checked={previewSettings.compactHeadings}
                     onCheckedChange={(checked) => 
-                      setPreviewPreferences({ compactHeadings: checked })
+                      setPreviewSettings({ compactHeadings: checked })
                     }
                   />
                 </div>
@@ -60,9 +63,9 @@ export const PreviewPreferencesDialog = ({ open, onOpenChange }: PreviewPreferen
                   </Label>
                   <Switch
                     id="show-word-count"
-                    checked={previewPreferences.showWordCount}
+                    checked={previewSettings.showWordCount}
                     onCheckedChange={(checked) => 
-                      setPreviewPreferences({ showWordCount: checked })
+                      setPreviewSettings({ showWordCount: checked })
                     }
                   />
                 </div>
@@ -83,9 +86,9 @@ export const PreviewPreferencesDialog = ({ open, onOpenChange }: PreviewPreferen
                   </Label>
                   <Switch
                     id="lazy-load"
-                    checked={previewPreferences.enableImageLazyLoad}
+                    checked={previewSettings.enableImageLazyLoad}
                     onCheckedChange={(checked) => 
-                      setPreviewPreferences({ enableImageLazyLoad: checked })
+                      setPreviewSettings({ enableImageLazyLoad: checked })
                     }
                   />
                 </div>
@@ -93,9 +96,9 @@ export const PreviewPreferencesDialog = ({ open, onOpenChange }: PreviewPreferen
                 <div className="space-y-2">
                   <Label htmlFor="image-width">Maximum Image Width</Label>
                   <Select 
-                    value={previewPreferences.maxImageWidth} 
+                    value={previewSettings.maxImageWidth} 
                     onValueChange={(value: 'full' | 'content' | 'narrow') => 
-                      setPreviewPreferences({ maxImageWidth: value })
+                      setPreviewSettings({ maxImageWidth: value })
                     }
                   >
                     <SelectTrigger id="image-width">
@@ -125,9 +128,9 @@ export const PreviewPreferencesDialog = ({ open, onOpenChange }: PreviewPreferen
                   </Label>
                   <Switch
                     id="highlight-section"
-                    checked={previewPreferences.highlightCurrentSection}
+                    checked={previewSettings.highlightCurrentSection}
                     onCheckedChange={(checked) => 
-                      setPreviewPreferences({ highlightCurrentSection: checked })
+                      setPreviewSettings({ highlightCurrentSection: checked })
                     }
                   />
                 </div>

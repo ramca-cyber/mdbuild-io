@@ -45,6 +45,10 @@ export function ViewMenu() {
     zoomIn,
     zoomOut,
     resetZoom,
+    lineWrap,
+    setLineWrap,
+    lineNumbers,
+    setLineNumbers,
   } = useEditorStore();
 
   const handlePrint = () => {

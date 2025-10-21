@@ -74,8 +74,8 @@ interface EditorState {
     breakPagesAtHeadings: boolean;
   };
   
-  // Preview Preferences
-  previewPreferences: {
+  // Preview Settings
+  previewSettings: {
     enableSmoothScroll: boolean;
     compactHeadings: boolean;
     showWordCount: boolean;
@@ -139,7 +139,7 @@ interface EditorState {
   
   // Document Settings actions
   setDocumentSettings: (settings: Partial<EditorState['documentSettings']>) => void;
-  setPreviewPreferences: (prefs: Partial<EditorState['previewPreferences']>) => void;
+  setPreviewSettings: (settings: Partial<EditorState['previewSettings']>) => void;
 }
 
 const defaultContent = `# Welcome to MDBuild.io 🚀
@@ -455,6 +455,14 @@ export const useEditorStore = create<EditorState>()(
       lastSavedContent: defaultContent,
       hasUnsavedChanges: false,
       autoSaveTimeoutId: null,
+      previewSettings: {
+        enableSmoothScroll: true,
+        compactHeadings: false,
+        showWordCount: false,
+        enableImageLazyLoad: true,
+        maxImageWidth: 'full',
+        highlightCurrentSection: false,
+      },
       previewRefreshKey: 0,
       statisticsExpanded: false,
       
@@ -857,9 +865,9 @@ export const useEditorStore = create<EditorState>()(
         documentSettings: { ...get().documentSettings, ...settings } 
       }),
       
-      // Preview Preferences methods
-      setPreviewPreferences: (prefs) => set({
-        previewPreferences: { ...get().previewPreferences, ...prefs }
+      // Preview Settings methods
+      setPreviewSettings: (settings) => set({
+        previewSettings: { ...get().previewSettings, ...settings }
       }),
     }),
     {
