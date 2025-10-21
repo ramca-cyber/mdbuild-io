@@ -67,7 +67,7 @@ export const Preview = () => {
   };
 
   const handleZoomOut = () => {
-    const newZoom = Math.max(previewSettings.previewZoom - 10, 80);
+    const newZoom = Math.max(previewSettings.previewZoom - 10, 50);
     setPreviewSettings({ previewZoom: newZoom });
   };
 
@@ -428,7 +428,7 @@ export const Preview = () => {
                   variant="ghost"
                   size="sm"
                   onClick={handleZoomOut}
-                  disabled={previewSettings.previewZoom <= 80}
+                  disabled={previewSettings.previewZoom <= 50}
                   className="h-8 px-2"
                   aria-label="Zoom out"
                 >
@@ -436,7 +436,7 @@ export const Preview = () => {
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                <p>Zoom Out (Min: 80%)</p>
+                <p>Zoom Out (Min: 50%)</p>
               </TooltipContent>
             </Tooltip>
 

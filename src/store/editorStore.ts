@@ -82,7 +82,7 @@ interface EditorState {
     enableImageLazyLoad: boolean;
     maxImageWidth: 'full' | 'content' | 'narrow';
     highlightCurrentSection: boolean;
-    previewZoom: number; // Preview content scale (80-200%)
+    previewZoom: number; // Preview content scale (50-200%)
   };
   
   setContent: (content: string) => void;
