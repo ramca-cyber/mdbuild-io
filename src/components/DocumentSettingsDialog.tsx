@@ -65,7 +65,7 @@ export const DocumentSettingsDialog = ({ open, onOpenChange }: DocumentSettingsD
             Document Settings
           </DialogTitle>
           <DialogDescription>
-            Customize document layout for preview, print, and export
+            Customize layout for PDF, Word, and print output. Does not affect live preview or HTML export.
           </DialogDescription>
         </DialogHeader>
 

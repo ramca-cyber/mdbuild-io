@@ -42,42 +42,6 @@ export const Preview = () => {
   const syncScrollRef = useRef(syncScroll);
   const anchorsRef = useRef<{ line: number; top: number }[]>([]);
   
-  // Apply document settings to preview
-  useEffect(() => {
-    if (!previewRef.current) return;
-    
-    const article = previewRef.current.querySelector('article');
-    if (!article) return;
-    
-    const htmlArticle = article as HTMLElement;
-    
-    // Apply margins
-    const marginPx = documentSettings.margins === 'narrow' ? '0.5in' : documentSettings.margins === 'wide' ? '1.5in' : '1in';
-    htmlArticle.style.padding = marginPx;
-    
-    // Apply font size
-    const fontSizeMap = { small: '14px', medium: '16px', large: '18px' };
-    htmlArticle.style.fontSize = fontSizeMap[documentSettings.fontSize];
-    
-    // Apply color mode
-    if (documentSettings.colorMode === 'grayscale') {
-      htmlArticle.style.filter = 'grayscale(100%)';
-    } else if (documentSettings.colorMode === 'blackwhite') {
-      htmlArticle.style.filter = 'grayscale(100%) contrast(200%)';
-    } else {
-      htmlArticle.style.filter = 'none';
-    }
-    
-    // Apply two-column layout
-    if (documentSettings.columns === 'two') {
-      htmlArticle.style.columnCount = '2';
-      htmlArticle.style.columnGap = '2rem';
-    } else {
-      htmlArticle.style.columnCount = 'unset';
-      htmlArticle.style.columnGap = 'unset';
-    }
-  }, [documentSettings]);
-  
   // Optimized copy buttons with proper cleanup and memoization
   const addCopyButtons = useCallback(() => {
     if (!previewRef.current) return;
