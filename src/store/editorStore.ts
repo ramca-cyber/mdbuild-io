@@ -74,6 +74,16 @@ interface EditorState {
     breakPagesAtHeadings: boolean;
   };
   
+  // Preview Preferences
+  previewPreferences: {
+    enableSmoothScroll: boolean;
+    compactHeadings: boolean;
+    showWordCount: boolean;
+    enableImageLazyLoad: boolean;
+    maxImageWidth: 'full' | 'content' | 'narrow';
+    highlightCurrentSection: boolean;
+  };
+  
   setContent: (content: string) => void;
   setTheme: (theme: Theme) => void;
   setFontSize: (size: number) => void;
@@ -129,6 +139,7 @@ interface EditorState {
   
   // Document Settings actions
   setDocumentSettings: (settings: Partial<EditorState['documentSettings']>) => void;
+  setPreviewPreferences: (prefs: Partial<EditorState['previewPreferences']>) => void;
 }
 
 const defaultContent = `# Welcome to MDBuild.io 🚀
@@ -493,6 +504,15 @@ export const useEditorStore = create<EditorState>()(
         breakPagesAtHeadings: false,
       },
       
+      previewPreferences: {
+        enableSmoothScroll: true,
+        compactHeadings: false,
+        showWordCount: false,
+        enableImageLazyLoad: true,
+        maxImageWidth: 'full',
+        highlightCurrentSection: false,
+      },
+      
       setContent: (content) => {
         const state = get();
         const hasChanges = content !== state.lastSavedContent;
@@ -835,6 +855,11 @@ export const useEditorStore = create<EditorState>()(
       // Document Settings methods
       setDocumentSettings: (settings) => set({ 
         documentSettings: { ...get().documentSettings, ...settings } 
+      }),
+      
+      // Preview Preferences methods
+      setPreviewPreferences: (prefs) => set({
+        previewPreferences: { ...get().previewPreferences, ...prefs }
       }),
     }),
     {

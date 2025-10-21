@@ -9,7 +9,6 @@ import { Toolbar } from '@/components/Toolbar';
 import { DocumentHeader } from '@/components/DocumentHeader';
 import { OutlinePanel } from '@/components/OutlinePanel';
 import { TemplatesDrawer } from '@/components/TemplatesDrawer';
-import { SettingsSheet } from '@/components/SettingsSheet';
 import { SavedDocuments } from '@/components/SavedDocuments';
 import { StatisticsPanel } from '@/components/StatisticsPanel';
 import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog';
@@ -23,7 +22,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const { theme, setTheme, viewMode, setViewMode, showOutline, focusMode, setFocusMode, zenMode, setZenMode, content } = useEditorStore();
-  const [mobilePanel, setMobilePanel] = useState<'documents' | 'templates' | 'settings' | 'outline' | null>(null);
+  const [mobilePanel, setMobilePanel] = useState<'documents' | 'templates' | 'outline' | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
   const isMobile = useIsMobile();
@@ -220,18 +219,6 @@ const Index = () => {
                     Help & Docs
                   </Link>
                 </Button>
-                
-                {/* Visual Separator */}
-                <div className="h-px bg-border my-2" />
-                
-                <Button 
-                  variant="ghost" 
-                  className="justify-start"
-                  onClick={() => setMobilePanel('settings')}
-                >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Preferences
-                </Button>
               </div>
             </SheetContent>
           </Sheet>
@@ -252,28 +239,6 @@ const Index = () => {
               <span>Help</span>
             </Link>
           </Button>
-          
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <Settings className="h-4 w-4 mr-2" />
-                    <span>Preferences</span>
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-80">
-                  <SheetHeader>
-                    <SheetTitle>Editor Preferences</SheetTitle>
-                  </SheetHeader>
-                  <SettingsSheet />
-                </SheetContent>
-              </Sheet>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Editor Preferences (Theme, Font Size, Limits)</p>
-            </TooltipContent>
-          </Tooltip>
           
           {/* Visual Separator */}
           <div className="w-px h-6 bg-border mx-1" />
@@ -466,15 +431,6 @@ const Index = () => {
             <SheetTitle>Outline</SheetTitle>
           </SheetHeader>
           <OutlinePanel />
-        </SheetContent>
-      </Sheet>
-
-      <Sheet open={mobilePanel === 'settings'} onOpenChange={(open) => !open && setMobilePanel(null)}>
-        <SheetContent side="right" className="w-80">
-          <SheetHeader>
-            <SheetTitle>Settings</SheetTitle>
-          </SheetHeader>
-          <SettingsSheet />
         </SheetContent>
       </Sheet>
     </div>

@@ -36,7 +36,7 @@ const rehypeAddLineNumbers = () => {
 };
 
 export const Preview = () => {
-  const { content, syncScroll, documentSettings } = useEditorStore();
+  const { content, syncScroll, documentSettings, previewPreferences } = useEditorStore();
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const syncScrollRef = useRef(syncScroll);
@@ -106,6 +106,35 @@ export const Preview = () => {
   useEffect(() => {
     syncScrollRef.current = syncScroll;
   }, [syncScroll]);
+  
+  // Apply preview preferences
+  useEffect(() => {
+    const article = previewRef.current?.querySelector('article');
+    if (!article) return;
+
+    // Apply smooth scroll
+    article.style.scrollBehavior = previewPreferences.enableSmoothScroll ? 'smooth' : 'auto';
+
+    // Apply compact headings
+    if (previewPreferences.compactHeadings) {
+      article.classList.add('compact-headings');
+    } else {
+      article.classList.remove('compact-headings');
+    }
+
+    // Apply max image width
+    article.setAttribute('data-image-width', previewPreferences.maxImageWidth);
+    
+    // Apply lazy loading to images
+    const images = article.querySelectorAll('img');
+    images.forEach((img) => {
+      if (previewPreferences.enableImageLazyLoad) {
+        img.setAttribute('loading', 'lazy');
+      } else {
+        img.removeAttribute('loading');
+      }
+    });
+  }, [previewPreferences]);
 
   // Re-sync when images or content size change (images, diagrams)
   useEffect(() => {

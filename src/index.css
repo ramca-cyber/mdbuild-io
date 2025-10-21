@@ -250,6 +250,27 @@ All colors MUST be HSL.
   }
   
   /* Keyboard shortcut styling */
+  /* Compact headings */
+  .compact-headings h1,
+  .compact-headings h2,
+  .compact-headings h3 {
+    margin-top: 0.5em;
+    margin-bottom: 0.25em;
+  }
+
+  /* Image width control */
+  article[data-image-width="content"] img {
+    max-width: 65ch;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  article[data-image-width="narrow"] img {
+    max-width: 75%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
   kbd {
     @apply inline-block px-2 py-1 text-xs font-semibold;
     @apply bg-muted text-foreground border border-border rounded;

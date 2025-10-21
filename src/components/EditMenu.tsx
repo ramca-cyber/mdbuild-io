@@ -37,6 +37,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { PreferencesMenu } from './PreferencesMenu';
 
 export const EditMenu = () => {
   const { content, setContent, setShowSearchReplace } = useEditorStore();
@@ -258,6 +259,10 @@ export const EditMenu = () => {
               <Eraser className="h-4 w-4 mr-2" />
               Clear Content
             </MenubarItem>
+            
+            <MenubarSeparator />
+            
+            <PreferencesMenu />
           </MenubarContent>
         </MenubarMenu>
       </Menubar>
