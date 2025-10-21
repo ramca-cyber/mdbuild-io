@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   Menubar,
   MenubarContent,
@@ -27,10 +26,8 @@ import {
   Printer,
   BarChart3,
   Sparkles,
-  Settings2,
 } from 'lucide-react';
 import { useEditorStore } from '@/store/editorStore';
-import { DocumentSettingsDialog } from '@/components/DocumentSettingsDialog';
 
 export function ViewMenu() {
   const {
@@ -49,21 +46,9 @@ export function ViewMenu() {
     zoomOut,
     resetZoom,
   } = useEditorStore();
-  
-  const [showDocumentSettings, setShowDocumentSettings] = useState(false);
 
   const handlePrint = () => {
     window.print();
-  };
-
-  const handlePrintPreview = () => {
-    // Set to preview mode and trigger print
-    const originalMode = viewMode;
-    setViewMode('preview');
-    setTimeout(() => {
-      window.print();
-      setViewMode(originalMode);
-    }, 100);
   };
 
   return (
@@ -176,17 +161,7 @@ export function ViewMenu() {
 
           <MenubarSeparator />
 
-          {/* Print Options */}
-          <MenubarItem onClick={() => setShowDocumentSettings(true)}>
-            <Settings2 className="h-4 w-4 mr-2" />
-            Document Settings...
-          </MenubarItem>
-
-          <MenubarItem onClick={handlePrintPreview}>
-            <Eye className="h-4 w-4 mr-2" />
-            Print Preview
-          </MenubarItem>
-
+          {/* Print */}
           <MenubarItem onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />
             Print
@@ -194,11 +169,6 @@ export function ViewMenu() {
           </MenubarItem>
         </MenubarContent>
       </MenubarMenu>
-      
-      <DocumentSettingsDialog 
-        open={showDocumentSettings} 
-        onOpenChange={setShowDocumentSettings}
-      />
     </Menubar>
   );
 }

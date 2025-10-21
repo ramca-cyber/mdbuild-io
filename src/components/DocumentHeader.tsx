@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { FileText, Plus, Save, Trash2, Database, Menu, Clock, FolderOpen, Edit2, X, Check, FileUp, FileDown, FileType, Code, Image as ImageIcon, BookTemplate, Copy, Eraser, Files } from 'lucide-react';
+import { FileText, Plus, Save, Trash2, Database, Menu, Clock, FolderOpen, Edit2, X, Check, FileUp, FileDown, FileType, Code, Image as ImageIcon, BookTemplate, Copy, Eraser, Files, Settings2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { calculateStorageUsage, formatStorageSize } from '@/lib/storageUtils';
 import { SaveAsDialog } from './SaveAsDialog';
@@ -35,6 +35,7 @@ import { templates } from '@/lib/templates';
 import { EditMenu } from './EditMenu';
 import { FormatMenu } from './FormatMenu';
 import { ViewMenu } from './ViewMenu';
+import { DocumentSettingsDialog } from './DocumentSettingsDialog';
 
 export function DocumentHeader() {
   const {
@@ -60,6 +61,7 @@ export function DocumentHeader() {
   const [saveAsOpen, setSaveAsOpen] = useState(false);
   const [openDocOpen, setOpenDocOpen] = useState(false);
   const [storageDialogOpen, setStorageDialogOpen] = useState(false);
+  const [showDocumentSettings, setShowDocumentSettings] = useState(false);
 
   const currentDoc = savedDocuments.find((doc) => doc.id === currentDocId);
 
@@ -491,6 +493,11 @@ export function DocumentHeader() {
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
               
+              <DropdownMenuItem onClick={() => setShowDocumentSettings(true)} className="cursor-pointer">
+                <Settings2 className="h-4 w-4 mr-2" />
+                Document Settings...
+              </DropdownMenuItem>
+              
               <DropdownMenuSeparator />
               
               {currentDoc && (
@@ -708,6 +715,11 @@ export function DocumentHeader() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <DocumentSettingsDialog 
+        open={showDocumentSettings} 
+        onOpenChange={setShowDocumentSettings}
+      />
     </>
   );
 }

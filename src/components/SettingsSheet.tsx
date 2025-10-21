@@ -122,34 +122,6 @@ export const SettingsSheet = () => {
         <Separator />
 
         <div>
-          <h4 className="text-sm font-semibold mb-3">Keyboard Shortcuts</h4>
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <div className="flex justify-between">
-              <span>Bold</span>
-              <kbd className="px-2 py-1 bg-muted rounded text-xs">Ctrl+B</kbd>
-            </div>
-            <div className="flex justify-between">
-              <span>Italic</span>
-              <kbd className="px-2 py-1 bg-muted rounded text-xs">Ctrl+I</kbd>
-            </div>
-            <div className="flex justify-between">
-              <span>Link</span>
-              <kbd className="px-2 py-1 bg-muted rounded text-xs">Ctrl+K</kbd>
-            </div>
-            <div className="flex justify-between">
-              <span>Code</span>
-              <kbd className="px-2 py-1 bg-muted rounded text-xs">Ctrl+`</kbd>
-            </div>
-            <div className="flex justify-between">
-              <span>Save</span>
-              <kbd className="px-2 py-1 bg-muted rounded text-xs">Ctrl+S</kbd>
-            </div>
-          </div>
-        </div>
-
-        <Separator />
-
-        <div>
           <h4 className="text-sm font-semibold mb-2">Reset Preferences</h4>
           <p className="text-xs text-muted-foreground mb-3">
             Restore editor preferences to their default values. This will not affect your saved documents.
