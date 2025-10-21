@@ -16,6 +16,11 @@ import { MermaidDiagram } from '@/components/MermaidDiagram';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { visit } from 'unist-util-visit';
 import { ViewModeSwitcher } from '@/components/ViewModeSwitcher';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ZoomIn, ZoomOut, Printer, List } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { calculateStatistics } from '@/lib/statisticsUtils';
 
 // TypeScript interfaces
 interface CodeProps {
@@ -37,11 +42,37 @@ const rehypeAddLineNumbers = () => {
 };
 
 export const Preview = () => {
-  const { content, syncScroll, documentSettings, previewSettings } = useEditorStore();
+  const { 
+    content, 
+    syncScroll, 
+    documentSettings, 
+    previewSettings, 
+    setPreviewSettings,
+    showOutline,
+    setShowOutline 
+  } = useEditorStore();
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const syncScrollRef = useRef(syncScroll);
   const anchorsRef = useRef<{ line: number; top: number }[]>([]);
+
+  // Calculate statistics for word count badge
+  const stats = useMemo(() => calculateStatistics(content), [content]);
+
+  // Handle zoom controls
+  const handleZoomIn = () => {
+    const newZoom = Math.min(previewSettings.previewZoom + 10, 200);
+    setPreviewSettings({ previewZoom: newZoom });
+  };
+
+  const handleZoomOut = () => {
+    const newZoom = Math.max(previewSettings.previewZoom - 10, 80);
+    setPreviewSettings({ previewZoom: newZoom });
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
   
   // Optimized copy buttons with proper cleanup and memoization
   const addCopyButtons = useCallback(() => {
@@ -354,13 +385,104 @@ export const Preview = () => {
 
   return (
     <div className="h-full w-full flex flex-col overflow-hidden bg-preview-bg">
-      <div className="px-4 py-2 bg-muted/50 border-b-2 border-border/80 flex-shrink-0 no-print shadow-sm flex items-center justify-between">
-        <h2 className="text-sm font-bold text-foreground/70 uppercase tracking-wider">
-          Preview
-        </h2>
-        {/* Import and add ViewModeSwitcher here */}
-        <div className="hidden lg:block">
-          <ViewModeSwitcher />
+      <div className="px-4 py-2 bg-muted/50 border-b-2 border-border/80 flex-shrink-0 no-print shadow-sm flex items-center justify-between gap-3">
+        {/* Left side: Preview title + Word count badge */}
+        <div className="flex items-center gap-3">
+          <h2 className="text-sm font-bold text-foreground/70 uppercase tracking-wider">
+            Preview
+          </h2>
+          <Badge variant="secondary" className="text-xs font-medium">
+            {stats.words.toLocaleString()} words
+          </Badge>
+        </div>
+
+        {/* Right side: Tools */}
+        <div className="flex items-center gap-1">
+          {/* Outline Toggle */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={showOutline ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setShowOutline(!showOutline)}
+                className="h-8 px-2 gap-1.5"
+                aria-label="Toggle outline panel"
+              >
+                <List className="h-4 w-4" />
+                <span className="hidden xl:inline text-xs">Outline</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>Toggle Outline Panel</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Zoom Controls */}
+          <div className="flex items-center gap-0.5 border-l pl-2 ml-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleZoomOut}
+                  disabled={previewSettings.previewZoom <= 80}
+                  className="h-8 px-2"
+                  aria-label="Zoom out"
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>Zoom Out (Min: 80%)</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <span className="text-xs font-medium text-muted-foreground min-w-[3rem] text-center">
+              {previewSettings.previewZoom}%
+            </span>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleZoomIn}
+                  disabled={previewSettings.previewZoom >= 200}
+                  className="h-8 px-2"
+                  aria-label="Zoom in"
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>Zoom In (Max: 200%)</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+
+          {/* Print Button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handlePrint}
+                className="h-8 px-2 gap-1.5 border-l ml-1 pl-2"
+                aria-label="Print preview"
+              >
+                <Printer className="h-4 w-4" />
+                <span className="hidden xl:inline text-xs">Print</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>Print Preview (Ctrl+P)</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* View Mode Switcher */}
+          <div className="hidden lg:block border-l pl-2 ml-1">
+            <ViewModeSwitcher />
+          </div>
         </div>
       </div>
       <div
