@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useEditorStore } from '@/store/editorStore';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { List } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { List, ChevronRight } from 'lucide-react';
 
 interface Heading {
   level: number;
@@ -9,9 +10,42 @@ interface Heading {
   id: string;
 }
 
+interface TreeNode {
+  heading: Heading;
+  children: TreeNode[];
+}
+
+// Build hierarchical tree from flat headings
+const buildHeadingTree = (headings: Heading[]): TreeNode[] => {
+  const tree: TreeNode[] = [];
+  const stack: TreeNode[] = [];
+
+  headings.forEach((heading) => {
+    const node: TreeNode = { heading, children: [] };
+
+    // Pop stack until we find a parent with lower level
+    while (stack.length > 0 && stack[stack.length - 1].heading.level >= heading.level) {
+      stack.pop();
+    }
+
+    if (stack.length === 0) {
+      // Top-level heading
+      tree.push(node);
+    } else {
+      // Add as child to current parent
+      stack[stack.length - 1].children.push(node);
+    }
+
+    stack.push(node);
+  });
+
+  return tree;
+};
+
 export const OutlinePanel = () => {
   const { content } = useEditorStore();
   const [headings, setHeadings] = useState<Heading[]>([]);
+  const [tree, setTree] = useState<TreeNode[]>([]);
 
   useEffect(() => {
     const lines = content.split('\n');
@@ -29,6 +63,7 @@ export const OutlinePanel = () => {
     });
     
     setHeadings(found);
+    setTree(buildHeadingTree(found));
   }, [content]);
 
   const scrollToHeading = (text: string) => {
@@ -52,6 +87,55 @@ export const OutlinePanel = () => {
     }
   };
 
+  // Recursive component to render outline nodes
+  const OutlineNode = ({ node, depth = 0 }: { node: TreeNode; depth?: number }) => {
+    const hasChildren = node.children.length > 0;
+
+    if (!hasChildren) {
+      // Leaf node - simple clickable button
+      return (
+        <button
+          onClick={() => scrollToHeading(node.heading.text)}
+          className="block w-full text-left px-2 py-1.5 text-sm hover:bg-muted rounded transition-colors"
+          style={{ paddingLeft: `${depth * 12 + 8}px` }}
+        >
+          <span className="text-muted-foreground mr-2">·</span>
+          {node.heading.text}
+        </button>
+      );
+    }
+
+    // Parent node with children - collapsible accordion
+    return (
+      <AccordionItem value={node.heading.id} className="border-none">
+        <AccordionTrigger 
+          className="py-1.5 px-2 hover:bg-muted rounded hover:no-underline text-sm font-normal"
+          style={{ paddingLeft: `${depth * 12 + 8}px` }}
+          onClick={(e) => {
+            // Allow clicking the heading text to scroll
+            if ((e.target as HTMLElement).closest('button') && !(e.target as HTMLElement).closest('svg')) {
+              scrollToHeading(node.heading.text);
+            }
+          }}
+        >
+          <span className="flex items-center flex-1">
+            <span className="text-muted-foreground mr-2">
+              {node.heading.level === 1 && '▸'}
+              {node.heading.level === 2 && '▹'}
+              {node.heading.level >= 3 && '·'}
+            </span>
+            {node.heading.text}
+          </span>
+        </AccordionTrigger>
+        <AccordionContent className="pb-0 pt-0">
+          {node.children.map((child, index) => (
+            <OutlineNode key={index} node={child} depth={depth + 1} />
+          ))}
+        </AccordionContent>
+      </AccordionItem>
+    );
+  };
+
   if (headings.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4 text-center">
@@ -63,23 +147,13 @@ export const OutlinePanel = () => {
 
   return (
     <ScrollArea className="h-full">
-      <div className="p-4 space-y-1">
+      <div className="p-4">
         <h3 className="font-semibold mb-3 text-sm text-foreground">Table of Contents</h3>
-        {headings.map((heading, index) => (
-          <button
-            key={index}
-            onClick={() => scrollToHeading(heading.text)}
-            className="block w-full text-left px-2 py-1.5 text-sm hover:bg-muted rounded transition-colors"
-            style={{ paddingLeft: `${(heading.level - 1) * 12 + 8}px` }}
-          >
-            <span className="text-muted-foreground mr-2">
-              {heading.level === 1 && '▸'}
-              {heading.level === 2 && '▹'}
-              {heading.level >= 3 && '·'}
-            </span>
-            {heading.text}
-          </button>
-        ))}
+        <Accordion type="multiple" className="space-y-1" defaultValue={tree.map(n => n.heading.id)}>
+          {tree.map((node, index) => (
+            <OutlineNode key={index} node={node} />
+          ))}
+        </Accordion>
       </div>
     </ScrollArea>
   );
