@@ -138,9 +138,12 @@ interface ContentSection {
 // Create DOCX from rendered preview
 export const createDocxFromPreview = async (
   previewElement: HTMLElement,
-  fileName: string
+  fileName: string,
+  onProgress?: (progress: number) => void
 ): Promise<Blob> => {
+  onProgress?.(10);
   await waitForContentToRender();
+  onProgress?.(20);
 
   const sections: any[] = [];
 
@@ -401,12 +404,18 @@ export const createDocxFromPreview = async (
   const article = previewElement.querySelector('article');
   if (article) {
     const children = Array.from(article.children);
+    const totalChildren = children.length;
     
-    for (const child of children) {
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
       const processedElements = await processElement(child);
       sections.push(...processedElements);
+      
+      const progress = 20 + Math.floor((i / totalChildren) * 60);
+      onProgress?.(progress);
     }
   }
+  onProgress?.(85);
 
   // Create the document with letter size (8.5" x 11")
   const doc = new Document({
@@ -435,21 +444,27 @@ export const createDocxFromPreview = async (
     ],
   });
 
+  onProgress?.(95);
   // Generate blob
   const blob = await Packer.toBlob(doc);
+  onProgress?.(100);
   return blob;
 };
 
 // Improved PDF export with better rendering
 export const exportToPdfWithRendering = async (
   previewElement: HTMLElement,
-  fileName: string
+  fileName: string,
+  onProgress?: (progress: number) => void
 ): Promise<void> => {
+  onProgress?.(10);
   const { jsPDF } = await import('jspdf');
   const html2canvas = (await import('html2canvas')).default;
 
+  onProgress?.(20);
   // Wait for all content to render
   await waitForContentToRender();
+  onProgress?.(30);
 
   const article = previewElement.querySelector('article');
   if (!article) {
@@ -464,6 +479,7 @@ export const exportToPdfWithRendering = async (
     logging: false,
     windowWidth: 900, // Match typical content width
   });
+  onProgress?.(60);
 
   const imgData = canvas.toDataURL('image/png');
   const pdf = new jsPDF({
@@ -492,6 +508,7 @@ export const exportToPdfWithRendering = async (
   let heightLeft = scaledHeight;
   let position = margin;
   let page = 0;
+  const totalPages = Math.ceil(scaledHeight / availableHeight);
 
   while (heightLeft > 0) {
     if (page > 0) {
@@ -509,17 +526,25 @@ export const exportToPdfWithRendering = async (
 
     heightLeft -= availableHeight;
     page++;
+    
+    const progress = 60 + Math.floor((page / totalPages) * 30);
+    onProgress?.(progress);
   }
 
+  onProgress?.(95);
   pdf.save(`${fileName}.pdf`);
+  onProgress?.(100);
 };
 
 // Improved HTML export with inline styles - captures already-rendered preview
 export const exportToHtmlWithInlineStyles = async (
   previewElement: HTMLElement,
-  fileName: string
+  fileName: string,
+  onProgress?: (progress: number) => void
 ): Promise<void> => {
+  onProgress?.(10);
   await waitForContentToRender();
+  onProgress?.(20);
 
   // Get the article content that's already rendered (includes Mermaid diagrams)
   const article = previewElement.querySelector('article');
@@ -537,8 +562,10 @@ export const exportToHtmlWithInlineStyles = async (
   // Rasterize complex elements to embedded images for robust formatting
   const rasterizeToImg = async (selector: string, altFactory: (el: Element) => string) => {
     const nodes = Array.from(clonedArticle.querySelectorAll(selector));
+    const totalNodes = nodes.length;
     
-    for (const node of nodes) {
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
       try {
         const htmlNode = node as HTMLElement;
         
@@ -579,11 +606,15 @@ export const exportToHtmlWithInlineStyles = async (
         // Leave the original element if conversion fails
       }
     }
+    return totalNodes;
   };
 
   // Mermaid and KaTeX tend to shift styles across environments – turn them into PNGs
+  onProgress?.(30);
   await rasterizeToImg('.mermaid-diagram-container', () => 'Mermaid diagram');
+  onProgress?.(60);
   await rasterizeToImg('.katex-display, .katex', () => 'Mathematical equation');
+  onProgress?.(80);
   
   const renderedContent = clonedArticle.innerHTML;
 
@@ -655,10 +686,12 @@ ${renderedContent}
 </html>`;
 
   const blob = new Blob([html], { type: 'text/html' });
+  onProgress?.(90);
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
   a.download = `${fileName}.html`;
   a.click();
   URL.revokeObjectURL(url);
+  onProgress?.(100);
 };

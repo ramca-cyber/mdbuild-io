@@ -304,8 +304,17 @@ export const Preview = () => {
         onClick={handleClick}
         role="document"
         aria-label="Markdown preview"
+        style={{
+          willChange: 'scroll-position',
+          contain: 'layout style paint',
+        }}
       >
-        <article className="prose prose-slate dark:prose-invert max-w-none">
+        <article 
+          className="prose prose-slate dark:prose-invert max-w-none"
+          style={{
+            contentVisibility: 'auto',
+          }}
+        >
           {markdownContent}
         </article>
       </div>

@@ -327,6 +327,31 @@ Express yourself with emojis! :tada: :rocket: :sparkles:
 
 export const getDefaultContent = () => defaultContent;
 
+// Handle multi-tab conflict resolution
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'editor-storage' && e.newValue) {
+      try {
+        const newState = JSON.parse(e.newValue);
+        const currentState = useEditorStore.getState();
+        
+        // Check if content was modified in another tab
+        if (newState.state.content !== currentState.content) {
+          const shouldSync = window.confirm(
+            'Content was modified in another tab. Do you want to sync with the latest version? (Cancel to keep current content)'
+          );
+          
+          if (shouldSync) {
+            useEditorStore.setState({ content: newState.state.content });
+          }
+        }
+      } catch (error) {
+        console.error('Failed to parse storage event:', error);
+      }
+    }
+  });
+}
+
 export const useEditorStore = create<EditorState>()(
   persist(
     (set, get) => ({

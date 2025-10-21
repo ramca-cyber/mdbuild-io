@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useMemo } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -7,6 +7,7 @@ import { EditorView } from '@codemirror/view';
 import { EditorSelection } from '@codemirror/state';
 import { undo, redo, deleteLine, copyLineDown, moveLineUp, moveLineDown, selectLine } from '@codemirror/commands';
 import { SearchReplace } from '@/components/SearchReplace';
+import { debounce } from '@/lib/utils';
 
 export const Editor = () => {
   const { 
@@ -148,11 +149,19 @@ export const Editor = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [zoomIn, zoomOut, resetZoom]);
 
+  // Debounced content update for better performance
+  const debouncedSetContent = useMemo(
+    () => debounce((value: string) => {
+      setContent(value);
+    }, 150),
+    [setContent]
+  );
+
   const onChange = useCallback(
     (value: string) => {
-      setContent(value);
+      debouncedSetContent(value);
     },
-    [setContent]
+    [debouncedSetContent]
   );
   
   // Track cursor position and selection

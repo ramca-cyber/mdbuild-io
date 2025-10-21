@@ -180,10 +180,19 @@ export function DocumentHeader() {
         return;
       }
 
+      const toastId = toast.loading('Exporting HTML...');
+      
       const { exportToHtmlWithInlineStyles } = await import('@/lib/exportUtils');
       
-      await exportToHtmlWithInlineStyles(previewElement as HTMLElement, fileName);
-      toast.success('Exported as HTML');
+      await exportToHtmlWithInlineStyles(
+        previewElement as HTMLElement, 
+        fileName,
+        (progress) => {
+          toast.loading(`Exporting HTML... ${progress}%`, { id: toastId });
+        }
+      );
+      
+      toast.success('Exported as HTML', { id: toastId });
     } catch (error) {
       console.error('HTML export error:', error);
       toast.error('Failed to export HTML');
@@ -200,12 +209,18 @@ export function DocumentHeader() {
         return;
       }
 
-      toast.info('Generating PDF...');
+      const toastId = toast.loading('Generating PDF...');
       
       const { exportToPdfWithRendering } = await import('@/lib/exportUtils');
-      await exportToPdfWithRendering(previewElement as HTMLElement, fileName);
+      await exportToPdfWithRendering(
+        previewElement as HTMLElement, 
+        fileName,
+        (progress) => {
+          toast.loading(`Generating PDF... ${progress}%`, { id: toastId });
+        }
+      );
       
-      toast.success('Exported as PDF');
+      toast.success('Exported as PDF', { id: toastId });
     } catch (error) {
       console.error('PDF export error:', error);
       toast.error('Failed to export PDF');
@@ -222,10 +237,16 @@ export function DocumentHeader() {
         return;
       }
 
-      toast.info('Preparing DOCX export...');
+      const toastId = toast.loading('Preparing DOCX export...');
       
       const { createDocxFromPreview } = await import('@/lib/exportUtils');
-      const blob = await createDocxFromPreview(previewElement as HTMLElement, fileName);
+      const blob = await createDocxFromPreview(
+        previewElement as HTMLElement, 
+        fileName,
+        (progress) => {
+          toast.loading(`Preparing DOCX... ${progress}%`, { id: toastId });
+        }
+      );
       
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -234,7 +255,7 @@ export function DocumentHeader() {
       a.click();
       URL.revokeObjectURL(url);
       
-      toast.success('Exported as DOCX');
+      toast.success('Exported as DOCX', { id: toastId });
     } catch (error) {
       console.error('DOCX export error:', error);
       toast.error('Failed to export DOCX');
