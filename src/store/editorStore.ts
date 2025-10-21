@@ -138,13 +138,34 @@ A modern, powerful markdown editor with live preview and advanced features.
 ## ✨ Features Overview
 
 - **GitHub Flavored Markdown** - Full GFM support with tables, strikethrough, and more
+- **GitHub Alerts** - Beautiful callouts for notes, tips, warnings, and more
 - **Live Preview** - See changes instantly as you type
 - **Mermaid Diagrams** - Create flowcharts, sequences, and more
 - **Math Equations** - Beautiful math rendering with KaTeX
 - **Syntax Highlighting** - Code blocks with language-specific highlighting
 - **Emoji Support** - :rocket: :sparkles: :heart:
+- **Footnotes** - Add references and citations[^1]
 - **Auto-save** - Never lose your work
-- **Export Options** - Save as Markdown, HTML, PDF, and more
+- **Export Options** - Save as Markdown, HTML, PDF, PNG, DOCX
+
+---
+
+## 🎯 GitHub Alerts
+
+> [!NOTE]
+> Useful information that users should know, even when skimming content.
+
+> [!TIP]
+> Helpful advice for doing things better or more easily.
+
+> [!IMPORTANT]
+> Key information users need to know to achieve their goal.
+
+> [!WARNING]
+> Urgent info that needs immediate user attention to avoid problems.
+
+> [!CAUTION]
+> Advises about risks or negative outcomes of certain actions.
 
 ---
 
@@ -354,6 +375,22 @@ Express yourself with emojis! :tada: :rocket: :sparkles:
 - :bulb: Great idea!
 - :zap: Fast performance!
 - :star: Favorite!
+
+---
+
+## 📚 Footnotes
+
+You can add footnotes to your documents[^1]. They appear at the bottom of the page.
+
+Here's another footnote reference[^2].
+
+You can even use named footnotes[^note-name] for better organization.
+
+[^1]: This is the first footnote with detailed information.
+
+[^2]: Here's the second footnote with more context and links: https://example.com
+
+[^note-name]: Named footnotes are great for longer documents with many references.
 
 ---
 
