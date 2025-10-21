@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { MermaidDiagram } from '@/components/MermaidDiagram';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { visit } from 'unist-util-visit';
+import { ViewModeSwitcher } from '@/components/ViewModeSwitcher';
 
 // TypeScript interfaces
 interface CodeProps {
@@ -353,6 +354,15 @@ export const Preview = () => {
 
   return (
     <div className="h-full w-full flex flex-col overflow-hidden bg-preview-bg">
+      <div className="px-4 py-2 bg-muted/50 border-b-2 border-border/80 flex-shrink-0 no-print shadow-sm flex items-center justify-between">
+        <h2 className="text-sm font-bold text-foreground/70 uppercase tracking-wider">
+          Preview
+        </h2>
+        {/* Import and add ViewModeSwitcher here */}
+        <div className="hidden lg:block">
+          <ViewModeSwitcher />
+        </div>
+      </div>
       <div
         ref={previewRef}
         className="flex-1 overflow-auto p-8 cursor-text preview-content"
