@@ -31,6 +31,14 @@ interface EditorState {
   previewRefreshKey: number;
   statisticsExpanded: boolean;
   
+  // Cursor & Selection
+  cursorLine: number;
+  cursorColumn: number;
+  selectedWords: number;
+  
+  // Zoom
+  zoomLevel: number;
+  
   // Search & Replace
   showSearchReplace: boolean;
   searchQuery: string;
@@ -61,6 +69,16 @@ interface EditorState {
   restoreVersion: (index: number) => void;
   createNewDocument: () => void;
   resetToDefaults: () => void;
+  
+  // Cursor & Selection actions
+  setCursorPosition: (line: number, column: number) => void;
+  setSelectedWords: (count: number) => void;
+  
+  // Zoom actions
+  setZoomLevel: (level: number) => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  resetZoom: () => void;
   
   // Search & Replace actions
   setShowSearchReplace: (show: boolean) => void;
@@ -329,6 +347,14 @@ export const useEditorStore = create<EditorState>()(
       previewRefreshKey: 0,
       statisticsExpanded: false,
       
+      // Cursor & Selection initial state
+      cursorLine: 1,
+      cursorColumn: 1,
+      selectedWords: 0,
+      
+      // Zoom initial state
+      zoomLevel: 100,
+      
       // Search & Replace initial state
       showSearchReplace: false,
       searchQuery: '',
@@ -524,6 +550,22 @@ export const useEditorStore = create<EditorState>()(
           viewMode: 'split',
         });
       },
+      
+      // Cursor & Selection methods
+      setCursorPosition: (line, column) => set({ cursorLine: line, cursorColumn: column }),
+      setSelectedWords: (count) => set({ selectedWords: count }),
+      
+      // Zoom methods
+      setZoomLevel: (level) => set({ zoomLevel: Math.min(Math.max(level, 50), 200) }),
+      zoomIn: () => {
+        const current = get().zoomLevel;
+        set({ zoomLevel: Math.min(current + 10, 200) });
+      },
+      zoomOut: () => {
+        const current = get().zoomLevel;
+        set({ zoomLevel: Math.max(current - 10, 50) });
+      },
+      resetZoom: () => set({ zoomLevel: 100 }),
       
       // Search & Replace methods
       setShowSearchReplace: (show) => set({ showSearchReplace: show }),

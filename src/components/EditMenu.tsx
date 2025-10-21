@@ -9,6 +9,11 @@ import {
   Calendar,
   FileText,
   Trash2,
+  CopyPlus,
+  ArrowUp,
+  ArrowDown,
+  Layers,
+  Eraser,
 } from 'lucide-react';
 import {
   Menubar,
@@ -121,6 +126,26 @@ export const EditMenu = () => {
       { duration: 5000 }
     );
   };
+  
+  const handleDeleteLine = () => {
+    window.dispatchEvent(new CustomEvent('editor-delete-line'));
+  };
+  
+  const handleDuplicateLine = () => {
+    window.dispatchEvent(new CustomEvent('editor-duplicate-line'));
+  };
+  
+  const handleSelectLine = () => {
+    window.dispatchEvent(new CustomEvent('editor-select-line'));
+  };
+  
+  const handleMoveLineUp = () => {
+    window.dispatchEvent(new CustomEvent('editor-move-line-up'));
+  };
+  
+  const handleMoveLineDown = () => {
+    window.dispatchEvent(new CustomEvent('editor-move-line-down'));
+  };
 
   const handleClearContent = () => {
     setShowClearDialog(true);
@@ -183,6 +208,34 @@ export const EditMenu = () => {
             </MenubarItem>
 
             <MenubarSeparator />
+            
+            <MenubarItem onClick={handleDeleteLine}>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Line
+              <MenubarShortcut>{modKey}+Shift+K</MenubarShortcut>
+            </MenubarItem>
+            <MenubarItem onClick={handleDuplicateLine}>
+              <CopyPlus className="h-4 w-4 mr-2" />
+              Duplicate Line
+              <MenubarShortcut>{modKey}+Shift+D</MenubarShortcut>
+            </MenubarItem>
+            <MenubarItem onClick={handleSelectLine}>
+              <Layers className="h-4 w-4 mr-2" />
+              Select Line
+              <MenubarShortcut>{modKey}+L</MenubarShortcut>
+            </MenubarItem>
+            <MenubarItem onClick={handleMoveLineUp}>
+              <ArrowUp className="h-4 w-4 mr-2" />
+              Move Line Up
+              <MenubarShortcut>Alt+↑</MenubarShortcut>
+            </MenubarItem>
+            <MenubarItem onClick={handleMoveLineDown}>
+              <ArrowDown className="h-4 w-4 mr-2" />
+              Move Line Down
+              <MenubarShortcut>Alt+↓</MenubarShortcut>
+            </MenubarItem>
+
+            <MenubarSeparator />
 
             <MenubarItem onClick={handleFindReplace}>
               <Search className="h-4 w-4 mr-2" />
@@ -192,7 +245,7 @@ export const EditMenu = () => {
             <MenubarItem onClick={handleInsertDateTime}>
               <Calendar className="h-4 w-4 mr-2" />
               Insert Date/Time
-              <MenubarShortcut>{modKey}+D</MenubarShortcut>
+              <MenubarShortcut>Alt+D</MenubarShortcut>
             </MenubarItem>
             <MenubarItem onClick={handleWordCount}>
               <FileText className="h-4 w-4 mr-2" />
@@ -202,7 +255,7 @@ export const EditMenu = () => {
             <MenubarSeparator />
 
             <MenubarItem onClick={handleClearContent} className="text-destructive">
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Eraser className="h-4 w-4 mr-2" />
               Clear Content
             </MenubarItem>
           </MenubarContent>

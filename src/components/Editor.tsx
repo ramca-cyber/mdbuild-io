@@ -5,11 +5,27 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { useEditorStore } from '@/store/editorStore';
 import { EditorView } from '@codemirror/view';
 import { EditorSelection } from '@codemirror/state';
-import { undo, redo } from '@codemirror/commands';
+import { undo, redo, deleteLine, copyLineDown, moveLineUp, moveLineDown, selectLine } from '@codemirror/commands';
 import { SearchReplace } from '@/components/SearchReplace';
 
 export const Editor = () => {
-  const { content, setContent, theme, fontSize, lineWrap, lineNumbers, syncScroll, searchResults, currentSearchIndex } = useEditorStore();
+  const { 
+    content, 
+    setContent, 
+    theme, 
+    fontSize, 
+    lineWrap, 
+    lineNumbers, 
+    syncScroll, 
+    searchResults, 
+    currentSearchIndex,
+    setCursorPosition,
+    setSelectedWords,
+    zoomLevel,
+    zoomIn,
+    zoomOut,
+    resetZoom
+  } = useEditorStore();
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
 
@@ -55,8 +71,62 @@ export const Editor = () => {
         useEditorStore.getState().setShowSearchReplace(true);
       }
       
-      // Insert Date/Time
-      if (modifier && e.key === 'd') {
+      // Go To Line
+      if (modifier && e.key === 'g') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('show-goto-dialog'));
+      }
+      
+      // Zoom In
+      if (modifier && (e.key === '+' || e.key === '=')) {
+        e.preventDefault();
+        zoomIn();
+      }
+      
+      // Zoom Out
+      if (modifier && e.key === '-') {
+        e.preventDefault();
+        zoomOut();
+      }
+      
+      // Reset Zoom
+      if (modifier && e.key === '0') {
+        e.preventDefault();
+        resetZoom();
+      }
+      
+      // Delete Line
+      if (modifier && e.shiftKey && e.key === 'K') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('editor-delete-line'));
+      }
+      
+      // Duplicate Line
+      if (modifier && e.shiftKey && e.key === 'D') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('editor-duplicate-line'));
+      }
+      
+      // Select Line
+      if (modifier && e.key === 'l') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('editor-select-line'));
+      }
+      
+      // Move Line Up
+      if (e.altKey && e.key === 'ArrowUp') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('editor-move-line-up'));
+      }
+      
+      // Move Line Down
+      if (e.altKey && e.key === 'ArrowDown') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('editor-move-line-down'));
+      }
+      
+      // Insert Date/Time (moved to Alt+D)
+      if (e.altKey && e.key === 'd') {
         e.preventDefault();
         const now = new Date();
         const formatted = now.toLocaleString('en-US', {
@@ -76,7 +146,7 @@ export const Editor = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [zoomIn, zoomOut, resetZoom]);
 
   const onChange = useCallback(
     (value: string) => {
@@ -84,6 +154,65 @@ export const Editor = () => {
     },
     [setContent]
   );
+  
+  // Track cursor position and selection
+  useEffect(() => {
+    if (!viewRef.current) return;
+    
+    const view = viewRef.current;
+    
+    const updateCursorInfo = () => {
+      if (!view) return;
+      
+      const selection = view.state.selection.main;
+      const doc = view.state.doc;
+      
+      // Get cursor position
+      const line = doc.lineAt(selection.head);
+      const lineNum = line.number;
+      const col = selection.head - line.from + 1;
+      
+      setCursorPosition(lineNum, col);
+      
+      // Get selected text word count
+      if (selection.from !== selection.to) {
+        const selectedText = doc.sliceString(selection.from, selection.to);
+        const words = selectedText.trim().split(/\s+/).filter(w => w.length > 0).length;
+        setSelectedWords(words);
+      } else {
+        setSelectedWords(0);
+      }
+    };
+    
+    const handleUpdate = () => {
+      updateCursorInfo();
+    };
+    
+    // Use MutationObserver to detect selection changes
+    const observer = new MutationObserver(handleUpdate);
+    const editorElement = editorRef.current?.querySelector('.cm-content');
+    
+    if (editorElement) {
+      observer.observe(editorElement, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+      });
+    }
+    
+    // Also listen to click and keyboard events
+    view.dom.addEventListener('click', updateCursorInfo);
+    view.dom.addEventListener('keyup', updateCursorInfo);
+    
+    // Initial update
+    updateCursorInfo();
+    
+    return () => {
+      observer.disconnect();
+      view.dom.removeEventListener('click', updateCursorInfo);
+      view.dom.removeEventListener('keyup', updateCursorInfo);
+    };
+  }, [setCursorPosition, setSelectedWords]);
 
   // Listen for preview clicks to set cursor position
   useEffect(() => {
@@ -246,15 +375,119 @@ export const Editor = () => {
         view.focus();
       }
     };
+    
+    const handleDeleteLine = () => {
+      if (viewRef.current) {
+        deleteLine(viewRef.current);
+        emitHistoryState();
+      }
+    };
+    
+    const handleDuplicateLine = () => {
+      if (viewRef.current) {
+        copyLineDown(viewRef.current);
+        emitHistoryState();
+      }
+    };
+    
+    const handleSelectLine = () => {
+      if (viewRef.current) {
+        selectLine(viewRef.current);
+      }
+    };
+    
+    const handleMoveLineUp = () => {
+      if (viewRef.current) {
+        moveLineUp(viewRef.current);
+        emitHistoryState();
+      }
+    };
+    
+    const handleMoveLineDown = () => {
+      if (viewRef.current) {
+        moveLineDown(viewRef.current);
+        emitHistoryState();
+      }
+    };
+    
+    const handleGoToLine = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { line } = customEvent.detail;
+      
+      if (viewRef.current && typeof line === 'number') {
+        const view = viewRef.current;
+        const doc = view.state.doc;
+        const lineCount = doc.lines;
+        
+        const targetLine = Math.min(Math.max(1, line), lineCount);
+        const pos = doc.line(targetLine).from;
+        
+        view.dispatch({
+          selection: { anchor: pos },
+          scrollIntoView: true,
+        });
+        view.focus();
+      }
+    };
+    
+    const handleConvertCase = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { caseType } = customEvent.detail;
+      
+      if (!viewRef.current) return;
+      
+      const view = viewRef.current;
+      const selection = view.state.selection.main;
+      
+      if (selection.from === selection.to) return; // No selection
+      
+      const selectedText = view.state.sliceDoc(selection.from, selection.to);
+      let convertedText = selectedText;
+      
+      switch (caseType) {
+        case 'upper':
+          convertedText = selectedText.toUpperCase();
+          break;
+        case 'lower':
+          convertedText = selectedText.toLowerCase();
+          break;
+        case 'title':
+          convertedText = selectedText.replace(/\w\S*/g, (txt) => 
+            txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+          );
+          break;
+      }
+      
+      view.dispatch({
+        changes: { from: selection.from, to: selection.to, insert: convertedText },
+        selection: { anchor: selection.from, head: selection.from + convertedText.length },
+      });
+      
+      emitHistoryState();
+    };
 
     window.addEventListener('editor-undo', handleUndo);
     window.addEventListener('editor-redo', handleRedo);
     window.addEventListener('editor-select-all', handleSelectAll);
+    window.addEventListener('editor-delete-line', handleDeleteLine);
+    window.addEventListener('editor-duplicate-line', handleDuplicateLine);
+    window.addEventListener('editor-select-line', handleSelectLine);
+    window.addEventListener('editor-move-line-up', handleMoveLineUp);
+    window.addEventListener('editor-move-line-down', handleMoveLineDown);
+    window.addEventListener('editor-goto-line', handleGoToLine);
+    window.addEventListener('editor-convert-case', handleConvertCase);
 
     return () => {
       window.removeEventListener('editor-undo', handleUndo);
       window.removeEventListener('editor-redo', handleRedo);
       window.removeEventListener('editor-select-all', handleSelectAll);
+      window.removeEventListener('editor-delete-line', handleDeleteLine);
+      window.removeEventListener('editor-duplicate-line', handleDuplicateLine);
+      window.removeEventListener('editor-select-line', handleSelectLine);
+      window.removeEventListener('editor-move-line-up', handleMoveLineUp);
+      window.removeEventListener('editor-move-line-down', handleMoveLineDown);
+      window.removeEventListener('editor-goto-line', handleGoToLine);
+      window.removeEventListener('editor-convert-case', handleConvertCase);
     };
   }, []);
 
@@ -362,6 +595,9 @@ export const Editor = () => {
           style={{
             fontSize: `${fontSize}px`,
             height: '100%',
+            transform: `scale(${zoomLevel / 100})`,
+            transformOrigin: 'top left',
+            width: `${10000 / zoomLevel}%`,
           }}
           aria-label="Markdown editor text area"
         />
