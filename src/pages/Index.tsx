@@ -104,7 +104,7 @@ const Index = () => {
   }, []);
 
   const SidePanel = ({ children }: { children: React.ReactNode }) => (
-    <div className="hidden lg:block w-64 border-l border-border bg-muted/30">
+    <div className="hidden lg:flex lg:flex-col w-64 border-l border-border bg-muted/30 overflow-hidden">
       {children}
     </div>
   );
@@ -334,7 +334,7 @@ const Index = () => {
         {/* Desktop Side Panels */}
         {!focusMode && showOutline && (
           <SidePanel>
-            <aside role="complementary" aria-label="Document outline">
+            <aside role="complementary" aria-label="Document outline" className="h-full overflow-hidden">
               <OutlinePanel />
             </aside>
           </SidePanel>
@@ -423,11 +423,13 @@ const Index = () => {
       </Sheet>
 
       <Sheet open={mobilePanel === 'outline'} onOpenChange={(open) => !open && setMobilePanel(null)}>
-        <SheetContent side="right" className="w-80">
+        <SheetContent side="right" className="w-80 flex flex-col">
           <SheetHeader>
             <SheetTitle>Outline</SheetTitle>
           </SheetHeader>
-          <OutlinePanel />
+          <div className="flex-1 overflow-hidden mt-4">
+            <OutlinePanel />
+          </div>
         </SheetContent>
       </Sheet>
     </div>
