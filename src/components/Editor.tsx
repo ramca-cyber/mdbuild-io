@@ -5,6 +5,7 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { useEditorStore } from '@/store/editorStore';
 import { EditorView } from '@codemirror/view';
 import { EditorSelection } from '@codemirror/state';
+import { undo, redo } from '@codemirror/commands';
 import { SearchReplace } from '@/components/SearchReplace';
 
 export const Editor = () => {
@@ -18,10 +19,58 @@ export const Editor = () => {
       const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
       const modifier = isMac ? e.metaKey : e.ctrlKey;
 
+      // Save
       if (modifier && e.key === 's') {
         e.preventDefault();
-        // Trigger save
         useEditorStore.getState().saveVersion();
+      }
+      
+      // Undo
+      if (modifier && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('editor-undo'));
+      }
+      
+      // Redo
+      if (modifier && e.shiftKey && e.key === 'z') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('editor-redo'));
+      }
+      
+      // Alternative Redo (Ctrl+Y)
+      if (modifier && e.key === 'y') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('editor-redo'));
+      }
+      
+      // Select All
+      if (modifier && e.key === 'a') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('editor-select-all'));
+      }
+      
+      // Find & Replace
+      if (modifier && e.key === 'f') {
+        e.preventDefault();
+        useEditorStore.getState().setShowSearchReplace(true);
+      }
+      
+      // Insert Date/Time
+      if (modifier && e.key === 'd') {
+        e.preventDefault();
+        const now = new Date();
+        const formatted = now.toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        window.dispatchEvent(
+          new CustomEvent('editor-insert', {
+            detail: { kind: 'wrap', before: formatted, after: '', placeholder: '' },
+          })
+        );
       }
     };
 
@@ -171,6 +220,60 @@ export const Editor = () => {
     }
   }, [currentSearchIndex, searchResults]);
 
+  // Edit commands handler
+  useEffect(() => {
+    const handleUndo = () => {
+      if (viewRef.current) {
+        undo(viewRef.current);
+        emitHistoryState();
+      }
+    };
+
+    const handleRedo = () => {
+      if (viewRef.current) {
+        redo(viewRef.current);
+        emitHistoryState();
+      }
+    };
+
+    const handleSelectAll = () => {
+      if (viewRef.current) {
+        const view = viewRef.current;
+        const doc = view.state.doc;
+        view.dispatch({
+          selection: { anchor: 0, head: doc.length },
+        });
+        view.focus();
+      }
+    };
+
+    window.addEventListener('editor-undo', handleUndo);
+    window.addEventListener('editor-redo', handleRedo);
+    window.addEventListener('editor-select-all', handleSelectAll);
+
+    return () => {
+      window.removeEventListener('editor-undo', handleUndo);
+      window.removeEventListener('editor-redo', handleRedo);
+      window.removeEventListener('editor-select-all', handleSelectAll);
+    };
+  }, []);
+
+  // Emit history state changes for Edit menu
+  const emitHistoryState = () => {
+    if (viewRef.current) {
+      // CodeMirror's history is always available with basicSetup
+      // We emit that undo/redo are available since they're always enabled
+      window.dispatchEvent(
+        new CustomEvent('editor-history-change', {
+          detail: {
+            canUndo: true,
+            canRedo: true,
+          },
+        })
+      );
+    }
+  };
+
   // Insertion bus - handles all toolbar insertions at the correct cursor position
   useEffect(() => {
     const handleInsert = (e: Event) => {
@@ -214,6 +317,7 @@ export const Editor = () => {
       }
       
       view.focus();
+      emitHistoryState();
     };
 
     window.addEventListener('editor-insert', handleInsert);

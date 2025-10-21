@@ -24,6 +24,25 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
       ],
     },
     {
+      category: 'Edit',
+      items: [
+        { keys: ['Ctrl', 'Z'], description: 'Undo' },
+        { keys: ['Ctrl', 'Shift', 'Z'], description: 'Redo' },
+        { keys: ['Ctrl', 'Y'], description: 'Redo (Alternative)' },
+        { keys: ['Ctrl', 'X'], description: 'Cut' },
+        { keys: ['Ctrl', 'C'], description: 'Copy' },
+        { keys: ['Ctrl', 'V'], description: 'Paste' },
+        { keys: ['Ctrl', 'A'], description: 'Select All' },
+        { keys: ['Ctrl', 'D'], description: 'Insert Date/Time' },
+      ],
+    },
+    {
+      category: 'Search & Replace',
+      items: [
+        { keys: ['Ctrl', 'F'], description: 'Find & Replace' },
+      ],
+    },
+    {
       category: 'View Controls',
       items: [
         { keys: ['F11'], description: 'Toggle Focus Mode' },
@@ -35,13 +54,6 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
       items: [
         { keys: ['Ctrl', 'B'], description: 'Bold (in supported editors)' },
         { keys: ['Ctrl', 'I'], description: 'Italic (in supported editors)' },
-      ],
-    },
-    {
-      category: 'Search & Replace',
-      items: [
-        { keys: ['Ctrl', 'F'], description: 'Find' },
-        { keys: ['Ctrl', 'H'], description: 'Replace' },
       ],
     },
   ];
