@@ -560,16 +560,16 @@ export function DocumentHeader() {
             onClick={() => setStorageDialogOpen(true)}
             className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-md transition-colors hover:bg-accent ${
               storageInfo.isCritical
-                ? 'text-destructive'
+                ? 'text-destructive font-semibold'
                 : storageInfo.isNearLimit
-                ? 'text-yellow-600 dark:text-yellow-500'
+                ? 'text-yellow-600 dark:text-yellow-500 font-medium'
                 : 'text-muted-foreground'
             }`}
-            title="Click for storage details"
-            aria-label="View storage usage details"
+            title={`Storage: ${formatStorageSize(storageInfo.bytes)} used (${storageInfo.percentage.toFixed(0)}%). Click for details.`}
+            aria-label={`Storage usage: ${storageInfo.percentage.toFixed(0)}% used. Click to view details.`}
           >
             <Database className="h-4 w-4" />
-            <span>{storageInfo.percentage.toFixed(0)}%</span>
+            <span className="font-mono">{storageInfo.percentage.toFixed(0)}%</span>
           </button>
         </div>
       </div>

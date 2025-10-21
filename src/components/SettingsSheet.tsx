@@ -13,17 +13,11 @@ import { toast } from 'sonner';
 export const SettingsSheet = () => {
   const {
     fontSize,
-    lineWrap,
-    lineNumbers,
-    autoSave,
     theme,
     wordLimitWarningsEnabled,
     customWordLimit,
     customCharLimit,
     setFontSize,
-    setLineWrap,
-    setLineNumbers,
-    setAutoSave,
     setTheme,
     setWordLimitWarningsEnabled,
     setCustomWordLimit,
@@ -40,7 +34,7 @@ export const SettingsSheet = () => {
     <ScrollArea className="h-full">
       <div className="p-6 space-y-6">
         <div>
-          <h3 className="text-lg font-semibold mb-4">Editor Settings</h3>
+          <h3 className="text-lg font-semibold mb-4">Appearance</h3>
           
           <div className="space-y-4">
             <div className="space-y-2">
@@ -67,41 +61,6 @@ export const SettingsSheet = () => {
                 value={[fontSize]}
                 onValueChange={(value) => setFontSize(value[0])}
                 className="w-full"
-              />
-            </div>
-
-            <Separator />
-
-            <div className="flex items-center justify-between">
-              <Label htmlFor="line-wrap" className="cursor-pointer">
-                Line Wrap
-              </Label>
-              <Switch
-                id="line-wrap"
-                checked={lineWrap}
-                onCheckedChange={setLineWrap}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Label htmlFor="line-numbers" className="cursor-pointer">
-                Line Numbers
-              </Label>
-              <Switch
-                id="line-numbers"
-                checked={lineNumbers}
-                onCheckedChange={setLineNumbers}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Label htmlFor="auto-save" className="cursor-pointer">
-                Auto Save
-              </Label>
-              <Switch
-                id="auto-save"
-                checked={autoSave}
-                onCheckedChange={setAutoSave}
               />
             </div>
           </div>
@@ -191,9 +150,9 @@ export const SettingsSheet = () => {
         <Separator />
 
         <div>
-          <h4 className="text-sm font-semibold mb-2">Reset Settings</h4>
+          <h4 className="text-sm font-semibold mb-2">Reset Preferences</h4>
           <p className="text-xs text-muted-foreground mb-3">
-            Restore all settings to their default values. This will not affect your saved documents.
+            Restore editor preferences to their default values. This will not affect your saved documents.
           </p>
           <Button 
             variant="destructive" 

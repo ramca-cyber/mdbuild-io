@@ -20,7 +20,7 @@ import {
 import { toast } from 'sonner';
 
 export function FormatMenu() {
-  const { lineWrap, setLineWrap, lineNumbers, setLineNumbers, content, setContent, zoomIn, zoomOut, resetZoom } = useEditorStore();
+  const { lineWrap, setLineWrap, lineNumbers, setLineNumbers, content, setContent, zoomIn, zoomOut, resetZoom, fontSize, setFontSize } = useEditorStore();
 
   // Dispatch wrap insertion (for inline formatting)
   const dispatchWrap = (before: string, after: string = '', placeholder: string = 'text') => {
@@ -92,6 +92,25 @@ export function FormatMenu() {
     }
     
     setContent(newContent);
+  };
+
+  const handleIncreaseFontSize = () => {
+    if (fontSize < 24) {
+      setFontSize(fontSize + 1);
+      toast.success(`Font size: ${fontSize + 1}px`);
+    }
+  };
+
+  const handleDecreaseFontSize = () => {
+    if (fontSize > 12) {
+      setFontSize(fontSize - 1);
+      toast.success(`Font size: ${fontSize - 1}px`);
+    }
+  };
+
+  const handleResetFontSize = () => {
+    setFontSize(16);
+    toast.success('Font size reset to 16px');
   };
 
   const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
@@ -227,6 +246,31 @@ export function FormatMenu() {
           </MenubarSub>
           
           <MenubarSeparator />
+          
+          <MenubarSub>
+            <MenubarSubTrigger>
+              <Type className="h-4 w-4 mr-2" />
+              Text Size
+            </MenubarSubTrigger>
+            <MenubarSubContent>
+              <MenubarItem onClick={handleIncreaseFontSize} disabled={fontSize >= 24}>
+                <ZoomIn className="h-4 w-4 mr-2" />
+                Increase Font Size
+              </MenubarItem>
+              <MenubarItem onClick={handleDecreaseFontSize} disabled={fontSize <= 12}>
+                <ZoomOut className="h-4 w-4 mr-2" />
+                Decrease Font Size
+              </MenubarItem>
+              <MenubarItem onClick={handleResetFontSize}>
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Reset Font Size
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem disabled>
+                Current: {fontSize}px
+              </MenubarItem>
+            </MenubarSubContent>
+          </MenubarSub>
           
           <MenubarSub>
             <MenubarSubTrigger>

@@ -230,7 +230,7 @@ const Index = () => {
                   onClick={() => setMobilePanel('settings')}
                 >
                   <Settings className="h-4 w-4 mr-2" />
-                  Settings
+                  Preferences
                 </Button>
               </div>
             </SheetContent>
@@ -253,20 +253,27 @@ const Index = () => {
             </Link>
           </Button>
           
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
-                <span>Settings</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-80">
-              <SheetHeader>
-                <SheetTitle>Settings</SheetTitle>
-              </SheetHeader>
-              <SettingsSheet />
-            </SheetContent>
-          </Sheet>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <Settings className="h-4 w-4 mr-2" />
+                    <span>Preferences</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-80">
+                  <SheetHeader>
+                    <SheetTitle>Editor Preferences</SheetTitle>
+                  </SheetHeader>
+                  <SettingsSheet />
+                </SheetContent>
+              </Sheet>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Editor Preferences (Theme, Font Size, Limits)</p>
+            </TooltipContent>
+          </Tooltip>
           
           {/* Visual Separator */}
           <div className="w-px h-6 bg-border mx-1" />
