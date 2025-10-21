@@ -175,6 +175,24 @@ export const Preview = () => {
     });
   }, [previewSettings]);
 
+  // Preserve scroll position when outline panel opens/closes or zoom changes
+  useEffect(() => {
+    if (!previewRef.current) return;
+    
+    const preview = previewRef.current;
+    const savedScrollRatio = preview.scrollTop / (preview.scrollHeight - preview.clientHeight);
+    
+    // Wait for layout to settle after outline toggle or zoom change
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (!isNaN(savedScrollRatio) && isFinite(savedScrollRatio)) {
+          const newMaxScroll = preview.scrollHeight - preview.clientHeight;
+          preview.scrollTop = newMaxScroll * savedScrollRatio;
+        }
+      });
+    });
+  }, [showOutline, previewSettings.previewZoom]);
+
   // Re-sync when images or content size change (images, diagrams)
   useEffect(() => {
     if (!previewRef.current) return;
@@ -234,7 +252,7 @@ export const Preview = () => {
       resizeObserver.disconnect();
       window.removeEventListener('resize', emitCurrent);
     };
-  }, [content, previewSettings.previewZoom]);
+  }, [content, previewSettings.previewZoom, showOutline]);
 
   // Robust synchronized scrolling using RAF + lock to prevent feedback loops
   useEffect(() => {
