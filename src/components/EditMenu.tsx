@@ -12,9 +12,6 @@ import {
   CopyPlus,
   ArrowUp,
   ArrowDown,
-  Layers,
-  Eraser,
-  Type,
   Square,
   Trash,
   FileBarChart,
@@ -163,35 +160,6 @@ export const EditMenu = () => {
     setShowClearDialog(true);
   };
 
-  const handleConvertCase = (caseType: 'upper' | 'lower' | 'title') => {
-    window.dispatchEvent(
-      new CustomEvent('editor-convert-case', {
-        detail: { caseType },
-      })
-    );
-  };
-
-  const handleTextCleanup = (cleanupType: 'trailing' | 'empty' | 'trim') => {
-    const { content, setContent } = useEditorStore.getState();
-    let newContent = content;
-    
-    switch (cleanupType) {
-      case 'trailing':
-        newContent = content.split('\n').map(line => line.trimEnd()).join('\n');
-        toast.success('Removed trailing spaces');
-        break;
-      case 'empty':
-        newContent = content.split('\n').filter(line => line.trim() !== '').join('\n');
-        toast.success('Removed empty lines');
-        break;
-      case 'trim':
-        newContent = content.split('\n').map(line => line.trim()).join('\n');
-        toast.success('Trimmed whitespace');
-        break;
-    }
-    
-    setContent(newContent);
-  };
 
   const confirmClear = () => {
     setContent('');
@@ -303,44 +271,6 @@ export const EditMenu = () => {
               Word Count
               <MenubarShortcut>{modKey}+Shift+W</MenubarShortcut>
             </MenubarItem>
-
-            <MenubarSeparator />
-
-            <MenubarSub>
-              <MenubarSubTrigger>
-                <Type className="h-4 w-4 mr-2" />
-                Convert Case
-              </MenubarSubTrigger>
-              <MenubarSubContent>
-                <MenubarItem onClick={() => handleConvertCase('upper')}>
-                  UPPERCASE
-                </MenubarItem>
-                <MenubarItem onClick={() => handleConvertCase('lower')}>
-                  lowercase
-                </MenubarItem>
-                <MenubarItem onClick={() => handleConvertCase('title')}>
-                  Title Case
-                </MenubarItem>
-              </MenubarSubContent>
-            </MenubarSub>
-
-            <MenubarSub>
-              <MenubarSubTrigger>
-                <Eraser className="h-4 w-4 mr-2" />
-                Text Cleanup
-              </MenubarSubTrigger>
-              <MenubarSubContent>
-                <MenubarItem onClick={() => handleTextCleanup('trailing')}>
-                  Remove Trailing Spaces
-                </MenubarItem>
-                <MenubarItem onClick={() => handleTextCleanup('empty')}>
-                  Remove Empty Lines
-                </MenubarItem>
-                <MenubarItem onClick={() => handleTextCleanup('trim')}>
-                  Trim Whitespace
-                </MenubarItem>
-              </MenubarSubContent>
-            </MenubarSub>
 
             <MenubarSeparator />
 

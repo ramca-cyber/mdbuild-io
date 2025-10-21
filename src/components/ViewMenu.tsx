@@ -26,6 +26,9 @@ import {
   Printer,
   BarChart3,
   Sparkles,
+  Monitor,
+  WrapText,
+  Hash,
 } from 'lucide-react';
 import { useEditorStore } from '@/store/editorStore';
 
@@ -84,6 +87,32 @@ export function ViewMenu() {
                   <MenubarShortcut>Ctrl+P</MenubarShortcut>
                 </MenubarRadioItem>
               </MenubarRadioGroup>
+            </MenubarSubContent>
+          </MenubarSub>
+
+          <MenubarSeparator />
+
+          {/* Editor Display */}
+          <MenubarSub>
+            <MenubarSubTrigger>
+              <Monitor className="h-4 w-4 mr-2" />
+              Editor Display
+            </MenubarSubTrigger>
+            <MenubarSubContent>
+              <MenubarCheckboxItem
+                checked={lineWrap}
+                onCheckedChange={setLineWrap}
+              >
+                <WrapText className="h-4 w-4 mr-2" />
+                Word Wrap
+              </MenubarCheckboxItem>
+              <MenubarCheckboxItem
+                checked={lineNumbers}
+                onCheckedChange={setLineNumbers}
+              >
+                <Hash className="h-4 w-4 mr-2" />
+                Line Numbers
+              </MenubarCheckboxItem>
             </MenubarSubContent>
           </MenubarSub>
 

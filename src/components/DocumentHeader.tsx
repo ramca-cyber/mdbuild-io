@@ -33,6 +33,7 @@ import { SaveAsDialog } from './SaveAsDialog';
 import { OpenDocumentDialog } from './OpenDocumentDialog';
 import { templates } from '@/lib/templates';
 import { EditMenu } from './EditMenu';
+import { FormatMenu } from './FormatMenu';
 import { ViewMenu } from './ViewMenu';
 import { SettingsMenu } from './SettingsMenu';
 import { DocumentSettingsDialog } from './DocumentSettingsDialog';
@@ -508,6 +509,8 @@ export function DocumentHeader() {
           </DropdownMenu>
           
           <EditMenu />
+          
+          <FormatMenu />
           
           <ViewMenu />
           
