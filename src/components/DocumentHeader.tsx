@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { FileText, Plus, Save, Trash2, Database, Menu, Clock, FolderOpen, Edit2, X, Check, FileUp, FileDown, FileType, Code, Image as ImageIcon, BookTemplate, Copy, Eraser, Files, Settings2 } from 'lucide-react';
+import { FileText, Plus, Save, Trash2, Database, Menu, Clock, FolderOpen, Edit2, X, Check, FileUp, FileDown, FileType, Code, Image as ImageIcon, BookTemplate, Copy, Eraser, Files, Settings2, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import { calculateStorageUsage, formatStorageSize } from '@/lib/storageUtils';
 import { SaveAsDialog } from './SaveAsDialog';
@@ -362,6 +362,10 @@ export function DocumentHeader() {
     }
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <>
       <div className="h-12 border-b bg-background flex items-center justify-between px-4 gap-4 no-print">
@@ -438,6 +442,12 @@ export function DocumentHeader() {
               <DropdownMenuItem onClick={handleDuplicateDocument} className="cursor-pointer">
                 <Files className="h-4 w-4 mr-2" />
                 Duplicate Document
+              </DropdownMenuItem>
+              
+              <DropdownMenuItem onClick={handlePrint} className="cursor-pointer">
+                <Printer className="h-4 w-4 mr-2" />
+                Print
+                <DropdownMenuShortcut>Ctrl+P</DropdownMenuShortcut>
               </DropdownMenuItem>
               
               <DropdownMenuSeparator />

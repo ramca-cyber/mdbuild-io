@@ -20,9 +20,7 @@ import {
   ListTree,
   Link,
   Maximize2,
-  Printer,
   Sparkles,
-  Monitor,
   WrapText,
   Hash,
 } from 'lucide-react';
@@ -45,10 +43,6 @@ export function ViewMenu() {
     lineNumbers,
     setLineNumbers,
   } = useEditorStore();
-
-  const handlePrint = () => {
-    window.print();
-  };
 
   return (
     <Menubar className="border-0 bg-transparent">
@@ -82,31 +76,20 @@ export function ViewMenu() {
             </MenubarSubContent>
           </MenubarSub>
 
-          <MenubarSeparator />
-
-          {/* Editor Display */}
-          <MenubarSub>
-            <MenubarSubTrigger>
-              <Monitor className="h-4 w-4 mr-2" />
-              Editor Display
-            </MenubarSubTrigger>
-            <MenubarSubContent>
-              <MenubarCheckboxItem
-                checked={lineWrap}
-                onCheckedChange={setLineWrap}
-              >
-                <WrapText className="h-4 w-4 mr-2" />
-                Word Wrap
-              </MenubarCheckboxItem>
-              <MenubarCheckboxItem
-                checked={lineNumbers}
-                onCheckedChange={setLineNumbers}
-              >
-                <Hash className="h-4 w-4 mr-2" />
-                Line Numbers
-              </MenubarCheckboxItem>
-            </MenubarSubContent>
-          </MenubarSub>
+          <MenubarCheckboxItem
+            checked={lineWrap}
+            onCheckedChange={setLineWrap}
+          >
+            <WrapText className="h-4 w-4 mr-2" />
+            Word Wrap
+          </MenubarCheckboxItem>
+          <MenubarCheckboxItem
+            checked={lineNumbers}
+            onCheckedChange={setLineNumbers}
+          >
+            <Hash className="h-4 w-4 mr-2" />
+            Line Numbers
+          </MenubarCheckboxItem>
 
           <MenubarSeparator />
 
@@ -152,13 +135,6 @@ export function ViewMenu() {
             <MenubarShortcut>Shift+F11</MenubarShortcut>
           </MenubarCheckboxItem>
 
-          <MenubarSeparator />
-
-          {/* Print */}
-          <MenubarItem onClick={handlePrint}>
-            <Printer className="h-4 w-4 mr-2" />
-            Print
-          </MenubarItem>
         </MenubarContent>
       </MenubarMenu>
     </Menubar>

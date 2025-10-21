@@ -1,4 +1,4 @@
-import { Bold, Italic, Code, Link as LinkIcon, List, ListOrdered, CheckSquare, Undo2, Redo2, Search, MoreHorizontal, Image as ImageIcon, Table, Quote, Strikethrough, Minus, Smile } from 'lucide-react';
+import { Bold, Italic, Code, Link as LinkIcon, List, ListOrdered, CheckSquare, Undo2, Redo2, Search, MoreHorizontal, Image as ImageIcon, Table, Quote, Strikethrough, Minus, Smile, Link } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -18,7 +18,7 @@ import { EmojiPicker } from './EmojiPicker';
 import { useState } from 'react';
 
 export function CompactToolbar() {
-  const { setShowSearchReplace } = useEditorStore();
+  const { setShowSearchReplace, viewMode, syncScroll, setSyncScroll } = useEditorStore();
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
 
   const dispatchWrap = (before: string, after: string = '', placeholder: string = '') => {
@@ -296,6 +296,24 @@ export function CompactToolbar() {
             <p>Redo (Ctrl+Y)</p>
           </TooltipContent>
         </Tooltip>
+
+        {viewMode === 'split' && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                variant={syncScroll ? 'default' : 'ghost'}
+                onClick={() => setSyncScroll(!syncScroll)}
+                className="h-8 w-8 p-0"
+              >
+                <Link className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Sync Scrolling</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
 
         <Tooltip>
           <TooltipTrigger asChild>
