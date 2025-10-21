@@ -282,9 +282,6 @@ const Index = () => {
 
       {/* Document Header */}
       {!focusMode && <DocumentHeader />}
-      
-      {/* Toolbar */}
-      {!zenMode && !focusMode && <Toolbar />}
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">

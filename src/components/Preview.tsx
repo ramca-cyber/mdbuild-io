@@ -353,12 +353,7 @@ export const Preview = () => {
 
   return (
     <div className="h-full w-full flex flex-col overflow-hidden bg-preview-bg">
-      <div className="px-4 py-3 bg-muted/50 border-b-2 border-border/80 flex-shrink-0 no-print shadow-sm">
-        <h2 className="text-sm font-bold text-foreground/70 uppercase tracking-wider">
-          Preview
-        </h2>
-      </div>
-      <div 
+      <div
         ref={previewRef}
         className="flex-1 overflow-auto p-8 cursor-text preview-content"
         onClick={handleClick}

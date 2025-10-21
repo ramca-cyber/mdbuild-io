@@ -37,6 +37,7 @@ import { FormatMenu } from './FormatMenu';
 import { ViewMenu } from './ViewMenu';
 import { SettingsMenu } from './SettingsMenu';
 import { DocumentSettingsDialog } from './DocumentSettingsDialog';
+import { CompactToolbar } from './CompactToolbar';
 
 export function DocumentHeader() {
   const {
@@ -516,6 +517,9 @@ export function DocumentHeader() {
           
           <SettingsMenu />
         </div>
+
+        {/* Compact Formatting Toolbar */}
+        <CompactToolbar />
 
         {/* CENTER: Document Name (inline editable) */}
         <div className="flex-1 flex items-center justify-center gap-2">

@@ -572,11 +572,6 @@ export const Editor = () => {
       ref={editorRef} 
       className="h-full w-full overflow-hidden relative flex flex-col no-print bg-editor-bg"
     >
-      <div className="px-4 py-3 bg-muted/50 border-b-2 border-border/80 flex-shrink-0 shadow-sm">
-        <h2 className="text-sm font-bold text-foreground/70 uppercase tracking-wider" role="heading" aria-level={2}>
-          Markdown Editor
-        </h2>
-      </div>
       <div className="flex-1 overflow-hidden relative">
         <SearchReplace />
         <CodeMirror
