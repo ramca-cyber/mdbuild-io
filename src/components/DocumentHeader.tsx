@@ -32,6 +32,7 @@ import { calculateStorageUsage, formatStorageSize } from '@/lib/storageUtils';
 import { SaveAsDialog } from './SaveAsDialog';
 import { OpenDocumentDialog } from './OpenDocumentDialog';
 import { templates } from '@/lib/templates';
+import { EditMenu } from './EditMenu';
 
 export function DocumentHeader() {
   const {
@@ -331,7 +332,7 @@ export function DocumentHeader() {
   return (
     <>
       <div className="h-12 border-b bg-background flex items-center justify-between px-4 gap-4 no-print">
-        {/* LEFT: File Menu */}
+        {/* LEFT: File and Edit Menus */}
         <div className="flex items-center gap-2">
           <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -408,23 +409,6 @@ export function DocumentHeader() {
               
               <DropdownMenuSeparator />
               
-              <DropdownMenuLabel>Edit</DropdownMenuLabel>
-              
-              <DropdownMenuItem onClick={handleCopyToClipboard} className="cursor-pointer">
-                <Copy className="h-4 w-4 mr-2" />
-                Copy to Clipboard
-              </DropdownMenuItem>
-              
-              <DropdownMenuItem 
-                onClick={() => setClearAllConfirm(true)} 
-                className="cursor-pointer text-destructive focus:text-destructive"
-              >
-                <Eraser className="h-4 w-4 mr-2" />
-                Clear All
-              </DropdownMenuItem>
-              
-              <DropdownMenuSeparator />
-              
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
                   <BookTemplate className="h-4 w-4 mr-2" />
@@ -490,6 +474,8 @@ export function DocumentHeader() {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          
+          <EditMenu />
         </div>
 
         {/* CENTER: Document Name (inline editable) */}

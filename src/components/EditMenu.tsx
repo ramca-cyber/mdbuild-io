@@ -78,6 +78,16 @@ export const EditMenu = () => {
     window.dispatchEvent(new CustomEvent('editor-select-all'));
   };
 
+  const handleCopyAll = async () => {
+    try {
+      await navigator.clipboard.writeText(content);
+      toast.success('All content copied to clipboard');
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      toast.error('Failed to copy to clipboard');
+    }
+  };
+
   const handleFindReplace = () => {
     setShowSearchReplace(true);
   };
@@ -166,6 +176,10 @@ export const EditMenu = () => {
               <AlignLeft className="h-4 w-4 mr-2" />
               Select All
               <MenubarShortcut>{modKey}+A</MenubarShortcut>
+            </MenubarItem>
+            <MenubarItem onClick={handleCopyAll}>
+              <Copy className="h-4 w-4 mr-2" />
+              Copy All
             </MenubarItem>
 
             <MenubarSeparator />

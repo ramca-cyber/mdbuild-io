@@ -40,7 +40,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ViewModeSwitcher } from '@/components/ViewModeSwitcher';
-import { EditMenu } from '@/components/EditMenu';
 
 export const Toolbar = () => {
   const { 
@@ -111,11 +110,6 @@ export const Toolbar = () => {
 
   return (
     <div className="flex items-center gap-2 px-2 sm:px-4 py-2 bg-toolbar-bg border-b border-border overflow-x-auto no-print">
-      {/* Edit Menu */}
-      <EditMenu />
-      
-      <Separator orientation="vertical" className="h-6 hidden sm:block mx-1" />
-      
       {/* LEFT SIDE: Content Formatting - Always visible on desktop */}
       <div className="hidden sm:flex items-center gap-1 bg-muted/30 rounded-md px-2 py-1 border border-border/50">
         <span className="text-xs font-semibold text-muted-foreground mr-1 hidden md:inline">Format</span>
@@ -418,7 +412,7 @@ export const Toolbar = () => {
 
       {/* RIGHT SIDE: View & Settings */}
       <div className="flex items-center gap-1 bg-muted/30 rounded-md px-2 py-1 border border-border/50">
-        <span className="text-xs font-semibold text-muted-foreground mr-1 hidden md:inline">Tools</span>
+        <span className="text-xs font-semibold text-muted-foreground mr-1 hidden md:inline">View</span>
         
         <ViewModeSwitcher />
         
