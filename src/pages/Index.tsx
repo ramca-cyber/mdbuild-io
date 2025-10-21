@@ -22,7 +22,7 @@ import { calculateStatistics } from '@/lib/statisticsUtils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
-  const { theme, setTheme, viewMode, setViewMode, showOutline, focusMode, setFocusMode, content } = useEditorStore();
+  const { theme, setTheme, viewMode, setViewMode, showOutline, focusMode, setFocusMode, zenMode, setZenMode, content } = useEditorStore();
   const [mobilePanel, setMobilePanel] = useState<'documents' | 'templates' | 'settings' | 'outline' | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
@@ -50,21 +50,31 @@ const Index = () => {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [setTheme]);
 
-  // Handle ESC key to exit focus mode
+  // Handle ESC key to exit focus/zen mode, F11 for focus mode, Shift+F11 for zen mode
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && focusMode) {
-        setFocusMode(false);
+      if (e.key === 'Escape') {
+        if (zenMode) {
+          setZenMode(false);
+        } else if (focusMode) {
+          setFocusMode(false);
+        }
       }
       if (e.key === 'F11') {
         e.preventDefault();
-        setFocusMode(!focusMode);
+        if (e.shiftKey) {
+          // Shift+F11 = Zen Mode
+          setZenMode(!zenMode);
+        } else {
+          // F11 = Focus Mode
+          setFocusMode(!focusMode);
+        }
       }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [focusMode, setFocusMode]);
+  }, [focusMode, setFocusMode, zenMode, setZenMode]);
 
   useEffect(() => {
     document.documentElement.classList.remove('dark', 'sepia');
@@ -302,7 +312,7 @@ const Index = () => {
       {!focusMode && <DocumentHeader />}
       
       {/* Toolbar */}
-      {!focusMode && <Toolbar />}
+      {!zenMode && !focusMode && <Toolbar />}
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
@@ -363,7 +373,7 @@ const Index = () => {
       </div>
 
       {/* Footer with Enhanced Statistics */}
-      {!focusMode && (
+      {!zenMode && !focusMode && (
         <footer role="contentinfo" className="border-t">
           <StatisticsPanel />
           <div className="px-4 py-2 text-sm text-muted-foreground flex justify-end">
@@ -372,24 +382,27 @@ const Index = () => {
         </footer>
       )}
 
-      {/* Focus Mode Exit Button and Word Count Overlay */}
-      {focusMode && (
-        <div role="dialog" aria-modal="true" aria-label="Focus mode">
+      {/* Focus Mode or Zen Mode Exit Button and Word Count Overlay */}
+      {(focusMode || zenMode) && (
+        <div role="dialog" aria-modal="true" aria-label={zenMode ? "Zen mode" : "Focus mode"}>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => setFocusMode(false)}
+                onClick={() => {
+                  if (zenMode) setZenMode(false);
+                  else setFocusMode(false);
+                }}
                 className="no-print fixed top-4 right-4 z-50 bg-background/80 backdrop-blur-sm border-border shadow-lg hover:bg-accent transition-all"
-                aria-label="Exit focus mode"
-                title="Exit Focus Mode (Esc)"
+                aria-label={zenMode ? "Exit zen mode" : "Exit focus mode"}
+                title={zenMode ? "Exit Zen Mode (Esc)" : "Exit Focus Mode (Esc)"}
               >
                 <X className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Exit Focus Mode (ESC)</p>
+              <p>{zenMode ? "Exit Zen Mode (ESC)" : "Exit Focus Mode (ESC)"}</p>
             </TooltipContent>
           </Tooltip>
 

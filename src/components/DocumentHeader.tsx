@@ -34,6 +34,7 @@ import { OpenDocumentDialog } from './OpenDocumentDialog';
 import { templates } from '@/lib/templates';
 import { EditMenu } from './EditMenu';
 import { FormatMenu } from './FormatMenu';
+import { ViewMenu } from './ViewMenu';
 
 export function DocumentHeader() {
   const {
@@ -479,6 +480,8 @@ export function DocumentHeader() {
           <EditMenu />
           
           <FormatMenu />
+          
+          <ViewMenu />
         </div>
 
         {/* CENTER: Document Name (inline editable) */}

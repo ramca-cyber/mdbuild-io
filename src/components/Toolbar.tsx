@@ -31,7 +31,7 @@ import { Toggle } from '@/components/ui/toggle';
 import { Separator } from '@/components/ui/separator';
 import { useEditorStore } from '@/store/editorStore';
 import { toast } from 'sonner';
-import React, { useState } from 'react';
+import React from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,20 +42,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { ViewModeSwitcher } from '@/components/ViewModeSwitcher';
 
 export const Toolbar = () => {
-  const { 
-    viewMode, 
-    setViewMode, 
-    content, 
-    setContent, 
-    showOutline,
-    setShowOutline,
-    focusMode,
-    setFocusMode,
-    syncScroll,
-    setSyncScroll,
-  } = useEditorStore();
-
-  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
+  const [mobileMoreOpen, setMobileMoreOpen] = React.useState(false);
 
   // Dispatch wrap insertion (for inline formatting)
   const dispatchWrap = (before: string, after: string = '', placeholder: string = 'text') => {
@@ -69,10 +56,6 @@ export const Toolbar = () => {
     window.dispatchEvent(new CustomEvent('editor-insert', { 
       detail: { kind: 'block', block } 
     }));
-  };
-
-  const handleViewMode = (mode: 'split' | 'editor' | 'preview') => {
-    setViewMode(mode);
   };
 
   const handleLinkInsert = () => {
@@ -102,10 +85,6 @@ export const Toolbar = () => {
       console.error('Error inserting image:', error);
       toast.error('Failed to insert image. Please try again.');
     }
-  };
-
-  const handlePrint = () => {
-    window.print();
   };
 
   return (
@@ -410,58 +389,9 @@ export const Toolbar = () => {
 
       <div className="flex-1" />
 
-      {/* RIGHT SIDE: View & Settings */}
-      <div className="flex items-center gap-1 bg-muted/30 rounded-md px-2 py-1 border border-border/50">
-        <span className="text-xs font-semibold text-muted-foreground mr-1 hidden md:inline">View</span>
-        
+      {/* RIGHT SIDE: Quick View Mode Switcher */}
+      <div className="flex items-center gap-1">
         <ViewModeSwitcher />
-        
-        <Separator orientation="vertical" className="h-6 mx-1" />
-        
-        <Toggle
-          pressed={showOutline}
-          onPressedChange={setShowOutline}
-          aria-label="Toggle Outline"
-          title="Toggle Outline"
-          className="hidden lg:flex"
-          size="sm"
-        >
-          <ListTree className="h-4 w-4" />
-        </Toggle>
-        
-        <Toggle
-          pressed={syncScroll}
-          onPressedChange={setSyncScroll}
-          aria-label="Toggle Synced Scrolling"
-          title="Toggle Synced Scrolling"
-          size="sm"
-          className={syncScroll ? "bg-primary/20" : ""}
-        >
-          <Link className="h-4 w-4" />
-        </Toggle>
-
-        <Separator orientation="vertical" className="h-6" />
-
-        <Button
-          variant={focusMode ? "default" : "ghost"}
-          size="icon"
-          onClick={() => setFocusMode(!focusMode)}
-          title={focusMode ? "Exit Focus Mode (Esc)" : "Focus Mode (F11)"}
-          aria-label={focusMode ? "Exit focus mode" : "Enter focus mode"}
-          aria-pressed={focusMode}
-        >
-          {focusMode ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handlePrint}
-          title="Print Document (Ctrl+P)"
-          aria-label="Print document"
-        >
-          <Printer className="h-4 w-4" />
-        </Button>
       </div>
     </div>
   );

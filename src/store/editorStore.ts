@@ -19,6 +19,7 @@ interface EditorState {
   viewMode: 'split' | 'editor' | 'preview';
   showOutline: boolean;
   focusMode: boolean;
+  zenMode: boolean;
   lineNumbers: boolean;
   autoSave: boolean;
   syncScroll: boolean;
@@ -54,6 +55,7 @@ interface EditorState {
   setViewMode: (mode: 'split' | 'editor' | 'preview') => void;
   setShowOutline: (show: boolean) => void;
   setFocusMode: (mode: boolean) => void;
+  setZenMode: (mode: boolean) => void;
   setLineNumbers: (show: boolean) => void;
   setAutoSave: (enabled: boolean) => void;
   setSyncScroll: (enabled: boolean) => void;
@@ -335,6 +337,7 @@ export const useEditorStore = create<EditorState>()(
       viewMode: 'split',
       showOutline: false,
       focusMode: false,
+      zenMode: false,
       lineNumbers: true,
       autoSave: true,
       syncScroll: true,
@@ -425,6 +428,7 @@ export const useEditorStore = create<EditorState>()(
       setViewMode: (mode) => set({ viewMode: mode }),
       setShowOutline: (show) => set({ showOutline: show }),
       setFocusMode: (mode) => set({ focusMode: mode }),
+      setZenMode: (mode) => set({ zenMode: mode }),
       setLineNumbers: (show) => set({ lineNumbers: show }),
       setAutoSave: (enabled) => set({ autoSave: enabled }),
       setSyncScroll: (enabled) => set({ syncScroll: enabled }),
