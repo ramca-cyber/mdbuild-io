@@ -18,6 +18,7 @@ import { visit } from 'unist-util-visit';
 import { ViewModeSwitcher } from '@/components/ViewModeSwitcher';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { ZoomIn, ZoomOut, Printer, List } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { calculateStatistics } from '@/lib/statisticsUtils';
@@ -397,7 +398,7 @@ export const Preview = () => {
         </div>
 
         {/* Right side: Tools */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           {/* Outline Toggle */}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -405,7 +406,7 @@ export const Preview = () => {
                 variant={showOutline ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setShowOutline(!showOutline)}
-                className="h-8 px-2 gap-1.5"
+                className="h-8 px-2 gap-1.5 hidden md:flex"
                 aria-label="Toggle outline panel"
               >
                 <List className="h-4 w-4" />
@@ -417,8 +418,10 @@ export const Preview = () => {
             </TooltipContent>
           </Tooltip>
 
+          <Separator orientation="vertical" className="h-6 hidden md:block" />
+
           {/* Zoom Controls */}
-          <div className="flex items-center gap-0.5 border-l pl-2 ml-1">
+          <div className="hidden md:flex items-center gap-0.5">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -460,6 +463,8 @@ export const Preview = () => {
             </Tooltip>
           </div>
 
+          <Separator orientation="vertical" className="h-6 hidden md:block" />
+
           {/* Print Button */}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -467,7 +472,7 @@ export const Preview = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handlePrint}
-                className="h-8 px-2 gap-1.5 border-l ml-1 pl-2"
+                className="h-8 px-2 gap-1.5 hidden md:flex"
                 aria-label="Print preview"
               >
                 <Printer className="h-4 w-4" />
@@ -475,12 +480,14 @@ export const Preview = () => {
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              <p>Print Preview (Ctrl+P)</p>
+              <p>Print Preview</p>
             </TooltipContent>
           </Tooltip>
 
+          <Separator orientation="vertical" className="h-6 hidden lg:block" />
+
           {/* View Mode Switcher */}
-          <div className="hidden lg:block border-l pl-2 ml-1">
+          <div className="hidden lg:block">
             <ViewModeSwitcher />
           </div>
         </div>

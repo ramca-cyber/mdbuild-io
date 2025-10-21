@@ -20,11 +20,7 @@ import {
   ListTree,
   Link,
   Maximize2,
-  ZoomIn,
-  ZoomOut,
-  RotateCcw,
   Printer,
-  BarChart3,
   Sparkles,
   Monitor,
   WrapText,
@@ -44,10 +40,6 @@ export function ViewMenu() {
     setFocusMode,
     zenMode,
     setZenMode,
-    zoomLevel,
-    zoomIn,
-    zoomOut,
-    resetZoom,
     lineWrap,
     setLineWrap,
     lineNumbers,
@@ -162,43 +154,10 @@ export function ViewMenu() {
 
           <MenubarSeparator />
 
-          {/* Zoom Controls */}
-          <MenubarSub>
-            <MenubarSubTrigger>
-              <ZoomIn className="h-4 w-4 mr-2" />
-              Zoom
-            </MenubarSubTrigger>
-            <MenubarSubContent>
-              <MenubarItem onClick={zoomIn}>
-                <ZoomIn className="h-4 w-4 mr-2" />
-                Zoom In
-                <MenubarShortcut>Ctrl++</MenubarShortcut>
-              </MenubarItem>
-              <MenubarItem onClick={zoomOut}>
-                <ZoomOut className="h-4 w-4 mr-2" />
-                Zoom Out
-                <MenubarShortcut>Ctrl+-</MenubarShortcut>
-              </MenubarItem>
-              <MenubarItem onClick={resetZoom}>
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Reset Zoom
-                <MenubarShortcut>Ctrl+0</MenubarShortcut>
-              </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem disabled className="opacity-70">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Current: {zoomLevel}%
-              </MenubarItem>
-            </MenubarSubContent>
-          </MenubarSub>
-
-          <MenubarSeparator />
-
           {/* Print */}
           <MenubarItem onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />
             Print
-            <MenubarShortcut>Ctrl+P</MenubarShortcut>
           </MenubarItem>
         </MenubarContent>
       </MenubarMenu>
