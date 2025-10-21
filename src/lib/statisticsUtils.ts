@@ -1,5 +1,79 @@
 import { Statistics } from '@/types/editor';
 
+export interface LimitStatus {
+  type: 'success' | 'warning' | 'error';
+  message: string;
+  percentage: number;
+}
+
+export interface DocumentLimits {
+  shortBlog: { min: 500; max: 800 };
+  mediumArticle: { min: 1500; max: 2500 };
+  longArticle: { min: 3000; max: 5000 };
+  twitter: { chars: 280 };
+  metaDescription: { chars: 160 };
+}
+
+export const documentLimits: DocumentLimits = {
+  shortBlog: { min: 500, max: 800 },
+  mediumArticle: { min: 1500, max: 2500 },
+  longArticle: { min: 3000, max: 5000 },
+  twitter: { chars: 280 },
+  metaDescription: { chars: 160 },
+};
+
+export const checkWordLimit = (words: number, targetLimit: number | null): LimitStatus | null => {
+  if (!targetLimit) return null;
+  
+  const percentage = (words / targetLimit) * 100;
+  
+  if (percentage < 90) {
+    return {
+      type: 'success',
+      message: `${words} / ${targetLimit} words`,
+      percentage,
+    };
+  } else if (percentage >= 90 && percentage <= 100) {
+    return {
+      type: 'warning',
+      message: `Approaching limit: ${words} / ${targetLimit} words`,
+      percentage,
+    };
+  } else {
+    return {
+      type: 'error',
+      message: `Over limit: ${words - targetLimit} words over`,
+      percentage,
+    };
+  }
+};
+
+export const checkCharLimit = (chars: number, targetLimit: number | null): LimitStatus | null => {
+  if (!targetLimit) return null;
+  
+  const percentage = (chars / targetLimit) * 100;
+  
+  if (percentage < 90) {
+    return {
+      type: 'success',
+      message: `${chars} / ${targetLimit} characters`,
+      percentage,
+    };
+  } else if (percentage >= 90 && percentage <= 100) {
+    return {
+      type: 'warning',
+      message: `Approaching limit: ${chars} / ${targetLimit} characters`,
+      percentage,
+    };
+  } else {
+    return {
+      type: 'error',
+      message: `Over limit: ${chars - targetLimit} characters over`,
+      percentage,
+    };
+  }
+};
+
 export const calculateStatistics = (content: string): Statistics => {
   if (!content.trim()) {
     return {

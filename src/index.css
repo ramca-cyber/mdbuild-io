@@ -499,6 +499,80 @@ All colors MUST be HSL.
     border: 1px solid #999 !important;
     page-break-before: avoid;
   }
+  
+  table {
+    page-break-inside: avoid;
+  }
+  
+  /* Print settings applied via classes */
+  .print-paper-A4 {
+    width: 210mm !important;
+    height: 297mm !important;
+  }
+  
+  .print-paper-Letter {
+    width: 8.5in !important;
+    height: 11in !important;
+  }
+  
+  .print-paper-Legal {
+    width: 8.5in !important;
+    height: 14in !important;
+  }
+  
+  .print-orientation-landscape {
+    transform: rotate(90deg);
+  }
+  
+  .print-margins-normal {
+    margin: 1in !important;
+  }
+  
+  .print-margins-narrow {
+    margin: 0.5in !important;
+  }
+  
+  .print-margins-wide {
+    margin: 1.5in !important;
+  }
+  
+  .print-font-small {
+    font-size: 10pt !important;
+  }
+  
+  .print-font-medium {
+    font-size: 12pt !important;
+  }
+  
+  .print-font-large {
+    font-size: 14pt !important;
+  }
+  
+  .print-grayscale {
+    filter: grayscale(100%) !important;
+  }
+  
+  .print-blackwhite {
+    filter: grayscale(100%) contrast(1000%) !important;
+  }
+  
+  .print-columns-two {
+    column-count: 2 !important;
+    column-gap: 1.5em !important;
+  }
+  
+  .print-page-numbers::after {
+    content: counter(page);
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    padding: 0.5em;
+  }
+  
+  .print-break-headings h1,
+  .print-break-headings h2 {
+    page-break-before: always;
+  }
 
   table {
     page-break-inside: avoid;

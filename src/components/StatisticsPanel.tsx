@@ -1,9 +1,10 @@
 import { useMemo, useEffect, useState } from 'react';
-import { ChevronUp, ChevronDown, CheckCircle2, Loader2 } from 'lucide-react';
+import { ChevronUp, ChevronDown, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { calculateStatistics } from '@/lib/statisticsUtils';
+import { calculateStatistics, checkWordLimit, checkCharLimit } from '@/lib/statisticsUtils';
 import { useEditorStore } from '@/store/editorStore';
 import { GoToLineDialog } from '@/components/GoToLineDialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export const StatisticsPanel = () => {
   const { 
@@ -15,7 +16,10 @@ export const StatisticsPanel = () => {
     cursorLine,
     cursorColumn,
     selectedWords,
-    zoomLevel
+    zoomLevel,
+    wordLimitWarningsEnabled,
+    customWordLimit,
+    customCharLimit,
   } = useEditorStore();
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -38,6 +42,16 @@ export const StatisticsPanel = () => {
 
   const stats = useMemo(() => calculateStatistics(content), [content]);
   const totalLines = content.split('\n').length;
+  
+  const wordLimitStatus = useMemo(() => 
+    wordLimitWarningsEnabled ? checkWordLimit(stats.words, customWordLimit) : null,
+    [wordLimitWarningsEnabled, stats.words, customWordLimit]
+  );
+  
+  const charLimitStatus = useMemo(() => 
+    wordLimitWarningsEnabled ? checkCharLimit(stats.characters, customCharLimit) : null,
+    [wordLimitWarningsEnabled, stats.characters, customCharLimit]
+  );
 
   const formatTime = (date: Date) => {
     const now = new Date();
@@ -97,12 +111,54 @@ export const StatisticsPanel = () => {
                 )}
               </span>
             )}
-            <span className="text-muted-foreground">
-              Words: <span className="font-medium text-foreground">{stats.words}</span>
-            </span>
-            <span className="text-muted-foreground">
-              Characters: <span className="font-medium text-foreground">{stats.characters}</span>
-            </span>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-muted-foreground flex items-center gap-1.5">
+                    Words: <span className={`font-medium ${
+                      wordLimitStatus?.type === 'error' ? 'text-destructive' :
+                      wordLimitStatus?.type === 'warning' ? 'text-yellow-600 dark:text-yellow-500' :
+                      'text-foreground'
+                    }`}>{stats.words}</span>
+                    {wordLimitStatus && wordLimitStatus.type !== 'success' && (
+                      <AlertTriangle className={`h-3.5 w-3.5 ${
+                        wordLimitStatus.type === 'error' ? 'text-destructive' : 'text-yellow-600 dark:text-yellow-500'
+                      }`} />
+                    )}
+                  </span>
+                </TooltipTrigger>
+                {wordLimitStatus && (
+                  <TooltipContent>
+                    <p>{wordLimitStatus.message}</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-muted-foreground flex items-center gap-1.5">
+                    Characters: <span className={`font-medium ${
+                      charLimitStatus?.type === 'error' ? 'text-destructive' :
+                      charLimitStatus?.type === 'warning' ? 'text-yellow-600 dark:text-yellow-500' :
+                      'text-foreground'
+                    }`}>{stats.characters}</span>
+                    {charLimitStatus && charLimitStatus.type !== 'success' && (
+                      <AlertTriangle className={`h-3.5 w-3.5 ${
+                        charLimitStatus.type === 'error' ? 'text-destructive' : 'text-yellow-600 dark:text-yellow-500'
+                      }`} />
+                    )}
+                  </span>
+                </TooltipTrigger>
+                {charLimitStatus && (
+                  <TooltipContent>
+                    <p>{charLimitStatus.message}</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
             <span className="text-muted-foreground">
               Lines: <span className="font-medium text-foreground">{stats.lines}</span>
             </span>

@@ -48,6 +48,29 @@ interface EditorState {
   currentSearchIndex: number;
   searchOptions: SearchOptions;
   
+  // Word/Character Limit Warnings
+  wordLimitWarningsEnabled: boolean;
+  customWordLimit: number | null;
+  customCharLimit: number | null;
+  
+  // Print Settings
+  printSettings: {
+    paperSize: 'A4' | 'Letter' | 'Legal';
+    orientation: 'portrait' | 'landscape';
+    margins: 'normal' | 'narrow' | 'wide';
+    includeLineNumbers: boolean;
+    includePageNumbers: boolean;
+    includeHeaderFooter: boolean;
+    headerText: string;
+    footerText: string;
+    fontSize: 'small' | 'medium' | 'large';
+    syntaxHighlighting: boolean;
+    colorMode: 'color' | 'grayscale' | 'blackwhite';
+    columns: 'single' | 'two';
+    includeTableOfContents: boolean;
+    breakPagesAtHeadings: boolean;
+  };
+  
   setContent: (content: string) => void;
   setTheme: (theme: Theme) => void;
   setFontSize: (size: number) => void;
@@ -94,6 +117,14 @@ interface EditorState {
   findPrevious: () => void;
   replaceOne: () => void;
   replaceAll: () => void;
+  
+  // Word/Character Limit Warnings actions
+  setWordLimitWarningsEnabled: (enabled: boolean) => void;
+  setCustomWordLimit: (limit: number | null) => void;
+  setCustomCharLimit: (limit: number | null) => void;
+  
+  // Print Settings actions
+  setPrintSettings: (settings: Partial<EditorState['printSettings']>) => void;
 }
 
 const defaultContent = `# Welcome to MDBuild.io 🚀
@@ -393,6 +424,29 @@ export const useEditorStore = create<EditorState>()(
         caseSensitive: false,
         wholeWord: false,
         useRegex: false,
+      },
+      
+      // Word/Character Limit Warnings initial state
+      wordLimitWarningsEnabled: false,
+      customWordLimit: null,
+      customCharLimit: null,
+      
+      // Print Settings initial state
+      printSettings: {
+        paperSize: 'A4',
+        orientation: 'portrait',
+        margins: 'normal',
+        includeLineNumbers: false,
+        includePageNumbers: true,
+        includeHeaderFooter: false,
+        headerText: '',
+        footerText: '',
+        fontSize: 'medium',
+        syntaxHighlighting: true,
+        colorMode: 'color',
+        columns: 'single',
+        includeTableOfContents: false,
+        breakPagesAtHeadings: false,
       },
       
       setContent: (content) => {
@@ -701,6 +755,16 @@ export const useEditorStore = create<EditorState>()(
           // Invalid regex
         }
       },
+      
+      // Word/Character Limit Warnings methods
+      setWordLimitWarningsEnabled: (enabled) => set({ wordLimitWarningsEnabled: enabled }),
+      setCustomWordLimit: (limit) => set({ customWordLimit: limit }),
+      setCustomCharLimit: (limit) => set({ customCharLimit: limit }),
+      
+      // Print Settings methods
+      setPrintSettings: (settings) => set({ 
+        printSettings: { ...get().printSettings, ...settings } 
+      }),
     }),
     {
       name: 'mdbuild-storage',

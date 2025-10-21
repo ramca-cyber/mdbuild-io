@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -16,11 +17,17 @@ export const SettingsSheet = () => {
     lineNumbers,
     autoSave,
     theme,
+    wordLimitWarningsEnabled,
+    customWordLimit,
+    customCharLimit,
     setFontSize,
     setLineWrap,
     setLineNumbers,
     setAutoSave,
     setTheme,
+    setWordLimitWarningsEnabled,
+    setCustomWordLimit,
+    setCustomCharLimit,
     resetToDefaults,
   } = useEditorStore();
 
@@ -97,6 +104,59 @@ export const SettingsSheet = () => {
                 onCheckedChange={setAutoSave}
               />
             </div>
+          </div>
+        </div>
+
+        <Separator />
+
+        <div>
+          <h3 className="text-lg font-semibold mb-4">Word/Character Limits</h3>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="limit-warnings" className="cursor-pointer">
+                Enable Limit Warnings
+              </Label>
+              <Switch
+                id="limit-warnings"
+                checked={wordLimitWarningsEnabled}
+                onCheckedChange={setWordLimitWarningsEnabled}
+              />
+            </div>
+
+            {wordLimitWarningsEnabled && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="word-limit">Custom Word Limit</Label>
+                  <Input
+                    id="word-limit"
+                    type="number"
+                    min="0"
+                    placeholder="e.g., 2500"
+                    value={customWordLimit || ''}
+                    onChange={(e) => setCustomWordLimit(e.target.value ? parseInt(e.target.value) : null)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Leave empty to disable word limit warnings
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="char-limit">Custom Character Limit</Label>
+                  <Input
+                    id="char-limit"
+                    type="number"
+                    min="0"
+                    placeholder="e.g., 5000"
+                    value={customCharLimit || ''}
+                    onChange={(e) => setCustomCharLimit(e.target.value ? parseInt(e.target.value) : null)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Leave empty to disable character limit warnings
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
