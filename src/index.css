@@ -456,7 +456,18 @@ All colors MUST be HSL.
     display: none !important;
   }
   
-  /* Show preview content */
+  /* Show preview content with print-safe overrides */
+  .preview-content {
+    display: block !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: var(--print-margin, 1in) !important;
+    margin: 0 !important;
+    background: white !important;
+    contain: none !important;
+  }
+
   .prose,
   article {
     display: block !important;
@@ -464,12 +475,14 @@ All colors MUST be HSL.
     max-width: 100% !important;
     width: 100% !important;
     height: auto !important;
-    padding: var(--print-margin, 1in) !important;
     margin: 0 !important;
     overflow: visible !important;
     background: white !important;
     font-size: var(--print-font-size, 12pt) !important;
     filter: var(--print-color-mode, none) !important;
+    transform: none !important; /* reset zoom scaling */
+    content-visibility: visible !important; /* ensure rendering */
+    contain: none !important; /* allow pagination */
   }
   
   /* Ensure all article content is visible */

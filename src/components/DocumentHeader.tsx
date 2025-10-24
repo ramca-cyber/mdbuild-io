@@ -510,7 +510,7 @@ export function DocumentHeader() {
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleExportDOCX} className="cursor-pointer">
                     <FileText className="h-4 w-4 mr-2" />
-                    Word (.doc)
+                    Word (.docx)
                   </DropdownMenuItem>
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
