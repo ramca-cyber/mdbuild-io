@@ -143,8 +143,22 @@ export const Preview = () => {
   };
 
   const handlePrint = async () => {
-    const { waitForPrintReady } = await import('@/lib/exportUtils');
+    const { waitForPrintReady, prepareArticleForPrint, restoreArticleAfterPrint } = await import('@/lib/exportUtils');
+    
+    // Prepare article for full rendering
+    const savedStyles = prepareArticleForPrint();
+    
+    // Wait for content to be ready
     await waitForPrintReady();
+    
+    // Setup cleanup after print
+    const cleanup = () => {
+      restoreArticleAfterPrint(savedStyles);
+      window.removeEventListener('afterprint', cleanup);
+    };
+    window.addEventListener('afterprint', cleanup);
+    
+    // Trigger print
     window.print();
   };
   

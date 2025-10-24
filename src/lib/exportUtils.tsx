@@ -61,6 +61,30 @@ export const waitForPrintReady = async (): Promise<void> => {
   await new Promise((resolve) => setTimeout(resolve, 200));
 };
 
+// Prepare article for printing by removing content-visibility
+export const prepareArticleForPrint = () => {
+  const article = document.querySelector('.preview-content article') as HTMLElement;
+  if (!article) return null;
+  
+  const originalContentVisibility = article.style.contentVisibility;
+  const originalContain = article.style.contain;
+  
+  // Force full rendering for print
+  article.style.contentVisibility = 'visible';
+  article.style.contain = 'none';
+  
+  return { originalContentVisibility, originalContain };
+};
+
+// Restore article styles after printing
+export const restoreArticleAfterPrint = (saved: { originalContentVisibility: string; originalContain: string } | null) => {
+  const article = document.querySelector('.preview-content article') as HTMLElement;
+  if (!article || !saved) return;
+  
+  article.style.contentVisibility = saved.originalContentVisibility;
+  article.style.contain = saved.originalContain;
+};
+
 // Convert DOM element to PNG image data
 export const convertElementToImage = async (element: HTMLElement): Promise<string> => {
   try {

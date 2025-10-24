@@ -31,11 +31,22 @@ export const DocumentSettingsDialog = ({ open, onOpenChange }: DocumentSettingsD
     applyDocumentSettingsToPrint(localSettings);
     
     // Wait for preview to fully render before printing
-    const { waitForPrintReady } = await import('@/lib/exportUtils');
+    const { waitForPrintReady, prepareArticleForPrint, restoreArticleAfterPrint } = await import('@/lib/exportUtils');
+    
+    // Prepare article for full rendering
+    const savedStyles = prepareArticleForPrint();
+    
     await waitForPrintReady();
     
+    // Setup cleanup after print
+    const cleanup = () => {
+      restoreArticleAfterPrint(savedStyles);
+      setViewMode(originalMode);
+      window.removeEventListener('afterprint', cleanup);
+    };
+    window.addEventListener('afterprint', cleanup);
+    
     window.print();
-    setViewMode(originalMode);
   };
 
   const handleSaveDefault = () => {
