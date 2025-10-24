@@ -359,6 +359,50 @@ All colors MUST be HSL.
     border-width: 0;
   }
   
+  /* Zoom wrapper for preview scaling */
+  .zoom-wrapper {
+    transform-origin: top left;
+    will-change: transform;
+    transition: transform 0.2s ease-out;
+  }
+  
+  /* Disable conflicting transforms when zoomed */
+  .zoom-wrapper .mermaid-diagram-container {
+    max-width: 100%;
+  }
+  
+  .zoom-wrapper .mermaid-diagram-container:hover {
+    /* Use subtle hover scale that works with zoom */
+    transform: scale(1.01) !important;
+  }
+  
+  /* Ensure all child elements respect zoom */
+  .zoom-wrapper img,
+  .zoom-wrapper svg,
+  .zoom-wrapper .katex,
+  .zoom-wrapper pre,
+  .zoom-wrapper table {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Ensure images use percentage-based sizing for zoom */
+  .zoom-wrapper article[data-image-width="25ch"] img {
+    max-width: 25%;
+  }
+  
+  .zoom-wrapper article[data-image-width="50ch"] img {
+    max-width: 50%;
+  }
+  
+  .zoom-wrapper article[data-image-width="75ch"] img {
+    max-width: 75%;
+  }
+  
+  .zoom-wrapper article[data-image-width="100ch"] img {
+    max-width: 100%;
+  }
+
   /* GitHub Alerts/Admonitions Styling */
   .markdown-alert {
     @apply p-4 mb-4 rounded-lg border-l-4;
@@ -446,6 +490,12 @@ All colors MUST be HSL.
 
 /* Print Styles with CSS Variables */
 @media print {
+  /* Reset zoom for printing */
+  .zoom-wrapper {
+    transform: scale(1) !important;
+    width: 100% !important;
+  }
+  
   /* Hide specific UI elements */
   .no-print,
   header,

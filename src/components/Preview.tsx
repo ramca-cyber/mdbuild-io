@@ -234,7 +234,8 @@ export const Preview = () => {
   // Apply preview preferences
   useEffect(() => {
     const article = previewRef.current?.querySelector('article');
-    if (!article) return;
+    const zoomWrapper = previewRef.current?.querySelector('.zoom-wrapper') as HTMLElement;
+    if (!article || !zoomWrapper) return;
 
     // Apply smooth scroll
     article.style.scrollBehavior = previewSettings.enableSmoothScroll ? 'smooth' : 'auto';
@@ -249,11 +250,11 @@ export const Preview = () => {
     // Apply max image width
     article.setAttribute('data-image-width', previewSettings.maxImageWidth);
     
-    // Apply preview zoom
+    // Apply preview zoom to wrapper instead of article
     const zoomScale = previewSettings.previewZoom / 100;
-    article.style.transform = `scale(${zoomScale})`;
-    article.style.transformOrigin = 'top left';
-    article.style.width = `${100 / zoomScale}%`;
+    zoomWrapper.style.transform = `scale(${zoomScale})`;
+    zoomWrapper.style.transformOrigin = 'top left';
+    zoomWrapper.style.width = `${100 / zoomScale}%`;
     
     // Apply lazy loading to images
     const images = article.querySelectorAll('img');
@@ -292,10 +293,11 @@ export const Preview = () => {
     // Build anchors map from preview content, accounting for zoom
     const rebuildAnchors = () => {
       const nodes = Array.from(root.querySelectorAll('[data-line]')) as HTMLElement[];
+      const zoomScale = previewSettings.previewZoom / 100;
       const anchors = nodes
         .map((el) => ({ 
           line: parseInt(el.getAttribute('data-line') || '0', 10) || 0, 
-          top: el.offsetTop 
+          top: el.offsetTop * zoomScale 
         }))
         .filter((a) => a.line > 0)
         .sort((a, b) => a.line - b.line);
@@ -644,14 +646,16 @@ export const Preview = () => {
           contain: 'layout style paint',
         }}
       >
-        <article 
-          className="prose prose-slate dark:prose-invert max-w-none"
-          style={{
-            contentVisibility: 'auto',
-          }}
-        >
-          {markdownContent}
-        </article>
+        <div className="zoom-wrapper">
+          <article 
+            className="prose prose-slate dark:prose-invert max-w-none"
+            style={{
+              contentVisibility: 'auto',
+            }}
+          >
+            {markdownContent}
+          </article>
+        </div>
       </div>
       {/* Preview footer with visible content stats */}
       <div className="border-t bg-background px-4 py-2 flex-shrink-0 no-print">

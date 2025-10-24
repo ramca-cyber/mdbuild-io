@@ -61,28 +61,44 @@ export const waitForPrintReady = async (): Promise<void> => {
   await new Promise((resolve) => setTimeout(resolve, 200));
 };
 
-// Prepare article for printing by removing content-visibility
+// Prepare article for printing by removing content-visibility and resetting zoom
 export const prepareArticleForPrint = () => {
   const article = document.querySelector('.preview-content article') as HTMLElement;
+  const wrapper = document.querySelector('.zoom-wrapper') as HTMLElement;
   if (!article) return null;
   
   const originalContentVisibility = article.style.contentVisibility;
   const originalContain = article.style.contain;
+  const originalTransform = wrapper?.style.transform || '';
+  const originalWidth = wrapper?.style.width || '';
   
   // Force full rendering for print
   article.style.contentVisibility = 'visible';
   article.style.contain = 'none';
   
-  return { originalContentVisibility, originalContain };
+  // Reset zoom for print
+  if (wrapper) {
+    wrapper.style.transform = 'scale(1)';
+    wrapper.style.width = '100%';
+  }
+  
+  return { originalContentVisibility, originalContain, originalTransform, originalWidth };
 };
 
 // Restore article styles after printing
-export const restoreArticleAfterPrint = (saved: { originalContentVisibility: string; originalContain: string } | null) => {
+export const restoreArticleAfterPrint = (saved: { originalContentVisibility: string; originalContain: string; originalTransform: string; originalWidth: string } | null) => {
   const article = document.querySelector('.preview-content article') as HTMLElement;
+  const wrapper = document.querySelector('.zoom-wrapper') as HTMLElement;
   if (!article || !saved) return;
   
   article.style.contentVisibility = saved.originalContentVisibility;
   article.style.contain = saved.originalContain;
+  
+  // Restore zoom
+  if (wrapper) {
+    wrapper.style.transform = saved.originalTransform;
+    wrapper.style.width = saved.originalWidth;
+  }
 };
 
 // Convert DOM element to PNG image data
