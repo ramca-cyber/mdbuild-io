@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { FileText, Plus, Save, Trash2, Database, Menu, Clock, FolderOpen, Edit2, X, Check, FileUp, FileDown, FileType, Code, Image as ImageIcon, BookTemplate, Copy, Eraser, Files, Settings2, Printer } from 'lucide-react';
+import { FileText, Plus, Save, Trash2, Database, Menu, Clock, FolderOpen, Edit2, X, Check, FileUp, FileDown, FileType, Code, Image as ImageIcon, BookTemplate, Copy, Eraser, Files, Settings2, Printer, ListTree, Link } from 'lucide-react';
 import { toast } from 'sonner';
 import { calculateStorageUsage, formatStorageSize } from '@/lib/storageUtils';
 import { SaveAsDialog } from './SaveAsDialog';
@@ -37,6 +37,8 @@ import { FormatMenu } from './FormatMenu';
 import { ViewMenu } from './ViewMenu';
 import { SettingsMenu } from './SettingsMenu';
 import { DocumentSettingsDialog } from './DocumentSettingsDialog';
+import { ViewModeSwitcher } from './ViewModeSwitcher';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export function DocumentHeader() {
   const {
@@ -52,6 +54,11 @@ export function DocumentHeader() {
     saveDocumentAs,
     content,
     hasUnsavedChanges,
+    viewMode,
+    showOutline,
+    setShowOutline,
+    syncScroll,
+    setSyncScroll,
   } = useEditorStore();
   
   const [isEditing, setIsEditing] = useState(false);
@@ -593,6 +600,52 @@ export function DocumentHeader() {
             <Database className="h-4 w-4" />
             <span className="font-mono">{storageInfo.percentage.toFixed(0)}%</span>
           </button>
+
+          {/* Visual Separator */}
+          <div className="w-px h-6 bg-border mx-1" />
+
+          {/* Outline Toggle */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={showOutline ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setShowOutline(!showOutline)}
+                className="h-8 gap-1.5"
+                aria-label="Toggle outline panel"
+              >
+                <ListTree className="h-4 w-4" />
+                <span className="hidden lg:inline text-xs">Outline</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Toggle Outline (Ctrl+B)</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* View Mode Switcher */}
+          <ViewModeSwitcher />
+
+          {/* Sync Scroll (only in split view) */}
+          {viewMode === 'split' && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={syncScroll ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setSyncScroll(!syncScroll)}
+                  className="h-8 gap-1.5"
+                  aria-label="Toggle sync scrolling"
+                >
+                  <Link className="h-4 w-4" />
+                  <span className="hidden lg:inline text-xs">Sync</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Sync Scrolling</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
       </div>
 
