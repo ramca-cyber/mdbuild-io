@@ -34,7 +34,7 @@ export const useExportProgress = () => {
         toast.success(successMessage);
         return result;
       } catch (error) {
-        console.error('Export failed:', error);
+        // Error in export progress hook
         toast.error('Export failed. Please try again.');
         setIsExporting(false);
         setProgress(0);

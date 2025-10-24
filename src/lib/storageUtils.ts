@@ -43,7 +43,7 @@ export const calculateStorageUsage = (): StorageInfo => {
     
     return result;
   } catch (error) {
-    console.error('Error calculating storage:', error);
+    // Error calculating storage
     toast({
       title: "Storage Error",
       description: "Failed to calculate storage usage. Please try again.",

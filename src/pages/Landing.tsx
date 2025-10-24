@@ -17,6 +17,7 @@ import {
   CheckSquare
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
+import { PWAInstallButton } from '@/components/PWAInstallButton';
 import { useEffect } from "react";
 
 const Landing = () => {
@@ -94,6 +95,7 @@ const Landing = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <PWAInstallButton />
             <Button variant="ghost" size="sm" asChild className="hidden sm:flex">
               <Link to="/help">
                 <BookOpen className="h-4 w-4 mr-2" />

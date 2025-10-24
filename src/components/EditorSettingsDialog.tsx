@@ -1,4 +1,4 @@
-import { useEditorStore } from '@/store/editorStore';
+import { useSettingsStore } from '@/store/settingsStore';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -29,7 +29,7 @@ export const EditorSettingsDialog = ({ open, onOpenChange }: EditorSettingsDialo
     setCustomWordLimit,
     setCustomCharLimit,
     resetToDefaults,
-  } = useEditorStore();
+  } = useSettingsStore();
 
   const handleReset = () => {
     resetToDefaults();

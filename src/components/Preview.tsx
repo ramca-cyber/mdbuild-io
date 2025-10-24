@@ -146,14 +146,16 @@ export const Preview = () => {
     window.print();
   };
   
-  // Optimized copy buttons with proper cleanup and memoization
+  // Optimized copy buttons with WeakMap tracking to prevent duplicate buttons
+  const processedCodeBlocks = useRef(new WeakMap<HTMLPreElement, boolean>());
+  
   const addCopyButtons = useCallback(() => {
     if (!previewRef.current) return;
     
     const codeBlocks = previewRef.current.querySelectorAll('pre');
     codeBlocks.forEach((pre) => {
-      // Skip if button already added
-      if (pre.hasAttribute('data-copy-button-added')) return;
+      // Skip if button already added using WeakMap
+      if (processedCodeBlocks.current.get(pre)) return;
       
       const code = pre.querySelector('code');
       if (code && !code.classList.contains('mermaid-diagram-container')) {
@@ -194,7 +196,9 @@ export const Preview = () => {
         
         pre.style.position = 'relative';
         pre.appendChild(button);
-        pre.setAttribute('data-copy-button-added', 'true');
+        
+        // Mark as processed using WeakMap
+        processedCodeBlocks.current.set(pre, true);
       }
     });
   }, [toast]);

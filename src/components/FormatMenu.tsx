@@ -32,10 +32,10 @@ import {
   Type,
   Eraser,
 } from 'lucide-react';
-import { useEditorStore } from '@/store/editorStore';
+import { useDocumentStore } from '@/store/documentStore';
 
 export const FormatMenu = () => {
-  const { content, setContent } = useEditorStore();
+  const { content, setContent } = useDocumentStore();
 
   const insertAtCursor = (before: string, after: string = '') => {
     const event = new CustomEvent('editor-insert', {

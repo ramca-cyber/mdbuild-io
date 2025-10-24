@@ -1,4 +1,4 @@
-import { EditorError } from '@/store/editorStore';
+import { EditorError } from '@/store/errorStore';
 
 export interface LintResult {
   errors: Omit<EditorError, 'id' | 'timestamp'>[];

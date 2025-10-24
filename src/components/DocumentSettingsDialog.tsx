@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { useEditorStore } from '@/store/editorStore';
+import { useSettingsStore } from '@/store/settingsStore';
 import { Printer, FileText, Settings2, Layout } from 'lucide-react';
 
 interface DocumentSettingsDialogProps {
@@ -15,7 +15,7 @@ interface DocumentSettingsDialogProps {
 }
 
 export const DocumentSettingsDialog = ({ open, onOpenChange }: DocumentSettingsDialogProps) => {
-  const { documentSettings, setDocumentSettings, viewMode, setViewMode } = useEditorStore();
+  const { documentSettings, setDocumentSettings, viewMode, setViewMode } = useSettingsStore();
   
   const [localSettings, setLocalSettings] = useState(documentSettings);
 

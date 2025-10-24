@@ -38,7 +38,7 @@ export const convertElementToImage = async (element: HTMLElement): Promise<strin
     // Ensure element is visible and has dimensions
     const rect = element.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) {
-      console.warn('Element has zero dimensions, cannot convert to image');
+      // Element has zero dimensions
       throw new Error('Element has zero dimensions');
     }
 
@@ -73,7 +73,7 @@ export const convertElementToImage = async (element: HTMLElement): Promise<strin
 
     return dataUrl;
   } catch (error) {
-    console.error('Error converting element to image:', error, element);
+    // Error converting element to image
     throw error;
   }
 };
@@ -150,8 +150,8 @@ export const createDocxFromPreview = async (
   
   // Get document settings from store if not provided
   if (!documentSettings) {
-    const { useEditorStore } = await import('@/store/editorStore');
-    documentSettings = useEditorStore.getState().documentSettings;
+    const { useSettingsStore } = await import('@/store/settingsStore');
+    documentSettings = useSettingsStore.getState().documentSettings;
   }
   
   // Map settings to DOCX values
@@ -204,7 +204,7 @@ export const createDocxFromPreview = async (
         );
         return elements;
       } catch (error) {
-        console.error('Error converting diagram to image:', error);
+        // Error converting diagram to image
         elements.push(new Paragraph({ text: '[Diagram could not be exported]', spacing: { before: 120, after: 120 } }));
         return elements;
       }
@@ -252,7 +252,7 @@ export const createDocxFromPreview = async (
         );
         return elements;
       } catch (error) {
-        console.error('Error converting equation to image:', error);
+        // Error converting equation to image
       }
     }
 
@@ -332,7 +332,7 @@ export const createDocxFromPreview = async (
             })
           );
         } catch (error) {
-          console.error('Error converting code block to image:', error);
+          // Error converting code block to image
           elements.push(new Paragraph({ text: codeElement.textContent || '', spacing: { before: 120, after: 120 } }));
         }
       }
@@ -368,7 +368,7 @@ export const createDocxFromPreview = async (
                   type: 'png',
                 }));
               } catch (error) {
-                console.error('Error converting inline equation:', error);
+                // Error converting inline equation
                 runs.push(new TextRun(text));
               }
               return;
@@ -489,8 +489,8 @@ export const exportToPdfWithRendering = async (
   
   // Get document settings from store if not provided
   if (!documentSettings) {
-    const { useEditorStore } = await import('@/store/editorStore');
-    documentSettings = useEditorStore.getState().documentSettings;
+    const { useSettingsStore } = await import('@/store/settingsStore');
+    documentSettings = useSettingsStore.getState().documentSettings;
   }
   
   // Wait for all content to render
@@ -612,7 +612,7 @@ export const exportToHtmlWithInlineStyles = async (
         // Skip if element is not visible or has no dimensions
         const rect = htmlNode.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) {
-          console.warn('Skipping element with zero dimensions:', selector);
+          // Skipping element with zero dimensions
           continue;
         }
 
@@ -622,7 +622,7 @@ export const exportToHtmlWithInlineStyles = async (
         ) as HTMLElement;
 
         if (!originalElement) {
-          console.warn('Could not find original element for:', selector);
+          // Could not find original element
           continue;
         }
 
@@ -630,7 +630,7 @@ export const exportToHtmlWithInlineStyles = async (
         
         // Validate data URL before creating image
         if (!dataUrl || dataUrl === 'data:,' || dataUrl.length < 100) {
-          console.error('Invalid data URL, skipping element');
+          // Invalid data URL, skipping element
           continue;
         }
 
@@ -642,8 +642,7 @@ export const exportToHtmlWithInlineStyles = async (
         img.style.height = 'auto';
         node.replaceWith(img);
       } catch (e) {
-        console.error('Rasterize error for', selector, ':', e);
-        // Leave the original element if conversion fails
+        // Rasterize error - leave original element
       }
     }
     return totalNodes;

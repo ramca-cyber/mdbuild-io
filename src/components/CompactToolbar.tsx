@@ -13,12 +13,12 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
-import { useEditorStore } from '@/store/editorStore';
+import { useSearchStore } from '@/store/searchStore';
 import { EmojiPicker } from './EmojiPicker';
 import { useState } from 'react';
 
 export function CompactToolbar() {
-  const { setShowSearchReplace } = useEditorStore();
+  const { setShowSearchReplace } = useSearchStore();
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
 
   const dispatchWrap = (before: string, after: string = '', placeholder: string = '') => {

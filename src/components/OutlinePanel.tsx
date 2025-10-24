@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useEditorStore } from '@/store/editorStore';
+import { useDocumentStore } from '@/store/documentStore';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { List, ChevronRight } from 'lucide-react';
@@ -43,7 +43,7 @@ const buildHeadingTree = (headings: Heading[]): TreeNode[] => {
 };
 
 export const OutlinePanel = () => {
-  const { content } = useEditorStore();
+  const { content } = useDocumentStore();
   const [headings, setHeadings] = useState<Heading[]>([]);
   const [tree, setTree] = useState<TreeNode[]>([]);
 

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useEditorStore } from '@/store/editorStore';
 import {
   Dialog,
   DialogContent,

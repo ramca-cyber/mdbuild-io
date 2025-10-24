@@ -28,7 +28,8 @@ import {
   MenubarSubTrigger,
   MenubarSubContent,
 } from '@/components/ui/menubar';
-import { useEditorStore } from '@/store/editorStore';
+import { useDocumentStore } from '@/store/documentStore';
+import { useSearchStore } from '@/store/searchStore';
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import {
@@ -43,7 +44,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 export const EditMenu = () => {
-  const { content, setContent, setShowSearchReplace } = useEditorStore();
+  const { content, setContent } = useDocumentStore();
+  const { setShowSearchReplace } = useSearchStore();
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);

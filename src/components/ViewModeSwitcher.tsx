@@ -1,11 +1,11 @@
 import { Edit3, Eye, Columns3 } from 'lucide-react';
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { useEditorStore } from '@/store/editorStore';
+import { useSettingsStore } from '@/store/settingsStore';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export const ViewModeSwitcher = () => {
-  const { viewMode, setViewMode } = useEditorStore();
+  const { viewMode, setViewMode } = useSettingsStore();
 
   // Handle keyboard shortcuts for view modes
   useEffect(() => {

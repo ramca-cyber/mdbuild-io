@@ -1,4 +1,4 @@
-import { useEditorStore } from '@/store/editorStore';
+import { useSettingsStore } from '@/store/settingsStore';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -13,7 +13,7 @@ interface PreviewSettingsDialogProps {
 }
 
 export const PreviewSettingsDialog = ({ open, onOpenChange }: PreviewSettingsDialogProps) => {
-  const { previewSettings, setPreviewSettings } = useEditorStore();
+  const { previewSettings, setPreviewSettings } = useSettingsStore();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

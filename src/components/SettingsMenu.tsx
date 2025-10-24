@@ -12,7 +12,7 @@ import { EditorSettingsDialog } from './EditorSettingsDialog';
 import { PreviewSettingsDialog } from './PreviewSettingsDialog';
 import { DocumentSettingsDialog } from './DocumentSettingsDialog';
 import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
-import { useEditorStore } from '@/store/editorStore';
+import { useSettingsStore } from '@/store/settingsStore';
 import { toast } from 'sonner';
 
 export const SettingsMenu = () => {
@@ -21,7 +21,7 @@ export const SettingsMenu = () => {
   const [showDocumentSettings, setShowDocumentSettings] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
   
-  const { resetToDefaults } = useEditorStore();
+  const { resetToDefaults } = useSettingsStore();
 
   const handleResetAll = () => {
     if (confirm('Reset all settings to defaults? This action cannot be undone.')) {

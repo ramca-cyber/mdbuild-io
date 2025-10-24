@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { AlertTriangle, AlertCircle, Info, X, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info, X, ChevronDown, ChevronUp, Trash2, Copy } from 'lucide-react';
 import { useState } from 'react';
 
 export const ErrorConsole = () => {
