@@ -430,11 +430,13 @@ All colors MUST be HSL.
   }
 
   /* Clean page layout */
-  body {
+  html, body {
     background: white !important;
     color: black !important;
     margin: 0 !important;
     padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
   }
   
   /* Override panel layout for full width printing */
@@ -493,9 +495,20 @@ All colors MUST be HSL.
   
   /* Ensure scrollable containers show all content */
   .overflow-auto,
-  .overflow-y-auto {
+  .overflow-y-auto,
+  .overflow-hidden {
     overflow: visible !important;
     height: auto !important;
+    max-height: none !important;
+  }
+
+  /* Common utility overrides that can constrain height in print */
+  .flex-1 {
+    height: auto !important;
+  }
+  
+  .preview-content *,
+  .prose * {
     max-height: none !important;
   }
 

@@ -502,17 +502,60 @@ export const exportToPdfWithRendering = async (
     throw new Error('Article element not found');
   }
 
-  // Capture with appropriate quality and size
-  const canvas = await html2canvas(article as HTMLElement, {
+  // Clone article into an offscreen container and reset styles for reliable capture
+  const offscreen = document.createElement('div');
+  offscreen.style.position = 'fixed';
+  offscreen.style.left = '-10000px';
+  offscreen.style.top = '0';
+  offscreen.style.zIndex = '-1';
+  offscreen.style.background = '#ffffff';
+  offscreen.style.padding = '0';
+  offscreen.style.margin = '0';
+
+  const cloned = article.cloneNode(true) as HTMLElement;
+  // Reset problematic preview styles
+  cloned.style.transform = 'none';
+  cloned.style.width = '900px'; // normalize width for capture
+  cloned.style.maxWidth = 'none';
+  cloned.style.contentVisibility = 'visible';
+  (cloned.style as any).contain = 'none';
+
+  // Ensure images are eagerly loaded in the clone
+  const imgs = Array.from(cloned.querySelectorAll('img')) as HTMLImageElement[];
+  imgs.forEach((img) => {
+    img.loading = 'eager';
+    // Force layout to ensure proper sizing
+    img.decoding = 'sync' as any;
+  });
+
+  offscreen.appendChild(cloned);
+  document.body.appendChild(offscreen);
+
+  // Wait for images in the cloned node to load
+  await Promise.all(
+    imgs.map((img) =>
+      img.complete && img.naturalWidth > 0
+        ? Promise.resolve()
+        : new Promise((resolve) => {
+            img.onload = () => resolve(null);
+            img.onerror = () => resolve(null);
+          })
+    )
+  );
+
+  // Capture with appropriate quality and size from the clone
+  const canvas = await html2canvas(cloned as HTMLElement, {
     scale: 2, // Good quality without oversizing
     useCORS: true,
     backgroundColor: '#ffffff',
     logging: false,
-    windowWidth: 900, // Match typical content width
   });
   onProgress?.(60);
 
   const imgData = canvas.toDataURL('image/png');
+
+  // Cleanup offscreen container
+  document.body.removeChild(offscreen);
   
   // Use document settings for PDF
   const format = documentSettings.paperSize === 'A4' ? 'a4' : documentSettings.paperSize === 'Legal' ? 'legal' : 'letter';
