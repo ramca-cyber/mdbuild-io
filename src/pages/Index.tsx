@@ -12,6 +12,7 @@ import { TemplatesDrawer } from '@/components/TemplatesDrawer';
 import { SavedDocuments } from '@/components/SavedDocuments';
 import { StatisticsPanel } from '@/components/StatisticsPanel';
 import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog';
+import { ErrorConsole } from '@/components/ErrorConsole';
 import { useEditorStore } from '@/store/editorStore';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, FileText, Settings, BookTemplate, List, Home, X, Moon, Sun, Keyboard, BookOpen } from 'lucide-react';
@@ -350,6 +351,9 @@ const Index = () => {
           </div>
         </footer>
       )}
+
+      {/* Error Console */}
+      <ErrorConsole />
 
       {/* Focus Mode or Zen Mode Exit Button and Word Count Overlay */}
       {(focusMode || zenMode) && (

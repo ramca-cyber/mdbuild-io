@@ -11,6 +11,16 @@ export interface SavedDocument {
   timestamp: number;
 }
 
+export interface EditorError {
+  id: string;
+  type: 'error' | 'warning' | 'info';
+  category: 'markdown' | 'mermaid' | 'math' | 'link' | 'accessibility';
+  line?: number;
+  message: string;
+  details?: string;
+  timestamp: number;
+}
+
 interface EditorState {
   content: string;
   theme: Theme;
@@ -31,6 +41,10 @@ interface EditorState {
   autoSaveTimeoutId: ReturnType<typeof setTimeout> | null;
   previewRefreshKey: number;
   statisticsExpanded: boolean;
+  
+  // Error Console
+  errors: EditorError[];
+  showErrorPanel: boolean;
   
   // Cursor & Selection
   cursorLine: number;
@@ -141,6 +155,13 @@ interface EditorState {
   // Document Settings actions
   setDocumentSettings: (settings: Partial<EditorState['documentSettings']>) => void;
   setPreviewSettings: (settings: Partial<EditorState['previewSettings']>) => void;
+  
+  // Error Console actions
+  setErrors: (errors: EditorError[]) => void;
+  addError: (error: Omit<EditorError, 'id' | 'timestamp'>) => void;
+  clearErrors: () => void;
+  removeError: (id: string) => void;
+  setShowErrorPanel: (show: boolean) => void;
 }
 
 const defaultContent = `# Welcome to MDBuild.io 🚀
@@ -467,6 +488,10 @@ export const useEditorStore = create<EditorState>()(
       },
       previewRefreshKey: 0,
       statisticsExpanded: false,
+      
+      // Error Console initial state
+      errors: [],
+      showErrorPanel: false,
       
       // Cursor & Selection initial state
       cursorLine: 1,
@@ -871,6 +896,20 @@ export const useEditorStore = create<EditorState>()(
       setPreviewSettings: (settings) => set({
         previewSettings: { ...get().previewSettings, ...settings }
       }),
+      
+      // Error Console methods
+      setErrors: (errors) => set({ errors }),
+      addError: (error) => {
+        const newError: EditorError = {
+          ...error,
+          id: `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          timestamp: Date.now()
+        };
+        set({ errors: [...get().errors, newError] });
+      },
+      clearErrors: () => set({ errors: [] }),
+      removeError: (id) => set({ errors: get().errors.filter(e => e.id !== id) }),
+      setShowErrorPanel: (show) => set({ showErrorPanel: show }),
     }),
     {
       name: 'mdbuild-storage',

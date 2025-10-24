@@ -14,6 +14,7 @@ import { useEditorStore } from '@/store/editorStore';
 import { useToast } from '@/hooks/use-toast';
 import { MermaidDiagram } from '@/components/MermaidDiagram';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { lintMarkdown } from '@/lib/markdownLinter';
 import { visit } from 'unist-util-visit';
 import { ViewModeSwitcher } from '@/components/ViewModeSwitcher';
 import { Badge } from '@/components/ui/badge';
@@ -50,15 +51,41 @@ export const Preview = () => {
     previewSettings, 
     setPreviewSettings,
     showOutline,
-    setShowOutline 
+    setShowOutline,
+    setErrors
   } = useEditorStore();
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const syncScrollRef = useRef(syncScroll);
   const anchorsRef = useRef<{ line: number; top: number }[]>([]);
+  const lintTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Calculate statistics for word count badge
   const stats = useMemo(() => calculateStatistics(content), [content]);
+
+  // Lint markdown content with debouncing
+  useEffect(() => {
+    if (lintTimeoutRef.current) {
+      clearTimeout(lintTimeoutRef.current);
+    }
+
+    lintTimeoutRef.current = setTimeout(() => {
+      const result = lintMarkdown(content);
+      // Convert lint results to full EditorError objects
+      const fullErrors = result.errors.map(err => ({
+        ...err,
+        id: `lint_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: Date.now()
+      }));
+      setErrors(fullErrors);
+    }, 500);
+
+    return () => {
+      if (lintTimeoutRef.current) {
+        clearTimeout(lintTimeoutRef.current);
+      }
+    };
+  }, [content, setErrors]);
 
   // Handle zoom controls
   const handleZoomIn = () => {
@@ -380,13 +407,24 @@ export const Preview = () => {
             const isInline = !match;
             
             if (!isInline && match?.[1] === 'mermaid') {
+              // Calculate approximate line number for the code block
+              const lines = content.split('\n');
+              let lineNumber: number | undefined;
+              const codeStr = String(children);
+              for (let i = 0; i < lines.length; i++) {
+                if (lines[i].includes(codeStr.substring(0, 20))) {
+                  lineNumber = i + 1;
+                  break;
+                }
+              }
+              
               return (
                 <ErrorBoundary fallback={
                   <div className="p-4 border border-destructive rounded bg-destructive/10 text-destructive">
                     <strong>Diagram Error:</strong> Failed to render Mermaid diagram
                   </div>
                 }>
-                  <MermaidDiagram code={String(children)} />
+                  <MermaidDiagram code={codeStr} lineNumber={lineNumber} />
                 </ErrorBoundary>
               );
             }

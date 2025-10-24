@@ -4,13 +4,15 @@ import { useEditorStore } from '@/store/editorStore';
 
 interface MermaidDiagramProps {
   code: string;
+  lineNumber?: number;
 }
 
-export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
-  const { theme } = useEditorStore();
+export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
+  const { theme, addError, removeError } = useEditorStore();
   const [svg, setSvg] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [retryCount, setRetryCount] = useState<number>(0);
+  const [errorId, setErrorId] = useState<string | null>(null);
 
   // Memoize code to prevent unnecessary re-renders
   const memoizedCode = useMemo(() => code.trim(), [code]);
@@ -70,6 +72,11 @@ export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
           setSvg(renderedSvg);
           setError('');
           setRetryCount(0);
+          // Clear error from store if it was previously added
+          if (errorId) {
+            removeError(errorId);
+            setErrorId(null);
+          }
         }
       } catch (err) {
         console.error('Mermaid rendering error:', err);
@@ -77,6 +84,17 @@ export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
           const errorMessage = err instanceof Error ? err.message : 'Unknown error';
           setError(`Failed to render diagram: ${errorMessage}`);
           setSvg('');
+          
+          // Add error to store
+          const newErrorId = `mermaid_${Date.now()}`;
+          setErrorId(newErrorId);
+          addError({
+            type: 'error',
+            category: 'mermaid',
+            line: lineNumber,
+            message: 'Mermaid diagram rendering failed',
+            details: errorMessage
+          });
           
           // Retry logic for transient errors
           if (retryCount < 2) {
@@ -92,8 +110,12 @@ export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
     
     return () => {
       isMounted = false;
+      // Clean up error when component unmounts
+      if (errorId) {
+        removeError(errorId);
+      }
     };
-  }, [memoizedCode, theme, retryCount]);
+  }, [memoizedCode, theme, retryCount, lineNumber, addError, removeError, errorId]);
 
   if (error) {
     return (
