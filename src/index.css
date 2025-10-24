@@ -530,6 +530,49 @@ All colors MUST be HSL.
     max-height: none !important;
   }
 
+  /* Prevent page breaks inside specific elements */
+  pre,
+  code,
+  table,
+  figure,
+  img,
+  svg,
+  .mermaid,
+  .mermaid-diagram-container,
+  .katex,
+  .katex-display,
+  .math,
+  .math-display,
+  blockquote,
+  .markdown-alert {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Keep diagrams and equations together */
+  .mermaid-diagram-container,
+  .katex-display {
+    page-break-before: auto !important;
+    page-break-after: auto !important;
+    break-before: auto !important;
+    break-after: auto !important;
+    margin: 1em 0 !important;
+  }
+
+  /* Keep code blocks together */
+  pre {
+    page-break-before: auto !important;
+    page-break-after: auto !important;
+    orphans: 3 !important;
+    widows: 3 !important;
+  }
+
+  /* Keep table rows together when possible */
+  tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
   /* Optimize for printing */
   * {
     box-shadow: none !important;

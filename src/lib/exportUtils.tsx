@@ -229,6 +229,8 @@ export const createDocxFromPreview = async (
               }),
             ],
             spacing: { before: 120, after: 120 },
+            keepLines: true, // Prevent splitting
+            keepNext: false, // Don't force next paragraph to stay with this
           })
         );
         return elements;
@@ -277,6 +279,8 @@ export const createDocxFromPreview = async (
               }),
             ],
             spacing: { before: 120, after: 120 },
+            keepLines: true, // Prevent splitting
+            keepNext: false, // Don't force next paragraph to stay with this
           })
         );
         return elements;
@@ -358,6 +362,8 @@ export const createDocxFromPreview = async (
                 }),
               ],
               spacing: { before: 120, after: 120 },
+              keepLines: true, // Prevent splitting code blocks
+              keepNext: false,
             })
           );
         } catch (error) {
