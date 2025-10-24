@@ -30,7 +30,8 @@ import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { useEditorStore } from '@/store/editorStore';
+import { useErrorStore } from '@/store/errorStore';
+import { useSearchStore } from '@/store/searchStore';
 import { toast } from 'sonner';
 import React from 'react';
 import {
@@ -45,7 +46,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 export const Toolbar = () => {
   const [mobileMoreOpen, setMobileMoreOpen] = React.useState(false);
-  const { errors, showErrorPanel, setShowErrorPanel } = useEditorStore();
+  const { errors, showErrorPanel, setShowErrorPanel } = useErrorStore();
 
   const errorCount = errors.filter(e => e.type === 'error').length;
   const warningCount = errors.filter(e => e.type === 'warning').length;
@@ -74,7 +75,7 @@ export const Toolbar = () => {
         toast.success('Link inserted successfully');
       }
     } catch (error) {
-      console.error('Error inserting link:', error);
+      // Error inserting link
       toast.error('Failed to insert link. Please try again.');
     }
   };
@@ -88,7 +89,7 @@ export const Toolbar = () => {
         toast.success('Image inserted successfully');
       }
     } catch (error) {
-      console.error('Error inserting image:', error);
+      // Error inserting image
       toast.error('Failed to insert image. Please try again.');
     }
   };

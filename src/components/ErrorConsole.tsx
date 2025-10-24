@@ -1,4 +1,4 @@
-import { useEditorStore } from '@/store/editorStore';
+import { useErrorStore } from '@/store/errorStore';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -7,7 +7,7 @@ import { AlertTriangle, AlertCircle, Info, X, ChevronDown, ChevronUp, Trash2 } f
 import { useState } from 'react';
 
 export const ErrorConsole = () => {
-  const { errors, showErrorPanel, setShowErrorPanel, clearErrors, removeError } = useEditorStore();
+  const { errors, showErrorPanel, setShowErrorPanel, clearErrors, removeError } = useErrorStore();
   const [filter, setFilter] = useState<'all' | 'error' | 'warning' | 'info'>('all');
 
   const filteredErrors = errors.filter(err => filter === 'all' || err.type === filter);

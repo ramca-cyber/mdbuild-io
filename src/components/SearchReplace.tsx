@@ -3,7 +3,8 @@ import { Search, X, ChevronUp, ChevronDown, Replace } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Toggle } from '@/components/ui/toggle';
-import { useEditorStore } from '@/store/editorStore';
+import { useSearchStore } from '@/store/searchStore';
+import { useDocumentStore } from '@/store/documentStore';
 
 export const SearchReplace = () => {
   const {
@@ -17,13 +18,30 @@ export const SearchReplace = () => {
     setSearchOptions,
     findNext,
     findPrevious,
-    replaceOne,
-    replaceAll,
     searchResults,
     currentSearchIndex,
-  } = useEditorStore();
+    replaceOne: storeReplaceOne,
+    replaceAll: storeReplaceAll,
+    performSearch,
+  } = useSearchStore();
+  
+  const { content, setContent } = useDocumentStore();
+  
+  const handleReplaceOne = () => {
+    storeReplaceOne(content, setContent);
+  };
+  
+  const handleReplaceAll = () => {
+    storeReplaceAll(content, setContent);
+  };
 
   const [showReplace, setShowReplace] = useState(false);
+
+  useEffect(() => {
+    if (searchQuery) {
+      performSearch(searchQuery, content);
+    }
+  }, [searchQuery, searchOptions, content, performSearch]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -133,7 +151,7 @@ export const SearchReplace = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={replaceOne}
+                onClick={handleReplaceOne}
                 disabled={matchCount === 0}
                 className="flex-1"
               >
@@ -142,7 +160,7 @@ export const SearchReplace = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={replaceAll}
+                onClick={handleReplaceAll}
                 disabled={matchCount === 0}
                 className="flex-1"
               >

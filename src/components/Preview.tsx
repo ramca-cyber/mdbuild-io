@@ -10,7 +10,9 @@ import { remarkFootnotes } from '@/lib/remarkFootnotes';
 import rehypeKatex from 'rehype-katex';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
-import { useEditorStore } from '@/store/editorStore';
+import { useDocumentStore } from '@/store/documentStore';
+import { useSettingsStore } from '@/store/settingsStore';
+import { useErrorStore } from '@/store/errorStore';
 import { useToast } from '@/hooks/use-toast';
 import { MermaidDiagram } from '@/components/MermaidDiagram';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -42,16 +44,16 @@ const rehypeAddLineNumbers = () => {
 };
 
 export const Preview = () => {
+  const { content } = useDocumentStore();
   const { 
-    content, 
     syncScroll, 
     documentSettings, 
     previewSettings, 
     setPreviewSettings,
     showOutline,
     setShowOutline,
-    replaceErrorsByCategory
-  } = useEditorStore();
+  } = useSettingsStore();
+  const { replaceErrorsByCategory } = useErrorStore();
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const syncScrollRef = useRef(syncScroll);

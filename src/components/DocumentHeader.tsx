@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useEditorStore, getDefaultContent, SavedDocument } from '@/store/editorStore';
+import { useDocumentStore, getDefaultContent, SavedDocument } from '@/store/documentStore';
+import { useSettingsStore } from '@/store/settingsStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -48,18 +49,21 @@ export function DocumentHeader() {
     deleteDocument,
     renameDocument,
     loadDocument,
-    autoSave,
-    setAutoSave,
     saveDocument,
     saveDocumentAs,
     content,
     hasUnsavedChanges,
+  } = useDocumentStore();
+  
+  const {
+    autoSave,
+    setAutoSave,
     viewMode,
     showOutline,
     setShowOutline,
     syncScroll,
     setSyncScroll,
-  } = useEditorStore();
+  } = useSettingsStore();
   
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
@@ -175,7 +179,7 @@ export function DocumentHeader() {
       URL.revokeObjectURL(url);
       toast.success('Exported as Markdown');
     } catch (error) {
-      console.error('Markdown export error:', error);
+      // Error exporting to Markdown
       toast.error('Failed to export as Markdown');
     }
   };
@@ -193,7 +197,7 @@ export function DocumentHeader() {
       const toastId = toast.loading('Exporting HTML...');
       
       const { exportToHtmlWithInlineStyles } = await import('@/lib/exportUtils');
-      const { documentSettings } = useEditorStore.getState();
+      const { documentSettings } = useSettingsStore.getState();
       
       await exportToHtmlWithInlineStyles(
         previewElement as HTMLElement, 
@@ -205,7 +209,7 @@ export function DocumentHeader() {
       
       toast.success('Exported as HTML', { id: toastId });
     } catch (error) {
-      console.error('HTML export error:', error);
+      // Error exporting to HTML
       toast.error('Failed to export HTML');
     }
   };
@@ -223,7 +227,7 @@ export function DocumentHeader() {
       const toastId = toast.loading('Generating PDF...');
       
       const { exportToPdfWithRendering } = await import('@/lib/exportUtils');
-      const { documentSettings } = useEditorStore.getState();
+      const { documentSettings } = useSettingsStore.getState();
       
       await exportToPdfWithRendering(
         previewElement as HTMLElement, 
@@ -236,7 +240,7 @@ export function DocumentHeader() {
       
       toast.success('Exported as PDF', { id: toastId });
     } catch (error) {
-      console.error('PDF export error:', error);
+      // Error generating PDF
       toast.error('Failed to export PDF');
     }
   };
@@ -254,7 +258,7 @@ export function DocumentHeader() {
       const toastId = toast.loading('Preparing DOCX export...');
       
       const { createDocxFromPreview } = await import('@/lib/exportUtils');
-      const { documentSettings } = useEditorStore.getState();
+      const { documentSettings } = useSettingsStore.getState();
       
       const blob = await createDocxFromPreview(
         previewElement as HTMLElement, 
@@ -274,7 +278,7 @@ export function DocumentHeader() {
       
       toast.success('Exported as DOCX', { id: toastId });
     } catch (error) {
-      console.error('DOCX export error:', error);
+      // Error generating DOCX
       toast.error('Failed to export DOCX');
     }
   };
@@ -303,12 +307,12 @@ export function DocumentHeader() {
               createNewDocument();
               // Use setTimeout to ensure new document is created first
               setTimeout(() => {
-                useEditorStore.getState().setContent(text);
+                useDocumentStore.getState().setContent(text);
                 toast.success('File imported successfully');
               }, 0);
             } catch (error) {
-              console.error('Error processing imported file:', error);
-              toast.error('Failed to import file');
+              // Error processing imported file
+              toast.error('Failed to import file. Please check the file format.');
             }
           };
           reader.onerror = () => {
@@ -319,8 +323,8 @@ export function DocumentHeader() {
       };
       input.click();
     } catch (error) {
-      console.error('Import error:', error);
-      toast.error('Failed to import file');
+    // Import error
+    toast.error('Failed to import file. Please try again.');
     }
   };
 
@@ -335,19 +339,19 @@ export function DocumentHeader() {
       await navigator.clipboard.writeText(content);
       toast.success('Content copied to clipboard');
     } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
-      toast.error('Failed to copy to clipboard');
+    // Failed to copy to clipboard
+    toast.error('Failed to copy to clipboard. Please try again.');
     }
   };
 
   const handleClearAll = () => {
     try {
-      useEditorStore.getState().setContent('');
+      useDocumentStore.getState().setContent('');
       setClearAllConfirm(false);
       toast.success('Document cleared');
     } catch (error) {
-      console.error('Failed to clear document:', error);
-      toast.error('Failed to clear document');
+      // Failed to clear document
+      toast.error('Failed to clear document. Please try again.');
     }
   };
 
@@ -364,8 +368,8 @@ export function DocumentHeader() {
         toast.success('Document duplicated');
       }
     } catch (error) {
-      console.error('Failed to duplicate document:', error);
-      toast.error('Failed to duplicate document');
+      // Failed to duplicate document
+      toast.error('Failed to duplicate document. Please try again.');
     }
   };
 
@@ -469,7 +473,7 @@ export function DocumentHeader() {
                     <DropdownMenuItem
                       key={template.name}
                       onClick={() => {
-                        useEditorStore.getState().setContent(template.content);
+                        useDocumentStore.getState().setContent(template.content);
                         toast.success(`Applied ${template.name} template`);
                       }}
                       className="cursor-pointer"

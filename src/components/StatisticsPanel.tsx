@@ -2,26 +2,25 @@ import { useMemo, useEffect, useState } from 'react';
 import { ChevronUp, ChevronDown, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { calculateStatistics, checkWordLimit, checkCharLimit } from '@/lib/statisticsUtils';
-import { useEditorStore } from '@/store/editorStore';
+import { useDocumentStore } from '@/store/documentStore';
+import { useSettingsStore } from '@/store/settingsStore';
+import { useSearchStore } from '@/store/searchStore';
 import { GoToLineDialog } from '@/components/GoToLineDialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export const StatisticsPanel = () => {
+  const { content, hasUnsavedChanges } = useDocumentStore();
   const { 
-    content, 
     statisticsExpanded, 
-    setStatisticsExpanded, 
-    hasUnsavedChanges, 
+    setStatisticsExpanded,
     autoSave,
-    cursorLine,
-    cursorColumn,
-    selectedWords,
     zoomLevel,
     wordLimitWarningsEnabled,
     customWordLimit,
     customCharLimit,
     viewMode,
-  } = useEditorStore();
+  } = useSettingsStore();
+  const { cursorLine, cursorColumn, selectedWords } = useSearchStore();
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showGoToDialog, setShowGoToDialog] = useState(false);

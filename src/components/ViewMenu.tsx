@@ -24,7 +24,7 @@ import {
   WrapText,
   Hash,
 } from 'lucide-react';
-import { useEditorStore } from '@/store/editorStore';
+import { useSettingsStore } from '@/store/settingsStore';
 
 export function ViewMenu() {
   const {
@@ -42,7 +42,7 @@ export function ViewMenu() {
     setLineWrap,
     lineNumbers,
     setLineNumbers,
-  } = useEditorStore();
+  } = useSettingsStore();
 
   return (
     <Menubar className="border-0 bg-transparent">

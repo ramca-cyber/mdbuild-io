@@ -1,17 +1,16 @@
 import { FileText, BookOpen, Briefcase, Calendar, GitBranch, FlaskConical } from 'lucide-react';
-import { useEditorStore } from '@/store/editorStore';
+import { useDocumentStore } from '@/store/documentStore';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
 import { templates } from '@/lib/templates';
 
 export const TemplatesDrawer = () => {
-  const { setContent } = useEditorStore();
+  const { setContent } = useDocumentStore();
 
   const handleTemplateClick = (template: typeof templates[0]) => {
     try {
       setContent(template.content);
     } catch (error) {
-      console.error('Error loading template:', error);
       // Error handling in store will show toast
     }
   };

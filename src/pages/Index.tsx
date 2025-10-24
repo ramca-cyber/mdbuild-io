@@ -13,16 +13,19 @@ import { SavedDocuments } from '@/components/SavedDocuments';
 import { StatisticsPanel } from '@/components/StatisticsPanel';
 import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog';
 import { ErrorConsole } from '@/components/ErrorConsole';
-import { useEditorStore } from '@/store/editorStore';
+import { useDocumentStore } from '@/store/documentStore';
+import { useSettingsStore } from '@/store/settingsStore';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, FileText, Settings, BookTemplate, List, Home, X, Moon, Sun, Keyboard, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { calculateStatistics } from '@/lib/statisticsUtils';
+import { PWAInstallButton } from '@/components/PWAInstallButton';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
-  const { theme, setTheme, viewMode, setViewMode, showOutline, focusMode, setFocusMode, zenMode, setZenMode, content } = useEditorStore();
+  const { theme, setTheme, viewMode, showOutline, focusMode, setFocusMode, zenMode, setZenMode } = useSettingsStore();
+  const { content } = useDocumentStore();
   const [mobilePanel, setMobilePanel] = useState<'documents' | 'templates' | 'outline' | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
@@ -245,6 +248,8 @@ const Index = () => {
           <div className="w-px h-6 bg-border mx-1" />
           
           {/* Utility Group */}
+          <PWAInstallButton />
+          
           <Tooltip>
             <TooltipTrigger asChild>
               <Button 

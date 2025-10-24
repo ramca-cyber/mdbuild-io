@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useEditorStore } from '@/store/editorStore';
+import { useDocumentStore } from '@/store/documentStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -7,14 +7,14 @@ import { FileText, Trash2, Search } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 export const SavedDocuments = () => {
-  const { savedDocuments, currentDocId, loadDocument, deleteDocument } = useEditorStore();
+  const { savedDocuments, currentDocId, loadDocument, deleteDocument } = useDocumentStore();
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleLoadDocument = (id: string) => {
     try {
       loadDocument(id);
     } catch (error) {
-      console.error('Error loading document:', error);
+      // Error loading document
       // Toast will be shown by the store if there's an error
     }
   };
@@ -23,7 +23,7 @@ export const SavedDocuments = () => {
     try {
       deleteDocument(id);
     } catch (error) {
-      console.error('Error deleting document:', error);
+      // Error deleting document
       // Toast will be shown by the store if there's an error
     }
   };

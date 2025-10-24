@@ -2,7 +2,9 @@ import { useCallback, useEffect, useRef, useMemo } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { useEditorStore } from '@/store/editorStore';
+import { useDocumentStore } from '@/store/documentStore';
+import { useSettingsStore } from '@/store/settingsStore';
+import { useSearchStore } from '@/store/searchStore';
 import { EditorView } from '@codemirror/view';
 import { EditorSelection } from '@codemirror/state';
 import { undo, redo, deleteLine, copyLineDown, moveLineUp, moveLineDown, selectLine } from '@codemirror/commands';
@@ -11,23 +13,24 @@ import { debounce } from '@/lib/utils';
 import { CompactToolbar } from '@/components/CompactToolbar';
 
 export const Editor = () => {
+  const { content, setContent } = useDocumentStore();
   const { 
-    content, 
-    setContent, 
     theme, 
     fontSize, 
     lineWrap, 
     lineNumbers, 
-    syncScroll, 
-    searchResults, 
-    currentSearchIndex,
-    setCursorPosition,
-    setSelectedWords,
+    syncScroll,
     zoomLevel,
     zoomIn,
     zoomOut,
     resetZoom
-  } = useEditorStore();
+  } = useSettingsStore();
+  const {
+    searchResults, 
+    currentSearchIndex,
+    setCursorPosition,
+    setSelectedWords,
+  } = useSearchStore();
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
 
@@ -40,7 +43,7 @@ export const Editor = () => {
       // Save
       if (modifier && e.key === 's') {
         e.preventDefault();
-        useEditorStore.getState().saveVersion();
+        useDocumentStore.getState().saveVersion();
       }
       
       // Undo
@@ -70,7 +73,7 @@ export const Editor = () => {
       // Find & Replace
       if (modifier && e.key === 'f') {
         e.preventDefault();
-        useEditorStore.getState().setShowSearchReplace(true);
+        useSearchStore.getState().setShowSearchReplace(true);
       }
       
       // Go To Line
