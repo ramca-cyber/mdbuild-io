@@ -26,20 +26,6 @@ export const StatisticsPanel = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [showGoToDialog, setShowGoToDialog] = useState(false);
 
-  // Preview-visible stats coming from Preview component
-  const [previewWords, setPreviewWords] = useState(0);
-  const [previewChars, setPreviewChars] = useState(0);
-
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const { words = 0, characters = 0 } = (e as CustomEvent).detail || {};
-      setPreviewWords(words);
-      setPreviewChars(characters);
-    };
-    window.addEventListener('preview-visible-stats', handler as EventListener);
-    return () => window.removeEventListener('preview-visible-stats', handler as EventListener);
-  }, []);
-
   useEffect(() => {
     if (!hasUnsavedChanges && autoSave) {
       setLastSaved(new Date());
@@ -78,6 +64,10 @@ export const StatisticsPanel = () => {
     if (diffSecs < 86400) return `${Math.floor(diffSecs / 3600)}h ago`;
     return date.toLocaleDateString();
   };
+
+  if (viewMode === 'preview') {
+    return null;
+  }
 
   return (
     <>
@@ -131,16 +121,6 @@ export const StatisticsPanel = () => {
               Lines: <span className="font-medium text-foreground">{stats.lines}</span>
             </span>
 
-            {viewMode !== 'editor' && (
-              <>
-                <span className="text-muted-foreground">
-                  Words: <span className="font-medium text-foreground">{previewWords.toLocaleString()}</span>
-                </span>
-                <span className="text-muted-foreground">
-                  Characters: <span className="font-medium text-foreground">{previewChars.toLocaleString()}</span>
-                </span>
-              </>
-            )}
           </div>
           
           <Button
