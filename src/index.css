@@ -425,8 +425,26 @@ All colors MUST be HSL.
 /* Print Styles with CSS Variables */
 @media print {
   /* Hide specific UI elements */
-  .no-print {
+  .no-print,
+  header,
+  nav,
+  button,
+  .toolbar,
+  .compact-toolbar,
+  .view-mode-switcher,
+  [role="menubar"],
+  [role="menu"],
+  [role="dialog"],
+  [role="banner"],
+  [role="navigation"],
+  [data-radix-menu],
+  [data-radix-dropdown-menu],
+  [data-radix-dialog],
+  [data-radix-menubar],
+  [data-radix-popover],
+  .lucide {
     display: none !important;
+    visibility: hidden !important;
   }
 
   /* Clean page layout */
