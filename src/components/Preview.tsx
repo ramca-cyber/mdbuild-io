@@ -142,7 +142,9 @@ export const Preview = () => {
     setPreviewSettings({ previewZoom: newZoom });
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    const { waitForPrintReady } = await import('@/lib/exportUtils');
+    await waitForPrintReady();
     window.print();
   };
   

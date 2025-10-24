@@ -19,7 +19,7 @@ export const DocumentSettingsDialog = ({ open, onOpenChange }: DocumentSettingsD
   
   const [localSettings, setLocalSettings] = useState(documentSettings);
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     setDocumentSettings(localSettings);
     onOpenChange(false);
     
@@ -30,10 +30,12 @@ export const DocumentSettingsDialog = ({ open, onOpenChange }: DocumentSettingsD
     // Apply document settings as CSS variables
     applyDocumentSettingsToPrint(localSettings);
     
-    setTimeout(() => {
-      window.print();
-      setViewMode(originalMode);
-    }, 100);
+    // Wait for preview to fully render before printing
+    const { waitForPrintReady } = await import('@/lib/exportUtils');
+    await waitForPrintReady();
+    
+    window.print();
+    setViewMode(originalMode);
   };
 
   const handleSaveDefault = () => {

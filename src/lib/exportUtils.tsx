@@ -32,6 +32,35 @@ export const waitForContentToRender = async (): Promise<void> => {
   await new Promise((resolve) => setTimeout(resolve, 150));
 };
 
+// Wait for preview to be fully rendered before printing
+export const waitForPrintReady = async (): Promise<void> => {
+  // Wait for mermaid and other async content
+  await waitForContentToRender();
+  
+  // Wait for all images in the preview to load
+  const article = document.querySelector('.preview-content article');
+  if (article) {
+    const images = Array.from(article.querySelectorAll('img')) as HTMLImageElement[];
+    await Promise.all(
+      images.map((img) => {
+        if (img.complete && img.naturalWidth > 0) {
+          return Promise.resolve();
+        }
+        return new Promise<void>((resolve) => {
+          img.onload = () => resolve();
+          img.onerror = () => resolve(); // Continue even if image fails
+          // Set timeout to prevent indefinite waiting
+          setTimeout(() => resolve(), 2000);
+        });
+      })
+    );
+  }
+  
+  // Extra delay for layout to settle
+  await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+  await new Promise((resolve) => setTimeout(resolve, 200));
+};
+
 // Convert DOM element to PNG image data
 export const convertElementToImage = async (element: HTMLElement): Promise<string> => {
   try {

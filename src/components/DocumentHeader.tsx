@@ -373,7 +373,9 @@ export function DocumentHeader() {
     }
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    const { waitForPrintReady } = await import('@/lib/exportUtils');
+    await waitForPrintReady();
     window.print();
   };
 
