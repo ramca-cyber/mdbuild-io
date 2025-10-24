@@ -16,11 +16,11 @@ import { MermaidDiagram } from '@/components/MermaidDiagram';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lintMarkdown } from '@/lib/markdownLinter';
 import { visit } from 'unist-util-visit';
-import { ViewModeSwitcher } from '@/components/ViewModeSwitcher';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { ZoomIn, ZoomOut, Printer, List } from 'lucide-react';
+import { ZoomIn, ZoomOut, Printer } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { calculateStatistics } from '@/lib/statisticsUtils';
 
@@ -453,26 +453,7 @@ export const Preview = () => {
 
         {/* Right side: Tools */}
         <div className="flex items-center gap-2">
-          {/* Outline Toggle */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={showOutline ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setShowOutline(!showOutline)}
-                className="h-8 px-2 gap-1.5 hidden md:flex"
-                aria-label="Toggle outline panel"
-              >
-                <List className="h-4 w-4" />
-                <span className="hidden xl:inline text-xs">Outline</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p>Toggle Outline Panel</p>
-            </TooltipContent>
-          </Tooltip>
 
-          <Separator orientation="vertical" className="h-6 hidden md:block" />
 
           {/* Zoom Controls */}
           <div className="hidden md:flex items-center gap-0.5">
@@ -538,12 +519,6 @@ export const Preview = () => {
             </TooltipContent>
           </Tooltip>
 
-          <Separator orientation="vertical" className="h-6 hidden lg:block" />
-
-          {/* View Mode Switcher */}
-          <div className="hidden lg:block">
-            <ViewModeSwitcher />
-          </div>
         </div>
       </div>
       <div
