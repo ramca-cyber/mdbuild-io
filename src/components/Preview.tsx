@@ -52,7 +52,7 @@ export const Preview = () => {
     setPreviewSettings,
     showOutline,
     setShowOutline,
-    setErrors
+    replaceErrorsByCategory
   } = useEditorStore();
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -71,13 +71,8 @@ export const Preview = () => {
 
     lintTimeoutRef.current = setTimeout(() => {
       const result = lintMarkdown(content);
-      // Convert lint results to full EditorError objects
-      const fullErrors = result.errors.map(err => ({
-        ...err,
-        id: `lint_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        timestamp: Date.now()
-      }));
-      setErrors(fullErrors);
+      // Replace only lint-related error categories, keeping other errors (mermaid, math, etc.)
+      replaceErrorsByCategory(['markdown', 'link', 'accessibility'], result.errors);
     }, 500);
 
     return () => {
@@ -85,7 +80,7 @@ export const Preview = () => {
         clearTimeout(lintTimeoutRef.current);
       }
     };
-  }, [content, setErrors]);
+  }, [content, replaceErrorsByCategory]);
 
   // Handle zoom controls
   const handleZoomIn = () => {

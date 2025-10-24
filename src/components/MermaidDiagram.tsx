@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import mermaid from 'mermaid';
 import { useEditorStore } from '@/store/editorStore';
 
@@ -12,7 +12,7 @@ export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
   const [svg, setSvg] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [retryCount, setRetryCount] = useState<number>(0);
-  const [errorId, setErrorId] = useState<string | null>(null);
+  const errorIdRef = useRef<string | null>(null);
 
   // Memoize code to prevent unnecessary re-renders
   const memoizedCode = useMemo(() => code.trim(), [code]);
@@ -73,31 +73,35 @@ export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
           setError('');
           setRetryCount(0);
           // Clear error from store if it was previously added
-          if (errorId) {
-            removeError(errorId);
-            setErrorId(null);
+          if (errorIdRef.current) {
+            removeError(errorIdRef.current);
+            errorIdRef.current = null;
           }
         }
       } catch (err) {
-        console.error('Mermaid rendering error:', err);
         if (isMounted) {
           const errorMessage = err instanceof Error ? err.message : 'Unknown error';
           setError(`Failed to render diagram: ${errorMessage}`);
           setSvg('');
           
-          // Add error to store
-          const newErrorId = `mermaid_${Date.now()}`;
-          setErrorId(newErrorId);
-          addError({
-            type: 'error',
-            category: 'mermaid',
-            line: lineNumber,
-            message: 'Mermaid diagram rendering failed',
-            details: errorMessage
-          });
+          // Only add error to store once
+          if (errorIdRef.current === null) {
+            const id = addError({
+              type: 'error',
+              category: 'mermaid',
+              line: lineNumber,
+              message: 'Mermaid diagram rendering failed',
+              details: errorMessage
+            });
+            errorIdRef.current = id;
+            
+            // Log once using console.debug
+            console.debug('Mermaid rendering error:', errorMessage);
+          }
           
-          // Retry logic for transient errors
-          if (retryCount < 2) {
+          // Smart retry logic: no retries for parse errors, max 2 for others
+          const isParseError = /Parse error|Syntax error/i.test(errorMessage);
+          if (!isParseError && retryCount < 2) {
             setTimeout(() => {
               if (isMounted) setRetryCount(prev => prev + 1);
             }, 500);
@@ -111,11 +115,11 @@ export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
     return () => {
       isMounted = false;
       // Clean up error when component unmounts
-      if (errorId) {
-        removeError(errorId);
+      if (errorIdRef.current) {
+        removeError(errorIdRef.current);
       }
     };
-  }, [memoizedCode, theme, retryCount, lineNumber, addError, removeError, errorId]);
+  }, [memoizedCode, theme, retryCount, lineNumber, addError, removeError]);
 
   if (error) {
     return (

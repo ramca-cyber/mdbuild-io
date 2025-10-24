@@ -158,7 +158,8 @@ interface EditorState {
   
   // Error Console actions
   setErrors: (errors: EditorError[]) => void;
-  addError: (error: Omit<EditorError, 'id' | 'timestamp'>) => void;
+  addError: (error: Omit<EditorError, 'id' | 'timestamp'>) => string;
+  replaceErrorsByCategory: (categories: string[], newErrors: Omit<EditorError, 'id' | 'timestamp'>[]) => void;
   clearErrors: () => void;
   removeError: (id: string) => void;
   setShowErrorPanel: (show: boolean) => void;
@@ -906,6 +907,20 @@ export const useEditorStore = create<EditorState>()(
           timestamp: Date.now()
         };
         set({ errors: [...get().errors, newError] });
+        return newError.id;
+      },
+      replaceErrorsByCategory: (categories, newErrors) => {
+        const currentErrors = get().errors;
+        // Keep errors that are NOT in the specified categories
+        const keptErrors = currentErrors.filter(e => !categories.includes(e.category));
+        // Convert new errors to full EditorError objects
+        const fullNewErrors: EditorError[] = newErrors.map(err => ({
+          ...err,
+          id: `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          timestamp: Date.now()
+        }));
+        // Merge kept errors with new ones
+        set({ errors: [...keptErrors, ...fullNewErrors] });
       },
       clearErrors: () => set({ errors: [] }),
       removeError: (id) => set({ errors: get().errors.filter(e => e.id !== id) }),
