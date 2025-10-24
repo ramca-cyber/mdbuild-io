@@ -346,9 +346,6 @@ const Index = () => {
       {!zenMode && !focusMode && (
         <footer role="contentinfo" className="border-t">
           <StatisticsPanel />
-          <div className="px-4 py-2 text-sm text-muted-foreground flex justify-end">
-            <Link to="/help" className="hover:text-foreground">Help & Docs</Link>
-          </div>
         </footer>
       )}
 
