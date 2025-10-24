@@ -13,6 +13,7 @@ import { SavedDocuments } from '@/components/SavedDocuments';
 import { StatisticsPanel } from '@/components/StatisticsPanel';
 import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog';
 import { ErrorConsole } from '@/components/ErrorConsole';
+import { ControlBar } from '@/components/ControlBar';
 import { useEditorStore } from '@/store/editorStore';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, FileText, Settings, BookTemplate, List, Home, X, Moon, Sun, Keyboard, BookOpen } from 'lucide-react';
@@ -126,6 +127,9 @@ const Index = () => {
       >
         Skip to content
       </a>
+      
+      {/* Control Bar - Always visible with view mode switcher */}
+      {!focusMode && !zenMode && <ControlBar onShowKeyboardShortcuts={() => setShowKeyboardShortcuts(true)} />}
       
       {/* Header */}
       {!focusMode && (
@@ -283,6 +287,9 @@ const Index = () => {
 
       {/* Document Header */}
       {!focusMode && <DocumentHeader />}
+
+      {/* Formatting Toolbar - Conditional based on view mode */}
+      {!focusMode && viewMode !== 'preview' && <Toolbar />}
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">

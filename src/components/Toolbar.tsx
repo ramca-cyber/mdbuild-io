@@ -41,7 +41,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { ViewModeSwitcher } from '@/components/ViewModeSwitcher';
 import { EmojiPicker } from '@/components/EmojiPicker';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -424,36 +423,6 @@ export const Toolbar = () => {
       </div>
 
       <div className="flex-1" />
-
-      {/* Error Badge */}
-      {errors.length > 0 && (
-        <>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowErrorPanel(!showErrorPanel)}
-                className="h-8 px-2 gap-1.5 relative"
-              >
-                <AlertTriangle className={`h-4 w-4 ${errorCount > 0 ? 'text-destructive' : 'text-yellow-500'}`} />
-                <Badge variant={errorCount > 0 ? 'destructive' : 'secondary'} className="h-5 text-xs">
-                  {errors.length}
-                </Badge>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{errorCount} error{errorCount !== 1 ? 's' : ''}, {warningCount} warning{warningCount !== 1 ? 's' : ''}</p>
-            </TooltipContent>
-          </Tooltip>
-          <Separator orientation="vertical" className="h-6 mx-1" />
-        </>
-      )}
-
-      {/* RIGHT SIDE: Quick View Mode Switcher */}
-      <div className="flex items-center gap-1">
-        <ViewModeSwitcher />
-      </div>
     </div>
     </TooltipProvider>
   );

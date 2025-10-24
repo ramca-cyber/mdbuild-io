@@ -578,7 +578,7 @@ export const Editor = () => {
           Markdown Editor
         </h2>
         {/* Import and add CompactToolbar here */}
-        <div className="hidden lg:block">
+        <div className="hidden xl:block">
           <CompactToolbar />
         </div>
       </div>
