@@ -61,31 +61,54 @@ export const Preview = () => {
   // Track rendered text statistics
   const [renderedStats, setRenderedStats] = useState({ words: 0, characters: 0 });
 
-  // Calculate rendered text statistics
+  // Calculate visible rendered text statistics and broadcast to footer
   useEffect(() => {
-    const calculateRenderedStats = () => {
+    const computeVisibleStats = () => {
       if (!previewRef.current) return;
-      
-      const article = previewRef.current.querySelector('article');
+      const container = previewRef.current;
+      const containerRect = container.getBoundingClientRect();
+      const article = container.querySelector('article');
       if (!article) return;
-      
-      // Extract text content from rendered HTML
-      const text = article.textContent || '';
-      
-      // Count words (split by whitespace, filter empty strings)
-      const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
-      
-      // Count characters (excluding leading/trailing whitespace)
+
+      const walker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT);
+      let text = '';
+      let node: Node | null;
+      // Aggregate text from elements intersecting the preview viewport
+      while ((node = walker.nextNode())) {
+        const parentEl = (node.parentElement || article) as Element;
+        const rects = parentEl.getClientRects();
+        let visible = false;
+        for (let i = 0; i < rects.length; i++) {
+          const r = rects[i];
+          if (r.bottom > containerRect.top && r.top < containerRect.bottom) {
+            visible = true;
+            break;
+          }
+        }
+        if (visible) text += (node.nodeValue || '') + ' ';
+      }
+
+      const words = text.trim().split(/\s+/).filter(Boolean).length;
       const characters = text.trim().length;
-      
       setRenderedStats({ words, characters });
+      window.dispatchEvent(new CustomEvent('preview-visible-stats', { detail: { words, characters } }));
     };
-    
-    // Calculate after a short delay to ensure rendering is complete
-    const timer = setTimeout(calculateRenderedStats, 100);
-    
-    return () => clearTimeout(timer);
-  }, [content]);
+
+    // Initial compute after render
+    const timer = setTimeout(computeVisibleStats, 100);
+
+    // Recompute on scroll and resize with rAF
+    const onScrollOrResize = () => requestAnimationFrame(computeVisibleStats);
+    const container = previewRef.current;
+    container?.addEventListener('scroll', onScrollOrResize, { passive: true });
+    window.addEventListener('resize', onScrollOrResize);
+
+    return () => {
+      clearTimeout(timer);
+      container?.removeEventListener('scroll', onScrollOrResize);
+      window.removeEventListener('resize', onScrollOrResize);
+    };
+  }, [content, previewSettings.previewZoom]);
 
   // Lint markdown content with debouncing
   useEffect(() => {
@@ -561,18 +584,6 @@ export const Preview = () => {
         >
           {markdownContent}
         </article>
-      </div>
-      
-      {/* Preview Statistics Footer - Fixed at bottom */}
-      <div className="flex-shrink-0 px-4 py-2 bg-background border-t no-print">
-        <div className="flex items-center justify-end gap-4 text-sm">
-          <span className="text-muted-foreground">
-            Words: <span className="font-medium text-foreground">{renderedStats.words.toLocaleString()}</span>
-          </span>
-          <span className="text-muted-foreground">
-            Characters: <span className="font-medium text-foreground">{renderedStats.characters.toLocaleString()}</span>
-          </span>
-        </div>
       </div>
     </div>
   );
