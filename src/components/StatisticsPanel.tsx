@@ -162,9 +162,6 @@ export const StatisticsPanel = () => {
             <span className="text-muted-foreground">
               Lines: <span className="font-medium text-foreground">{stats.lines}</span>
             </span>
-            <span className="text-muted-foreground">
-              Reading time: <span className="font-medium text-foreground">{stats.readingTime} min</span>
-            </span>
           </div>
           
           <Button

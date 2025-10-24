@@ -573,6 +573,7 @@ export function DocumentHeader() {
 
         {/* RIGHT: Settings & Info */}
         <div className="flex items-center gap-4">
+          {/* Group 1: Utility Controls */}
           <div className="flex items-center gap-2">
             <Switch
               id="auto-save"
@@ -580,14 +581,14 @@ export function DocumentHeader() {
               onCheckedChange={setAutoSave}
               aria-label="Toggle auto-save"
             />
-            <Label htmlFor="auto-save" className="text-sm cursor-pointer">
+            <Label htmlFor="auto-save" className="text-xs cursor-pointer text-muted-foreground">
               Auto-save
             </Label>
           </div>
 
           <button
             onClick={() => setStorageDialogOpen(true)}
-            className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-md transition-colors hover:bg-accent ${
+            className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md transition-colors hover:bg-accent ${
               storageInfo.isCritical
                 ? 'text-destructive font-semibold'
                 : storageInfo.isNearLimit
@@ -597,55 +598,61 @@ export function DocumentHeader() {
             title={`Storage: ${formatStorageSize(storageInfo.bytes)} used (${storageInfo.percentage.toFixed(0)}%). Click for details.`}
             aria-label={`Storage usage: ${storageInfo.percentage.toFixed(0)}% used. Click to view details.`}
           >
-            <Database className="h-4 w-4" />
+            <Database className="h-3.5 w-3.5" />
             <span className="font-mono">{storageInfo.percentage.toFixed(0)}%</span>
           </button>
 
-          {/* Visual Separator */}
-          <div className="w-px h-6 bg-border mx-1" />
+          {/* Separator */}
+          <div className="w-px h-6 bg-border mx-2" />
 
-          {/* Outline Toggle */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={showOutline ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setShowOutline(!showOutline)}
-                className="h-8 gap-1.5"
-                aria-label="Toggle outline panel"
-              >
-                <ListTree className="h-4 w-4" />
-                <span className="hidden lg:inline text-xs">Outline</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Toggle Outline (Ctrl+B)</p>
-            </TooltipContent>
-          </Tooltip>
-
-          {/* View Mode Switcher */}
+          {/* Group 2: View Mode (Most Important) */}
           <ViewModeSwitcher />
 
-          {/* Sync Scroll (only in split view) */}
-          {viewMode === 'split' && (
+          {/* Separator */}
+          <div className="w-px h-6 bg-border mx-2" />
+
+          {/* Group 3: Contextual Tools */}
+          <div className="flex items-center gap-1">
+            {/* Outline Toggle */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant={syncScroll ? 'default' : 'ghost'}
+                  variant={showOutline ? 'default' : 'ghost'}
                   size="sm"
-                  onClick={() => setSyncScroll(!syncScroll)}
+                  onClick={() => setShowOutline(!showOutline)}
                   className="h-8 gap-1.5"
-                  aria-label="Toggle sync scrolling"
+                  aria-label="Toggle outline panel"
                 >
-                  <Link className="h-4 w-4" />
-                  <span className="hidden lg:inline text-xs">Sync</span>
+                  <ListTree className="h-4 w-4" />
+                  <span className="hidden lg:inline text-xs">Outline</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Sync Scrolling</p>
+                <p>Toggle Outline (Ctrl+B)</p>
               </TooltipContent>
             </Tooltip>
-          )}
+
+            {/* Sync Scroll (only in split view) */}
+            {viewMode === 'split' && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={syncScroll ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setSyncScroll(!syncScroll)}
+                    className="h-8 gap-1.5"
+                    aria-label="Toggle sync scrolling"
+                  >
+                    <Link className="h-4 w-4" />
+                    <span className="hidden lg:inline text-xs">Sync</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Sync Scrolling</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         </div>
       </div>
 

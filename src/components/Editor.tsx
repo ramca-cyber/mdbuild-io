@@ -194,33 +194,27 @@ export const Editor = () => {
       }
     };
     
-    const handleUpdate = () => {
-      updateCursorInfo();
-    };
-    
-    // Use MutationObserver to detect selection changes
-    const observer = new MutationObserver(handleUpdate);
-    const editorElement = editorRef.current?.querySelector('.cm-content');
-    
-    if (editorElement) {
-      observer.observe(editorElement, {
-        attributes: true,
-        childList: true,
-        subtree: true,
-      });
-    }
-    
-    // Also listen to click and keyboard events
+    // Listen to multiple events for robust tracking
     view.dom.addEventListener('click', updateCursorInfo);
     view.dom.addEventListener('keyup', updateCursorInfo);
+    view.dom.addEventListener('focus', updateCursorInfo);
+    view.dom.addEventListener('mouseup', updateCursorInfo);
+    
+    // Also listen to selection changes via document event
+    const handleSelectionChange = () => {
+      requestAnimationFrame(updateCursorInfo);
+    };
+    document.addEventListener('selectionchange', handleSelectionChange);
     
     // Initial update
     updateCursorInfo();
     
     return () => {
-      observer.disconnect();
       view.dom.removeEventListener('click', updateCursorInfo);
       view.dom.removeEventListener('keyup', updateCursorInfo);
+      view.dom.removeEventListener('focus', updateCursorInfo);
+      view.dom.removeEventListener('mouseup', updateCursorInfo);
+      document.removeEventListener('selectionchange', handleSelectionChange);
     };
   }, [setCursorPosition, setSelectedWords]);
 
