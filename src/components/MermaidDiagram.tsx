@@ -1,6 +1,8 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
 import mermaid from 'mermaid';
-import { useEditorStore } from '@/store/editorStore';
+import { useEffect, useMemo, useState, useRef } from 'react';
+import { useErrorStore } from '@/store/errorStore';
+import { useSettingsStore } from '@/store/settingsStore';
+import { Loader2 } from 'lucide-react';
 
 interface MermaidDiagramProps {
   code: string;
@@ -8,22 +10,33 @@ interface MermaidDiagramProps {
 }
 
 export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
-  const { theme, addError, removeError } = useEditorStore();
+  const { theme } = useSettingsStore();
+  const { addError, removeError } = useErrorStore();
   const [svg, setSvg] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const errorIdRef = useRef<string | null>(null);
 
-  // Memoize code to prevent unnecessary re-renders
+  // Memoize code with hash to prevent unnecessary re-renders
   const memoizedCode = useMemo(() => code.trim(), [code]);
+  const codeHash = useMemo(() => {
+    let hash = 0;
+    for (let i = 0; i < code.length; i++) {
+      hash = ((hash << 5) - hash) + code.charCodeAt(i);
+      hash |= 0;
+    }
+    return hash;
+  }, [code]);
 
   useEffect(() => {
     let isMounted = true;
-    
+
     const renderDiagram = async () => {
-      if (!memoizedCode) {
-        setError('Empty diagram code');
+      if (!memoizedCode || !isMounted) {
         return;
       }
+
+      setIsLoading(true);
 
       try {
         // First, validate the diagram syntax using parse
@@ -39,46 +52,33 @@ export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
         const isDark = theme === 'dark';
         mermaid.initialize({
           startOnLoad: false,
-          securityLevel: 'loose',
           theme: isDark ? 'dark' : 'default',
-          themeVariables: isDark
-            ? {
-                background: 'transparent',
-                mainBkg: '#1a2332',
-                primaryColor: '#2d3748',
-                secondaryColor: '#1a2332',
-                tertiaryColor: '#151d28',
-                textColor: '#f7f8f9',
-                primaryTextColor: '#f7f8f9',
-                lineColor: '#94a3b8',
-                nodeBorder: '#4a5568',
-                clusterBkg: '#1a2332',
-                clusterBorder: '#4a5568',
-                edgeLabelBackground: '#1a2332',
-              }
-            : {
-                background: 'transparent',
-                mainBkg: '#ffffff',
-                primaryColor: '#f8fafc',
-                secondaryColor: '#ffffff',
-                tertiaryColor: '#f1f5f9',
-                textColor: '#1a202c',
-                primaryTextColor: '#1a202c',
-                lineColor: '#4a5568',
-                nodeBorder: '#cbd5e1',
-                clusterBkg: '#ffffff',
-                clusterBorder: '#cbd5e1',
-                edgeLabelBackground: '#ffffff',
-              },
+          securityLevel: 'loose',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          flowchart: {
+            htmlLabels: true,
+            curve: 'basis',
+          },
+          sequence: {
+            diagramMarginX: 50,
+            diagramMarginY: 10,
+            actorMargin: 50,
+            width: 150,
+            height: 65,
+            boxMargin: 10,
+            boxTextMargin: 5,
+            noteMargin: 10,
+            messageMargin: 35,
+          },
         });
 
-        // Render the diagram
-        const renderID = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        const { svg: renderedSvg } = await mermaid.render(renderID, memoizedCode);
-        
+        const id = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const { svg: renderedSvg } = await mermaid.render(id, memoizedCode);
+
         if (isMounted) {
           setSvg(renderedSvg);
           setError('');
+          setIsLoading(false);
           // Clear error from store if it was previously added
           if (errorIdRef.current) {
             removeError(errorIdRef.current);
@@ -87,12 +87,13 @@ export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
         }
       } catch (err) {
         if (isMounted) {
-          const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-          setError(`Failed to render diagram: ${errorMessage}`);
+          const errorMessage = err instanceof Error ? err.message : 'Failed to render diagram';
+          setError(errorMessage);
           setSvg('');
+          setIsLoading(false);
           
-          // Only add error to store once
-          if (errorIdRef.current === null) {
+          // Add error to global error store
+          if (lineNumber) {
             const id = addError({
               type: 'error',
               category: 'mermaid',
@@ -107,7 +108,7 @@ export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
     };
 
     renderDiagram();
-    
+
     return () => {
       isMounted = false;
       // Clean up error when component unmounts
@@ -116,7 +117,16 @@ export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
         errorIdRef.current = null;
       }
     };
-  }, [memoizedCode, theme, lineNumber, addError, removeError]);
+  }, [codeHash, theme, lineNumber, memoizedCode, addError, removeError]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8 bg-muted/30 rounded-lg">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <span className="ml-2 text-sm text-muted-foreground">Rendering diagram...</span>
+      </div>
+    );
+  }
 
   if (error) {
     // Error is already reported to the error console, don't show inline
@@ -124,19 +134,15 @@ export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
   }
 
   if (!svg) {
-    return (
-      <div className="mermaid-diagram-container p-4 text-muted-foreground">
-        Loading diagram...
-      </div>
-    );
+    return null;
   }
 
   return (
     <div 
-      className="mermaid-diagram-container"
+      className="mermaid-diagram-container" 
       dangerouslySetInnerHTML={{ __html: svg }}
-      role="img"
       aria-label="Mermaid diagram"
+      role="img"
     />
   );
 };
