@@ -167,10 +167,9 @@ export const Editor = () => {
   
   // Track cursor position and selection
   useEffect(() => {
-    if (!viewRef.current) return;
-    
-    const view = viewRef.current;
-    
+    let view: EditorView | null = null;
+    let handlersAttached = false;
+
     const updateCursorInfo = () => {
       if (!view) return;
       
@@ -194,26 +193,39 @@ export const Editor = () => {
       }
     };
     
-    // Listen to multiple events for robust tracking
-    view.dom.addEventListener('click', updateCursorInfo);
-    view.dom.addEventListener('keyup', updateCursorInfo);
-    view.dom.addEventListener('focus', updateCursorInfo);
-    view.dom.addEventListener('mouseup', updateCursorInfo);
-    
     // Also listen to selection changes via document event
     const handleSelectionChange = () => {
       requestAnimationFrame(updateCursorInfo);
     };
-    document.addEventListener('selectionchange', handleSelectionChange);
-    
-    // Initial update
-    updateCursorInfo();
+
+    const tryAttach = () => {
+      if (handlersAttached) return;
+      view = viewRef.current;
+      if (!view) {
+        requestAnimationFrame(tryAttach);
+        return;
+      }
+      // Listen to multiple events for robust tracking
+      view.dom.addEventListener('click', updateCursorInfo);
+      view.dom.addEventListener('keyup', updateCursorInfo);
+      view.dom.addEventListener('focus', updateCursorInfo);
+      view.dom.addEventListener('mouseup', updateCursorInfo);
+      document.addEventListener('selectionchange', handleSelectionChange);
+      handlersAttached = true;
+      
+      // Initial update
+      updateCursorInfo();
+    };
+
+    tryAttach();
     
     return () => {
-      view.dom.removeEventListener('click', updateCursorInfo);
-      view.dom.removeEventListener('keyup', updateCursorInfo);
-      view.dom.removeEventListener('focus', updateCursorInfo);
-      view.dom.removeEventListener('mouseup', updateCursorInfo);
+      if (view) {
+        view.dom.removeEventListener('click', updateCursorInfo);
+        view.dom.removeEventListener('keyup', updateCursorInfo);
+        view.dom.removeEventListener('focus', updateCursorInfo);
+        view.dom.removeEventListener('mouseup', updateCursorInfo);
+      }
       document.removeEventListener('selectionchange', handleSelectionChange);
     };
   }, [setCursorPosition, setSelectedWords]);
