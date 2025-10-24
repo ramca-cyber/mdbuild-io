@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useCallback, useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -17,12 +17,10 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lintMarkdown } from '@/lib/markdownLinter';
 import { visit } from 'unist-util-visit';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ZoomIn, ZoomOut, Printer } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { calculateStatistics } from '@/lib/statisticsUtils';
 
 // TypeScript interfaces
 interface CodeProps {
@@ -60,8 +58,34 @@ export const Preview = () => {
   const anchorsRef = useRef<{ line: number; top: number }[]>([]);
   const lintTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Calculate statistics for word count badge
-  const stats = useMemo(() => calculateStatistics(content), [content]);
+  // Track rendered text statistics
+  const [renderedStats, setRenderedStats] = useState({ words: 0, characters: 0 });
+
+  // Calculate rendered text statistics
+  useEffect(() => {
+    const calculateRenderedStats = () => {
+      if (!previewRef.current) return;
+      
+      const article = previewRef.current.querySelector('article');
+      if (!article) return;
+      
+      // Extract text content from rendered HTML
+      const text = article.textContent || '';
+      
+      // Count words (split by whitespace, filter empty strings)
+      const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+      
+      // Count characters (excluding leading/trailing whitespace)
+      const characters = text.trim().length;
+      
+      setRenderedStats({ words, characters });
+    };
+    
+    // Calculate after a short delay to ensure rendering is complete
+    const timer = setTimeout(calculateRenderedStats, 100);
+    
+    return () => clearTimeout(timer);
+  }, [content]);
 
   // Lint markdown content with debouncing
   useEffect(() => {
@@ -441,14 +465,11 @@ export const Preview = () => {
   return (
     <div className="h-full w-full flex flex-col overflow-hidden bg-preview-bg">
       <div className="px-4 py-2 bg-muted/50 border-b-2 border-border/80 flex-shrink-0 no-print shadow-sm flex items-center justify-between gap-3">
-        {/* Left side: Preview title + Word count badge */}
+        {/* Left side: Preview title */}
         <div className="flex items-center gap-3">
           <h2 className="text-sm font-bold text-foreground/70 uppercase tracking-wider">
             Preview
           </h2>
-          <Badge variant="secondary" className="text-xs font-medium">
-            {stats.words.toLocaleString()} words
-          </Badge>
         </div>
 
         {/* Right side: Tools */}
@@ -540,6 +561,18 @@ export const Preview = () => {
         >
           {markdownContent}
         </article>
+      </div>
+      
+      {/* Preview Statistics Footer */}
+      <div className="flex-shrink-0 px-4 py-2 bg-muted/50 border-t border-border/80 no-print">
+        <div className="flex items-center justify-end gap-4 text-xs text-muted-foreground">
+          <span>
+            Words: <span className="font-medium text-foreground">{renderedStats.words.toLocaleString()}</span>
+          </span>
+          <span>
+            Characters: <span className="font-medium text-foreground">{renderedStats.characters.toLocaleString()}</span>
+          </span>
+        </div>
       </div>
     </div>
   );
