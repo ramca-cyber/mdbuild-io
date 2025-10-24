@@ -122,8 +122,16 @@ export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
   }, [memoizedCode, theme, retryCount, lineNumber, addError, removeError]);
 
   if (error) {
-    // Error is already reported to the error console, don't show inline
-    return null;
+    return (
+      <div 
+        className="mermaid-diagram-container text-destructive p-4 border border-destructive rounded bg-destructive/10"
+        role="alert"
+        aria-live="polite"
+      >
+        <strong>Diagram Error:</strong> {error}
+        {retryCount > 0 && <p className="text-sm mt-2">Retry attempt {retryCount}/2...</p>}
+      </div>
+    );
   }
 
   if (!svg) {
