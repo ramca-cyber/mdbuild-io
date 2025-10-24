@@ -11,7 +11,6 @@ export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
   const { theme, addError, removeError } = useEditorStore();
   const [svg, setSvg] = useState<string>('');
   const [error, setError] = useState<string>('');
-  const [retryCount, setRetryCount] = useState<number>(0);
   const errorIdRef = useRef<string | null>(null);
 
   // Memoize code to prevent unnecessary re-renders
@@ -27,6 +26,15 @@ export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
       }
 
       try {
+        // First, validate the diagram syntax using parse
+        try {
+          await mermaid.parse(memoizedCode);
+        } catch (parseError) {
+          // Syntax error detected - report it
+          const errorMessage = parseError instanceof Error ? parseError.message : 'Syntax error in diagram';
+          throw new Error(errorMessage);
+        }
+
         // Initialize mermaid with theme-specific settings
         const isDark = theme === 'dark';
         mermaid.initialize({
@@ -71,7 +79,6 @@ export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
         if (isMounted) {
           setSvg(renderedSvg);
           setError('');
-          setRetryCount(0);
           // Clear error from store if it was previously added
           if (errorIdRef.current) {
             removeError(errorIdRef.current);
@@ -90,21 +97,10 @@ export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
               type: 'error',
               category: 'mermaid',
               line: lineNumber,
-              message: 'Mermaid diagram rendering failed',
+              message: 'Mermaid diagram syntax error',
               details: errorMessage
             });
             errorIdRef.current = id;
-            
-            // Log once using console.debug
-            console.debug('Mermaid rendering error:', errorMessage);
-          }
-          
-          // Smart retry logic: no retries for parse errors, max 2 for others
-          const isParseError = /Parse error|Syntax error/i.test(errorMessage);
-          if (!isParseError && retryCount < 2) {
-            setTimeout(() => {
-              if (isMounted) setRetryCount(prev => prev + 1);
-            }, 500);
           }
         }
       }
@@ -117,9 +113,10 @@ export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
       // Clean up error when component unmounts
       if (errorIdRef.current) {
         removeError(errorIdRef.current);
+        errorIdRef.current = null;
       }
     };
-  }, [memoizedCode, theme, retryCount, lineNumber, addError, removeError]);
+  }, [memoizedCode, theme, lineNumber, addError, removeError]);
 
   if (error) {
     // Error is already reported to the error console, don't show inline
