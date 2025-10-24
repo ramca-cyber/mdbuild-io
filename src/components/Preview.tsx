@@ -565,11 +565,11 @@ export const Preview = () => {
       
       {/* Preview Statistics Footer */}
       <div className="flex-shrink-0 px-4 py-2 bg-muted/50 border-t border-border/80 no-print">
-        <div className="flex items-center justify-end gap-4 text-xs text-muted-foreground">
-          <span>
+        <div className="flex items-center justify-end gap-4 text-sm">
+          <span className="text-muted-foreground">
             Words: <span className="font-medium text-foreground">{renderedStats.words.toLocaleString()}</span>
           </span>
-          <span>
+          <span className="text-muted-foreground">
             Characters: <span className="font-medium text-foreground">{renderedStats.characters.toLocaleString()}</span>
           </span>
         </div>

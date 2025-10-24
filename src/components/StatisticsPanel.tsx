@@ -112,53 +112,6 @@ export const StatisticsPanel = () => {
               </span>
             )}
             
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="text-muted-foreground flex items-center gap-1.5">
-                    Words: <span className={`font-medium ${
-                      wordLimitStatus?.type === 'error' ? 'text-destructive' :
-                      wordLimitStatus?.type === 'warning' ? 'text-yellow-600 dark:text-yellow-500' :
-                      'text-foreground'
-                    }`}>{stats.words}</span>
-                    {wordLimitStatus && wordLimitStatus.type !== 'success' && (
-                      <AlertTriangle className={`h-3.5 w-3.5 ${
-                        wordLimitStatus.type === 'error' ? 'text-destructive' : 'text-yellow-600 dark:text-yellow-500'
-                      }`} />
-                    )}
-                  </span>
-                </TooltipTrigger>
-                {wordLimitStatus && (
-                  <TooltipContent>
-                    <p>{wordLimitStatus.message}</p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
-            
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="text-muted-foreground flex items-center gap-1.5">
-                    Characters: <span className={`font-medium ${
-                      charLimitStatus?.type === 'error' ? 'text-destructive' :
-                      charLimitStatus?.type === 'warning' ? 'text-yellow-600 dark:text-yellow-500' :
-                      'text-foreground'
-                    }`}>{stats.characters}</span>
-                    {charLimitStatus && charLimitStatus.type !== 'success' && (
-                      <AlertTriangle className={`h-3.5 w-3.5 ${
-                        charLimitStatus.type === 'error' ? 'text-destructive' : 'text-yellow-600 dark:text-yellow-500'
-                      }`} />
-                    )}
-                  </span>
-                </TooltipTrigger>
-                {charLimitStatus && (
-                  <TooltipContent>
-                    <p>{charLimitStatus.message}</p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
             <span className="text-muted-foreground">
               Lines: <span className="font-medium text-foreground">{stats.lines}</span>
             </span>
