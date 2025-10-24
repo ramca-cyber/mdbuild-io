@@ -456,27 +456,11 @@ All colors MUST be HSL.
     display: none !important;
   }
   
-  /* Hide everything except preview */
-  body > div > * {
-    display: none !important;
-  }
-  
-  /* Show only the main content area */
-  body > div > div:has(.preview-content) {
+  /* Show preview content */
+  .prose,
+  article {
     display: block !important;
-    width: 100% !important;
-    height: auto !important;
-  }
-  
-  /* Show preview container and its children */
-  .preview-content,
-  .preview-content * {
-    display: revert !important;
     visibility: visible !important;
-  }
-
-  /* Format preview content for print with CSS variables */
-  .preview-content {
     max-width: 100% !important;
     width: 100% !important;
     height: auto !important;
@@ -484,15 +468,22 @@ All colors MUST be HSL.
     margin: 0 !important;
     overflow: visible !important;
     background: white !important;
-  }
-
-  .preview-content article,
-  .preview-content .prose {
-    max-width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
     font-size: var(--print-font-size, 12pt) !important;
     filter: var(--print-color-mode, none) !important;
+  }
+  
+  /* Ensure all article content is visible */
+  article * {
+    display: revert !important;
+    visibility: visible !important;
+  }
+  
+  /* Ensure scrollable containers show all content */
+  .overflow-auto,
+  .overflow-y-auto {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
   }
 
   /* Optimize for printing */
