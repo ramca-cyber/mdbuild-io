@@ -330,13 +330,38 @@ export const Preview = () => {
     };
   }, [content, previewSettings.previewZoom, showOutline]);
 
-  // Robust synchronized scrolling using RAF + lock to prevent feedback loops
+  // Smooth synchronized scrolling using RAF + interpolation
   useEffect(() => {
     if (!previewRef.current) return;
 
     const preview = previewRef.current;
     let isSyncing = false;
     let rafId: number | null = null;
+    let smoothRafId: number | null = null;
+    let currentScrollTop = preview.scrollTop;
+    let targetScrollTop = preview.scrollTop;
+
+    // Smooth scroll animation
+    const animateScroll = () => {
+      const diff = Math.abs(targetScrollTop - currentScrollTop);
+      
+      if (diff < 0.5) {
+        currentScrollTop = targetScrollTop;
+        preview.scrollTop = currentScrollTop;
+        smoothRafId = null;
+        // Release sync lock
+        requestAnimationFrame(() => {
+          isSyncing = false;
+        });
+        return;
+      }
+
+      // Smooth interpolation
+      currentScrollTop += (targetScrollTop - currentScrollTop) * 0.15;
+      preview.scrollTop = currentScrollTop;
+      
+      smoothRafId = requestAnimationFrame(animateScroll);
+    };
 
     const handleEditorScroll = (e: Event) => {
       if (!syncScrollRef.current) return;
@@ -346,6 +371,8 @@ export const Preview = () => {
 
       isSyncing = true;
       if (rafId) cancelAnimationFrame(rafId);
+      if (smoothRafId) cancelAnimationFrame(smoothRafId);
+      
       rafId = requestAnimationFrame(() => {
         if (detail && typeof detail === 'object' && 'line' in detail) {
           // Precise: map line -> preview top via anchors
@@ -354,18 +381,22 @@ export const Preview = () => {
           if (idx === -1) idx = anchors.length - 1;
           if (idx < 0) idx = 0;
           const targetTop = anchors[idx]?.top ?? 0;
-          preview.scrollTop = targetTop;
+          
+          // Set target and start smooth animation
+          targetScrollTop = targetTop;
+          currentScrollTop = preview.scrollTop;
+          animateScroll();
         } else {
           // Fallback: simple ratio
           const scrollPercentage = typeof detail === 'number' ? detail : detail?.ratio ?? 0;
           const maxScroll = preview.scrollHeight - preview.clientHeight;
-          preview.scrollTop = maxScroll * scrollPercentage;
+          
+          // Set target and start smooth animation
+          targetScrollTop = maxScroll * scrollPercentage;
+          currentScrollTop = preview.scrollTop;
+          animateScroll();
         }
 
-        // Release the lock on the next frame after the scroll event fires
-        requestAnimationFrame(() => {
-          isSyncing = false;
-        });
         rafId = null;
       });
     };
@@ -375,6 +406,9 @@ export const Preview = () => {
 
       if (rafId) cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(() => {
+        currentScrollTop = preview.scrollTop;
+        targetScrollTop = preview.scrollTop;
+        
         const maxScroll = preview.scrollHeight - preview.clientHeight;
         if (maxScroll > 0) {
           const ratio = preview.scrollTop / maxScroll;
@@ -394,17 +428,29 @@ export const Preview = () => {
     
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
+      if (smoothRafId) cancelAnimationFrame(smoothRafId);
       window.removeEventListener('editor-scroll', handleEditorScroll);
       preview.removeEventListener('scroll', handlePreviewScroll);
     };
   }, []); // Only setup once
 
-  // Handle clicks to sync cursor position based on scroll ratio
+  // Handle clicks to sync cursor position - only when not selecting text
   const handleClick = useCallback((e: React.MouseEvent) => {
+    // Don't interfere with text selection
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      return;
+    }
+
     if (!previewRef.current) return;
 
     const root = previewRef.current;
     let el = e.target as HTMLElement | null;
+
+    // Don't trigger on copy button clicks
+    if (el?.closest('.copy-button')) {
+      return;
+    }
 
     // Walk up to find element with data-line attribute
     while (el && el !== root) {

@@ -260,7 +260,7 @@ export const Editor = () => {
     return () => window.removeEventListener('preview-click', handlePreviewClick);
   }, []);
 
-  // Robust scroll sync using RAF + lock to prevent feedback loops
+  // Smooth scroll sync using RAF + interpolation
   useEffect(() => {
     if (!syncScroll || !editorRef.current) return;
 
@@ -273,12 +273,40 @@ export const Editor = () => {
 
       let isSyncing = false;
       let rafId: number | null = null;
+      let smoothRafId: number | null = null;
+      let currentScrollTop = editorScroll.scrollTop;
+      let targetScrollTop = editorScroll.scrollTop;
+
+      // Smooth scroll animation
+      const animateScroll = () => {
+        const diff = Math.abs(targetScrollTop - currentScrollTop);
+        
+        if (diff < 0.5) {
+          currentScrollTop = targetScrollTop;
+          editorScroll.scrollTop = currentScrollTop;
+          smoothRafId = null;
+          // Release sync lock
+          requestAnimationFrame(() => {
+            isSyncing = false;
+          });
+          return;
+        }
+
+        // Smooth interpolation
+        currentScrollTop += (targetScrollTop - currentScrollTop) * 0.15;
+        editorScroll.scrollTop = currentScrollTop;
+        
+        smoothRafId = requestAnimationFrame(animateScroll);
+      };
 
       const handleScroll = () => {
         if (!syncScroll || isSyncing) return;
 
         if (rafId) cancelAnimationFrame(rafId);
         rafId = requestAnimationFrame(() => {
+          currentScrollTop = editorScroll.scrollTop;
+          targetScrollTop = editorScroll.scrollTop;
+          
           const maxScroll = editorScroll.scrollHeight - editorScroll.clientHeight;
           const scrollPercentage = maxScroll > 0 ? editorScroll.scrollTop / maxScroll : 0;
 
@@ -306,6 +334,8 @@ export const Editor = () => {
 
         isSyncing = true;
         if (rafId) cancelAnimationFrame(rafId);
+        if (smoothRafId) cancelAnimationFrame(smoothRafId);
+        
         rafId = requestAnimationFrame(() => {
           const maxScroll = editorScroll.scrollHeight - editorScroll.clientHeight;
 
@@ -318,19 +348,24 @@ export const Editor = () => {
             const rect = editorScroll.getBoundingClientRect();
             if (coords) {
               const delta = coords.top - rect.top;
-              editorScroll.scrollTop += delta;
+              // Set target and start smooth animation
+              targetScrollTop = editorScroll.scrollTop + delta;
+              currentScrollTop = editorScroll.scrollTop;
+              animateScroll();
             } else if (maxScroll > 0 && detail.ratio != null) {
-              editorScroll.scrollTop = detail.ratio * maxScroll;
+              // Set target and start smooth animation
+              targetScrollTop = detail.ratio * maxScroll;
+              currentScrollTop = editorScroll.scrollTop;
+              animateScroll();
             }
           } else {
             const ratio = typeof detail === 'number' ? detail : detail?.ratio ?? 0;
-            editorScroll.scrollTop = ratio * maxScroll;
+            // Set target and start smooth animation
+            targetScrollTop = ratio * maxScroll;
+            currentScrollTop = editorScroll.scrollTop;
+            animateScroll();
           }
 
-          // Release the lock on the next frame (after the scroll event fires)
-          requestAnimationFrame(() => {
-            isSyncing = false;
-          });
           rafId = null;
         });
       };
@@ -340,6 +375,7 @@ export const Editor = () => {
 
       return () => {
         if (rafId) cancelAnimationFrame(rafId);
+        if (smoothRafId) cancelAnimationFrame(smoothRafId);
         editorScroll.removeEventListener('scroll', handleScroll);
         window.removeEventListener('preview-scroll', handlePreviewScroll);
       };

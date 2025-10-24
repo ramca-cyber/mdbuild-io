@@ -138,6 +138,28 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Preview text selection */
+  .preview-content article,
+  .preview-content .prose {
+    user-select: text;
+    cursor: text;
+  }
+
+  .preview-content article *:not(button):not(.copy-button) {
+    user-select: text;
+  }
+
+  .preview-content .copy-button {
+    user-select: none;
+    pointer-events: auto;
+  }
+
+  /* Ensure selection works even with transform */
+  .preview-content article {
+    transform-origin: top left;
+  }
+
   /* Enhanced focus styles for accessibility */
   *:focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
