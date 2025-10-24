@@ -66,9 +66,9 @@ export const ViewModeSwitcher = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setViewMode(mode.value)}
-                  className={`gap-1.5 transition-all duration-200 h-9 ${
+                  className={`gap-1.5 transition-all duration-200 h-8 ${
                     isActive 
-                      ? 'border-primary border-2 bg-primary/15 text-primary font-semibold shadow-md' 
+                      ? 'border-primary border-2 bg-primary/10 text-primary font-semibold shadow-sm' 
                       : 'border-border hover:bg-accent hover:border-accent-foreground/20'
                   }`}
                   aria-label={mode.tooltip}
