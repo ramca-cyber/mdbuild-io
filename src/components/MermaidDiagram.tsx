@@ -93,16 +93,14 @@ export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
           setIsLoading(false);
           
           // Add error to global error store
-          if (lineNumber) {
-            const id = addError({
-              type: 'error',
-              category: 'mermaid',
-              line: lineNumber,
-              message: 'Mermaid diagram syntax error',
-              details: errorMessage
-            });
-            errorIdRef.current = id;
-          }
+          const id = addError({
+            type: 'error',
+            category: 'mermaid',
+            line: lineNumber,
+            message: 'Mermaid diagram syntax error',
+            details: errorMessage
+          });
+          errorIdRef.current = id;
         }
       }
     };
