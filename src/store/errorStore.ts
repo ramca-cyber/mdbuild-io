@@ -35,7 +35,7 @@ export const useErrorStore = create<ErrorState>((set, get) => ({
       id,
       timestamp: Date.now(),
     };
-    set({ errors: [...get().errors, newError] });
+    set({ errors: [...get().errors, newError], showErrorPanel: true });
     return id;
   },
 
@@ -51,7 +51,11 @@ export const useErrorStore = create<ErrorState>((set, get) => ({
       timestamp: Date.now(),
     }));
     
-    set({ errors: [...filteredErrors, ...mappedNewErrors] });
+    const allErrors = [...filteredErrors, ...mappedNewErrors];
+    set({ 
+      errors: allErrors,
+      showErrorPanel: allErrors.length > 0 ? true : get().showErrorPanel
+    });
   },
 
   clearErrors: () => set({ errors: [] }),
