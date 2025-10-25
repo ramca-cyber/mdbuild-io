@@ -241,12 +241,65 @@ const Help = () => {
               <p className="text-sm text-muted-foreground">
                 Create flowcharts, sequence diagrams, Gantt charts, and more using simple text syntax.
               </p>
+              
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm">Quick Start:</h4>
+                <div className="bg-muted p-3 rounded text-xs">
+                  <pre className="overflow-x-auto">{`\`\`\`mermaid
+flowchart TD
+    A[Start] --> B{Decision?}
+    B -->|Yes| C[Action]
+    B -->|No| D[End]
+\`\`\``}</pre>
+                </div>
+              </div>
+
+              <div className="space-y-3 border-t pt-3">
+                <h4 className="font-semibold text-sm">Common Syntax Tips:</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-start gap-2">
+                    <span className="font-medium min-w-[120px]">Newlines:</span>
+                    <div>
+                      <p className="text-muted-foreground">Use <code className="px-1 py-0.5 bg-muted rounded text-xs">flowchart</code> syntax with <code className="px-1 py-0.5 bg-muted rounded text-xs">\n</code> or <code className="px-1 py-0.5 bg-muted rounded text-xs">&lt;br&gt;</code> tags</p>
+                      <code className="text-xs mt-1 block">A["Line 1\nLine 2"]</code>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="font-medium min-w-[120px]">Special chars:</span>
+                    <div>
+                      <p className="text-muted-foreground">Use quotes for labels with parentheses or spaces</p>
+                      <code className="text-xs mt-1 block">A["Text (with parens)"]</code>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="font-medium min-w-[120px]">Markdown:</span>
+                    <div>
+                      <p className="text-muted-foreground">Use backticks for formatted text</p>
+                      <code className="text-xs mt-1 block">A[`**Bold** text`]</code>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-yellow-500/10 border border-yellow-500/20 p-3 rounded text-sm">
+                  <p className="font-semibold text-yellow-700 dark:text-yellow-400 mb-1">⚠️ Common Pitfall</p>
+                  <p className="text-xs text-muted-foreground">
+                    Old <code className="px-1 py-0.5 bg-muted rounded">graph</code> syntax doesn't support <code className="px-1 py-0.5 bg-muted rounded">\n</code> for newlines. 
+                    Use <code className="px-1 py-0.5 bg-muted rounded">flowchart</code> instead for better compatibility!
+                  </p>
+                </div>
+              </div>
+
               <div>
                 <h4 className="font-semibold text-sm mb-2">Official Documentation:</h4>
                 <ul className="space-y-1 text-sm">
                   <li>
                     <a href="https://mermaid.js.org/" target="_blank" rel="noopener noreferrer" className={externalLinkClass}>
                       Mermaid Official Site <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://mermaid.js.org/syntax/flowchart.html" target="_blank" rel="noopener noreferrer" className={externalLinkClass}>
+                      Flowchart Syntax Guide <ExternalLink className="h-3 w-3" />
                     </a>
                   </li>
                 </ul>

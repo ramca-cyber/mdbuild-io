@@ -92,13 +92,27 @@ export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
           setSvg('');
           setIsLoading(false);
           
+          // Detect common issues and provide helpful suggestions
+          let enhancedDetails = errorMessage;
+          const codeLines = memoizedCode.toLowerCase();
+          
+          // Check if using old 'graph' syntax with newlines
+          if (codeLines.includes('graph ') && memoizedCode.includes('\\n')) {
+            enhancedDetails += '\n\n💡 Tip: You\'re using the old "graph" syntax with \\n for newlines. Use "flowchart" instead:\n- Change "graph TD" to "flowchart TD"\n- Or use <br> tags instead of \\n';
+          }
+          
+          // Check for common bracket/parenthesis issues
+          if (errorMessage.toLowerCase().includes('bracket') || errorMessage.toLowerCase().includes('parse')) {
+            enhancedDetails += '\n\n💡 Tip: For labels with special characters:\n- Use quotes: A["Label (with parens)"]\n- Escape quotes inside: A["Label with \\"quotes\\""]\n- Use markdown strings: A[`**Bold** text`]';
+          }
+          
           // Add error to global error store
           const id = addError({
             type: 'error',
             category: 'mermaid',
             line: lineNumber,
             message: 'Mermaid diagram syntax error',
-            details: errorMessage
+            details: enhancedDetails
           });
           errorIdRef.current = id;
         }

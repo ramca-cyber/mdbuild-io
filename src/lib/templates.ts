@@ -432,40 +432,123 @@ Wrap up your post with key takeaways and actionable next steps.
     icon: GitBranch,
     content: `# Mermaid Diagram Examples
 
-## Flowchart
+> [!TIP]
+> Use **flowchart** syntax (not graph) for best compatibility with newlines and special characters!
+
+---
+
+## Flowchart Syntax (Recommended)
+
+### Basic Flowchart with Newlines
 \`\`\`mermaid
-graph TD
-    A[Start] --> B{Is it?}
-    B -->|Yes| C[OK]
-    B -->|No| D[End]
-    C --> D
+flowchart TD
+    A[Start Process] --> B{Check\nStatus}
+    B -->|Success| C[Process\nComplete]
+    B -->|Error| D[Handle\nError]
+    C --> E[End]
+    D --> E
 \`\`\`
 
-## Sequence Diagram
+### Using <br> Tags for Line Breaks
+\`\`\`mermaid
+flowchart LR
+    A[Step 1:<br>Initialize] --> B[Step 2:<br>Process Data]
+    B --> C[Step 3:<br>Save Results]
+\`\`\`
+
+### Labels with Parentheses and Special Characters
+\`\`\`mermaid
+flowchart TD
+    A["User Input (required)"] --> B{"Validate Data\n(check format)"}
+    B -->|Valid| C["Save to DB\n(with timestamp)"]
+    B -->|Invalid| D["Show Error\n(retry allowed)"]
+\`\`\`
+
+### Using Markdown Strings (Backticks)
+\`\`\`mermaid
+flowchart LR
+    A[\`**Bold Text**\nNew line\`] --> B[\`*Italic* text\`]
+    B --> C[\`Code: \\\`value\\\`\`]
+\`\`\`
+
+---
+
+## Other Diagram Types
+
+### Sequence Diagram
 \`\`\`mermaid
 sequenceDiagram
-    Alice->>John: Hello John!
-    John-->>Alice: Hi Alice!
-    Alice->>John: How are you?
+    participant User
+    participant App
+    participant API
+    participant DB
+    
+    User->>App: Click Button
+    App->>API: POST /data
+    API->>DB: INSERT query
+    DB-->>API: Success
+    API-->>App: 200 OK
+    App-->>User: Show Success
 \`\`\`
 
-## Pie Chart
+### Pie Chart
 \`\`\`mermaid
-pie title Pets adopted by volunteers
-    "Dogs" : 386
-    "Cats" : 85
-    "Rats" : 15
+pie title Project Time Distribution
+    "Development" : 45
+    "Testing" : 25
+    "Meetings" : 15
+    "Documentation" : 15
 \`\`\`
 
-## Gantt Chart
+### Gantt Chart
 \`\`\`mermaid
 gantt
     title Project Timeline
     dateFormat YYYY-MM-DD
-    section Phase 1
-    Task 1: 2024-01-01, 30d
-    Task 2: 2024-02-01, 20d
+    section Design
+    UI Design       :2024-01-01, 10d
+    UX Research     :2024-01-05, 15d
+    section Development
+    Frontend        :2024-01-15, 20d
+    Backend         :2024-01-20, 25d
+    section Testing
+    QA Testing      :2024-02-10, 10d
 \`\`\`
+
+### Git Graph
+\`\`\`mermaid
+gitGraph
+    commit
+    commit
+    branch develop
+    checkout develop
+    commit
+    commit
+    checkout main
+    merge develop
+    commit
+\`\`\`
+
+---
+
+## Common Tips & Tricks
+
+> [!NOTE]
+> **Flowchart vs Graph:** Use \`flowchart\` (newer syntax) instead of \`graph\` for better support of:
+> - \\n for newlines in labels
+> - Special characters in quotes
+> - Markdown formatting in backticks
+
+> [!WARNING]
+> **Old Graph Syntax:** If you use \`graph TD\` or \`graph LR\`:
+> - \\n won't work for newlines (use <br> instead)
+> - Some special characters may cause issues
+
+> [!TIP]
+> **Escaping Special Characters:**
+> - Use quotes for labels with spaces: \`A["Label with spaces"]\`
+> - Use parentheses safely: \`A["Text (with parens)"]\`
+> - For complex text, use backticks: \`A[\\\`**Bold** text\\\`]\`
 `,
   },
   {
