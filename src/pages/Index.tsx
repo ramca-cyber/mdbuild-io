@@ -16,7 +16,7 @@ import { ErrorConsole } from '@/components/ErrorConsole';
 import { useDocumentStore } from '@/store/documentStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, FileText, Settings, BookTemplate, List, Home, X, Moon, Sun, Keyboard } from 'lucide-react';
+import { Menu, FileText, Settings, BookTemplate, List, Home, X, Moon, Sun, Keyboard, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { calculateStatistics } from '@/lib/statisticsUtils';
@@ -164,7 +164,14 @@ const Index = () => {
                   </Link>
                 </Button>
                 
-                <Button 
+                <Button variant="ghost" className="justify-start" asChild>
+                  <Link to="/help">
+                    <HelpCircle className="h-4 w-4 mr-2" />
+                    Help
+                  </Link>
+                </Button>
+                
+                <Button
                   variant="ghost" 
                   className="justify-start"
                   onClick={() => setMobilePanel('documents')}
@@ -228,6 +235,13 @@ const Index = () => {
             <Link to="/landing" className="flex items-center gap-2">
               <Home className="h-4 w-4" />
               <span>Home</span>
+            </Link>
+          </Button>
+          
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/help" className="flex items-center gap-2">
+              <HelpCircle className="h-4 w-4" />
+              <span>Help</span>
             </Link>
           </Button>
           

@@ -106,6 +106,9 @@ export const MermaidDiagram = ({ code, lineNumber }: MermaidDiagramProps) => {
             enhancedDetails += '\n\n💡 Tip: For labels with special characters:\n- Use quotes: A["Label (with parens)"]\n- Escape quotes inside: A["Label with \\"quotes\\""]\n- Use markdown strings: A[`**Bold** text`]';
           }
           
+          // Add link to Help page
+          enhancedDetails += '\n\n📚 See the Help page (/help) for detailed Mermaid syntax examples and tips.';
+          
           // Add error to global error store
           const id = addError({
             type: 'error',
