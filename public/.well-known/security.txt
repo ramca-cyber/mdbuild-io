@@ -1,0 +1,10 @@
+Contact: mailto:support@mdbuild.io
+Expires: 2026-12-31T23:59:59.000Z
+Preferred-Languages: en
+Canonical: https://mdbuild.io/.well-known/security.txt
+Policy: https://mdbuild.io/privacy
+Acknowledgments: https://mdbuild.io/about
+
+# MDBuild.io Security
+# Client-side only application - no server-side data processing
+# All data stored locally in browser storage

@@ -14,7 +14,8 @@ import {
   Eye,
   Share2,
   BookOpen,
-  CheckSquare
+  CheckSquare,
+  Database
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { PWAInstallButton } from '@/components/PWAInstallButton';
@@ -495,6 +496,98 @@ const Landing = () => {
               <h3 className="font-semibold">4MB Storage</h3>
               <p className="text-sm text-muted-foreground">Free local storage for your docs</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Security & Privacy Section */}
+      <section className="py-20 px-4 bg-muted/30">
+        <div className="container max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+              <Shield className="h-4 w-4" />
+              <span>Built for Privacy & Security</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Enterprise-Ready Security
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Designed for teams and individuals who value data privacy
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-card border rounded-lg p-6 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                <Shield className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold text-lg">100% Client-Side</h3>
+              <p className="text-sm text-muted-foreground">
+                All processing happens in your browser. We never see your documents or personal information.
+              </p>
+            </div>
+            
+            <div className="bg-card border rounded-lg p-6 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                <Lock className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold text-lg">No Account Required</h3>
+              <p className="text-sm text-muted-foreground">
+                Start writing immediately. No sign-up, no tracking, no data collection of any kind.
+              </p>
+            </div>
+            
+            <div className="bg-card border rounded-lg p-6 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                <Database className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold text-lg">Your Data Stays Local</h3>
+              <p className="text-sm text-muted-foreground">
+                Documents stored in your browser only. Export anytime, anywhere, in any format.
+              </p>
+            </div>
+          </div>
+          
+          <div className="mt-8 bg-card border rounded-lg p-6">
+            <h4 className="font-semibold mb-3 flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              For IT Administrators
+            </h4>
+            <p className="text-sm text-muted-foreground mb-4">
+              MDBuild.io is safe for corporate environments with strict security policies.
+            </p>
+            <ul className="grid md:grid-cols-2 gap-2 text-sm text-muted-foreground mb-4">
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-0.5">✓</span>
+                <span>Zero server-side data storage</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-0.5">✓</span>
+                <span>GDPR compliant</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-0.5">✓</span>
+                <span>No cookies or tracking</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-0.5">✓</span>
+                <span>Works offline (PWA)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-0.5">✓</span>
+                <span>Open source & auditable</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-0.5">✓</span>
+                <span>No external API calls</span>
+              </li>
+            </ul>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/help#corporate">
+                <BookOpen className="h-4 w-4 mr-2" />
+                View IT Documentation
+              </Link>
+            </Button>
           </div>
         </div>
       </section>

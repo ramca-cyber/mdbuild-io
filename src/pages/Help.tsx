@@ -6,7 +6,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { 
   FileText, GitBranch, Sigma, Code, Download, Keyboard, 
   BookOpen, ExternalLink, Home, Zap, Layout, Search, 
-  Edit3, FileCode, Settings, Moon, Save, Copy, Eye, Zap as ZapIcon, Lock, Edit, Eye as EyeIcon, AlertCircle
+  Edit3, FileCode, Settings, Moon, Save, Copy, Eye, Zap as ZapIcon, Lock, Edit, Eye as EyeIcon, AlertCircle, Shield, Database
 } from "lucide-react";
 
 const Help = () => {
@@ -363,6 +363,78 @@ flowchart TD
                     <span>Preview</span>
                     <kbd className="px-2 py-1 bg-muted rounded text-xs">Ctrl+P</kbd>
                   </div>
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Corporate Network Access */}
+          <AccordionItem value="corporate" className="border rounded-lg px-6">
+            <AccordionTrigger className="hover:no-underline">
+              <div className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" />
+                <span className="text-lg font-semibold">Corporate Network Access</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="space-y-4 pt-4">
+              <p className="text-sm text-muted-foreground">
+                MDBuild.io is a privacy-focused, client-side markdown editor designed for technical documentation.
+              </p>
+              
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm">For IT Administrators</h4>
+                
+                <div className="bg-muted/50 p-4 rounded-lg space-y-3">
+                  <div>
+                    <h5 className="font-semibold text-sm mb-2">Security Profile:</h5>
+                    <ul className="space-y-1 text-sm text-muted-foreground">
+                      <li>✅ 100% client-side processing (no server-side data storage)</li>
+                      <li>✅ All documents stored locally in browser localStorage</li>
+                      <li>✅ No user authentication or account creation required</li>
+                      <li>✅ No analytics tracking or data collection</li>
+                      <li>✅ Works completely offline after initial load (PWA)</li>
+                      <li>✅ Open source and auditable code</li>
+                      <li>✅ Zero external API calls for document processing</li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h5 className="font-semibold text-sm mb-2">Network Requirements:</h5>
+                    <p className="text-sm text-muted-foreground mb-2">MDBuild requires access to these trusted CDN domains:</p>
+                    <ul className="space-y-1 text-sm font-mono text-muted-foreground">
+                      <li>• mdbuild.io (primary application domain)</li>
+                      <li>• cdn.jsdelivr.net (KaTeX math rendering library)</li>
+                      <li>• cdnjs.cloudflare.com (Syntax highlighting library)</li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h5 className="font-semibold text-sm mb-2">Firewall Configuration:</h5>
+                    <p className="text-sm text-muted-foreground mb-2">If MDBuild.io is blocked on your corporate network:</p>
+                    <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
+                      <li>Verify the site category in your web filter console</li>
+                      <li>Request recategorization to "Software/Technology" or "Productivity Tools"</li>
+                      <li>Whitelist domain: <code className="px-1 py-0.5 bg-muted rounded text-xs">mdbuild.io</code></li>
+                      <li>Optionally whitelist CDN domains listed above</li>
+                    </ol>
+                  </div>
+                  
+                  <div>
+                    <h5 className="font-semibold text-sm mb-2">Privacy & Compliance:</h5>
+                    <ul className="space-y-1 text-sm text-muted-foreground">
+                      <li>• GDPR compliant (no personal data collection)</li>
+                      <li>• No cookies used for tracking</li>
+                      <li>• No third-party analytics</li>
+                      <li>• Suitable for handling sensitive technical documentation</li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div className="bg-primary/10 border border-primary/20 p-3 rounded text-sm">
+                  <p className="font-semibold text-primary mb-1">Need Help?</p>
+                  <p className="text-xs text-muted-foreground">
+                    For security assessments or whitelisting support, contact: <a href="mailto:support@mdbuild.io" className="text-primary hover:underline">support@mdbuild.io</a>
+                  </p>
                 </div>
               </div>
             </AccordionContent>
