@@ -1,3 +1,4 @@
+import { useSettingsStore } from '@/store/settingsStore';
 import {
   Menubar,
   MenubarContent,
@@ -23,8 +24,8 @@ import {
   Sparkles,
   WrapText,
   Hash,
+  AlignCenter,
 } from 'lucide-react';
-import { useSettingsStore } from '@/store/settingsStore';
 
 export function ViewMenu() {
   const {
@@ -38,6 +39,8 @@ export function ViewMenu() {
     setFocusMode,
     zenMode,
     setZenMode,
+    typewriterMode,
+    setTypewriterMode,
     lineWrap,
     setLineWrap,
     lineNumbers,
@@ -133,6 +136,16 @@ export function ViewMenu() {
             <Sparkles className="h-4 w-4 mr-2" />
             Zen Mode
             <MenubarShortcut>Shift+F11</MenubarShortcut>
+          </MenubarCheckboxItem>
+
+          <MenubarSeparator />
+
+          <MenubarCheckboxItem
+            checked={typewriterMode}
+            onCheckedChange={setTypewriterMode}
+          >
+            <AlignCenter className="h-4 w-4 mr-2" />
+            Typewriter Mode
           </MenubarCheckboxItem>
 
         </MenubarContent>
