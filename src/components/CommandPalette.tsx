@@ -4,7 +4,8 @@ import {
   Bold, Italic, Strikethrough, Code, Hash, List, ListTodo, 
   Link, Image, Table, Minus, FileDown, Save, Search, 
   Settings, Eye, FileText, Undo2, Redo2, Trash2, Copy,
-  ZoomIn, ZoomOut, AlertCircle, FileCode, Quote
+  ZoomIn, ZoomOut, AlertCircle, FileCode, Quote, Plus, ArrowDown, ArrowUp,
+  Columns, AlignCenter
 } from 'lucide-react';
 import { useEditorCommands } from '@/hooks/useEditorCommands';
 import { useDocumentStore } from '@/store/documentStore';
@@ -61,6 +62,13 @@ export const CommandPalette = () => {
     { icon: AlertCircle, label: 'Note Alert', description: 'Insert a note callout', action: () => insertText('> [!NOTE]\n> ', '', 'Note content') },
     { icon: AlertCircle, label: 'Warning Alert', description: 'Insert a warning', action: () => insertText('> [!WARNING]\n> ', '', 'Warning content') },
     { icon: AlertCircle, label: 'Important Alert', description: 'Insert important info', action: () => insertText('> [!IMPORTANT]\n> ', '', 'Important content') },
+    
+    // Table Commands
+    { icon: ArrowDown, label: 'Add Row Below', description: 'Add a row below current cell (in table)', action: () => window.dispatchEvent(new CustomEvent('table-add-row-below')), shortcut: 'Ctrl+Shift+Enter' },
+    { icon: ArrowUp, label: 'Add Row Above', description: 'Add a row above current cell (in table)', action: () => window.dispatchEvent(new CustomEvent('table-add-row-above')), shortcut: 'Ctrl+Shift+Alt+Enter' },
+    { icon: Plus, label: 'Add Column', description: 'Add a column after current cell (in table)', action: () => window.dispatchEvent(new CustomEvent('table-add-column')), shortcut: 'Ctrl+Shift+\\' },
+    { icon: AlignCenter, label: 'Toggle Alignment', description: 'Toggle column alignment (in table)', action: () => window.dispatchEvent(new CustomEvent('table-toggle-alignment')), shortcut: 'Ctrl+Shift+A' },
+    { icon: Trash2, label: 'Delete Row', description: 'Delete current row (in table)', action: () => window.dispatchEvent(new CustomEvent('table-delete-row')), shortcut: 'Ctrl+Shift+Backspace' },
     
     // Edit
     { icon: Undo2, label: 'Undo', description: 'Undo last change', action: undo, shortcut: 'Ctrl+Z' },
@@ -175,8 +183,23 @@ export const CommandPalette = () => {
           })}
         </CommandGroup>
         
+        <CommandGroup heading="Table Commands">
+          {commands.slice(19, 24).map((cmd) => {
+            const Icon = cmd.icon;
+            return (
+              <CommandItem key={cmd.label} onSelect={() => handleSelect(cmd.action)}>
+                <Icon className="mr-2 h-4 w-4" />
+                <span className="flex-1">{cmd.label}</span>
+                {cmd.shortcut && (
+                  <kbd className="ml-auto text-xs text-muted-foreground">{cmd.shortcut}</kbd>
+                )}
+              </CommandItem>
+            );
+          })}
+        </CommandGroup>
+        
         <CommandGroup heading="Edit">
-          {commands.slice(19, 23).map((cmd) => {
+          {commands.slice(24, 28).map((cmd) => {
             const Icon = cmd.icon;
             return (
               <CommandItem key={cmd.label} onSelect={() => handleSelect(cmd.action)}>
@@ -191,7 +214,7 @@ export const CommandPalette = () => {
         </CommandGroup>
         
         <CommandGroup heading="View">
-          {commands.slice(23, 27).map((cmd) => {
+          {commands.slice(28, 32).map((cmd) => {
             const Icon = cmd.icon;
             return (
               <CommandItem key={cmd.label} onSelect={() => handleSelect(cmd.action)}>
@@ -206,7 +229,7 @@ export const CommandPalette = () => {
         </CommandGroup>
         
         <CommandGroup heading="Document">
-          {commands.slice(27, 32).map((cmd) => {
+          {commands.slice(32, 37).map((cmd) => {
             const Icon = cmd.icon;
             return (
               <CommandItem key={cmd.label} onSelect={() => handleSelect(cmd.action)}>
@@ -221,7 +244,7 @@ export const CommandPalette = () => {
         </CommandGroup>
         
         <CommandGroup heading="Settings">
-          {commands.slice(32).map((cmd) => {
+          {commands.slice(37).map((cmd) => {
             const Icon = cmd.icon;
             return (
               <CommandItem key={cmd.label} onSelect={() => handleSelect(cmd.action)}>

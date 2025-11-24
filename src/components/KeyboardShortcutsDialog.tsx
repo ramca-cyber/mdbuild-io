@@ -95,6 +95,18 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
         { keys: ['Select', '`'], description: 'Wrap selection with code (`text`)' },
       ],
     },
+    {
+      category: 'Table Navigation & Editing',
+      items: [
+        { keys: ['Tab'], description: 'Move to next cell (in table)' },
+        { keys: ['Shift', 'Tab'], description: 'Move to previous cell (in table)' },
+        { keys: ['Ctrl', 'Shift', 'Enter'], description: 'Add row below current cell' },
+        { keys: ['Ctrl', 'Shift', 'Alt', 'Enter'], description: 'Add row above current cell' },
+        { keys: ['Ctrl', 'Shift', '\\'], description: 'Add column after current cell' },
+        { keys: ['Ctrl', 'Shift', 'A'], description: 'Toggle column alignment (left/center/right)' },
+        { keys: ['Ctrl', 'Shift', 'Backspace'], description: 'Delete current row' },
+      ],
+    },
   ];
 
   return (
