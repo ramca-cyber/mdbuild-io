@@ -11,6 +11,7 @@ interface SettingsState {
   showOutline: boolean;
   focusMode: boolean;
   zenMode: boolean;
+  typewriterMode: boolean;
   lineNumbers: boolean;
   autoSave: boolean;
   syncScroll: boolean;
@@ -59,6 +60,7 @@ interface SettingsState {
   setShowOutline: (show: boolean) => void;
   setFocusMode: (mode: boolean) => void;
   setZenMode: (mode: boolean) => void;
+  setTypewriterMode: (mode: boolean) => void;
   setLineNumbers: (show: boolean) => void;
   setAutoSave: (enabled: boolean) => void;
   setSyncScroll: (enabled: boolean) => void;
@@ -86,6 +88,7 @@ export const useSettingsStore = create<SettingsState>()(
       showOutline: false,
       focusMode: false,
       zenMode: false,
+      typewriterMode: false,
       lineNumbers: true,
       autoSave: true,
       syncScroll: true,
@@ -130,6 +133,7 @@ export const useSettingsStore = create<SettingsState>()(
       setShowOutline: (showOutline) => set({ showOutline }),
       setFocusMode: (focusMode) => set({ focusMode }),
       setZenMode: (zenMode) => set({ zenMode }),
+      setTypewriterMode: (typewriterMode) => set({ typewriterMode }),
       setLineNumbers: (lineNumbers) => set({ lineNumbers }),
       setAutoSave: (autoSave) => set({ autoSave }),
       setSyncScroll: (syncScroll) => set({ syncScroll }),
@@ -155,6 +159,7 @@ export const useSettingsStore = create<SettingsState>()(
         showOutline: false,
         focusMode: false,
         zenMode: false,
+        typewriterMode: false,
         lineNumbers: true,
         autoSave: true,
         syncScroll: true,

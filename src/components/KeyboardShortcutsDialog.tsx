@@ -86,6 +86,15 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
         { keys: ['Select Text'], description: 'Shows floating toolbar for quick formatting' },
       ],
     },
+    {
+      category: 'Snippets & Auto-completion',
+      items: [
+        { keys: ['Trigger', 'Tab'], description: 'Expand snippet (e.g., "date" + Tab)' },
+        { keys: ['Select', '*'], description: 'Wrap selection with bold (**text**)' },
+        { keys: ['Select', '_'], description: 'Wrap selection with italic (_text_)' },
+        { keys: ['Select', '`'], description: 'Wrap selection with code (`text`)' },
+      ],
+    },
   ];
 
   return (

@@ -37,6 +37,7 @@ import { EditMenu } from './EditMenu';
 import { FormatMenu } from './FormatMenu';
 import { ViewMenu } from './ViewMenu';
 import { SettingsMenu } from './SettingsMenu';
+import { SnippetsMenu } from './SnippetsMenu';
 import { DocumentSettingsDialog } from './DocumentSettingsDialog';
 import { ViewModeSwitcher } from './ViewModeSwitcher';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -550,6 +551,8 @@ export function DocumentHeader() {
           <FormatMenu />
           
           <ViewMenu />
+          
+          <SnippetsMenu />
           
           <SettingsMenu />
         </div>

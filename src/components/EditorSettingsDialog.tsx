@@ -20,11 +20,13 @@ export const EditorSettingsDialog = ({ open, onOpenChange }: EditorSettingsDialo
   const {
     fontSize,
     theme,
+    typewriterMode,
     wordLimitWarningsEnabled,
     customWordLimit,
     customCharLimit,
     setFontSize,
     setTheme,
+    setTypewriterMode,
     setWordLimitWarningsEnabled,
     setCustomWordLimit,
     setCustomCharLimit,
@@ -75,6 +77,30 @@ export const EditorSettingsDialog = ({ open, onOpenChange }: EditorSettingsDialo
                     value={[fontSize]}
                     onValueChange={(value) => setFontSize(value[0])}
                     className="w-full"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Writing Experience</h3>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="typewriter-mode" className="cursor-pointer">
+                      Typewriter Mode
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Keep cursor centered while typing
+                    </p>
+                  </div>
+                  <Switch
+                    id="typewriter-mode"
+                    checked={typewriterMode}
+                    onCheckedChange={setTypewriterMode}
                   />
                 </div>
               </div>

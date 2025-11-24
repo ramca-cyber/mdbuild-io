@@ -5,8 +5,9 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { useDocumentStore } from '@/store/documentStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useSearchStore } from '@/store/searchStore';
-import { EditorView } from '@codemirror/view';
-import { EditorSelection } from '@codemirror/state';
+import { useSnippetsStore } from '@/store/snippetsStore';
+import { EditorView, ViewUpdate, keymap } from '@codemirror/view';
+import { EditorSelection, Prec } from '@codemirror/state';
 import { undo, redo, deleteLine, copyLineDown, moveLineUp, moveLineDown, selectLine } from '@codemirror/commands';
 import { SearchReplace } from '@/components/SearchReplace';
 import { debounce } from '@/lib/utils';
@@ -14,6 +15,7 @@ import { CompactToolbar } from '@/components/CompactToolbar';
 import { SlashCommandMenu } from '@/components/SlashCommandMenu';
 import { CommandPalette } from '@/components/CommandPalette';
 import { FloatingToolbar } from '@/components/FloatingToolbar';
+import { LinkPreview } from '@/components/LinkPreview';
 import TurndownService from 'turndown';
 
 export const Editor = () => {
@@ -27,7 +29,8 @@ export const Editor = () => {
     zoomLevel,
     zoomIn,
     zoomOut,
-    resetZoom
+    resetZoom,
+    typewriterMode
   } = useSettingsStore();
   const {
     searchResults, 
@@ -35,6 +38,7 @@ export const Editor = () => {
     setCursorPosition,
     setSelectedWords,
   } = useSearchStore();
+  const { getSnippetByTrigger } = useSnippetsStore();
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const [slashMenuPosition, setSlashMenuPosition] = useState<{ x: number; y: number } | null>(null);
@@ -67,6 +71,149 @@ export const Editor = () => {
     window.addEventListener('keypress', handleKeyPress);
     return () => window.removeEventListener('keypress', handleKeyPress);
   }, []);
+
+  // Snippets system with Tab trigger
+  const snippetKeymap = useMemo(() => {
+    return Prec.highest(
+      keymap.of([
+        {
+          key: 'Tab',
+          run: (view) => {
+            const selection = view.state.selection.main;
+            const line = view.state.doc.lineAt(selection.from);
+            const textBeforeCursor = line.text.substring(0, selection.from - line.from);
+            
+            // Extract the word before cursor
+            const wordMatch = textBeforeCursor.match(/(\S+)$/);
+            if (wordMatch) {
+              const trigger = wordMatch[1];
+              const snippet = getSnippetByTrigger(trigger);
+              
+              if (snippet) {
+                // Replace trigger with snippet content
+                let content = snippet.content;
+                
+                // Handle ${date} variable
+                if (content.includes('${date}')) {
+                  content = content.replace(/\$\{date\}/g, new Date().toLocaleDateString());
+                }
+                
+                const from = selection.from - trigger.length;
+                view.dispatch({
+                  changes: { from, to: selection.from, insert: content },
+                  selection: EditorSelection.cursor(from + content.length),
+                });
+                
+                return true;
+              }
+            }
+            
+            return false;
+          },
+        },
+      ])
+    );
+  }, [getSnippetByTrigger]);
+
+  // Wrap selection with markdown syntax
+  const wrapSelection = useCallback((before: string, after: string = '') => {
+    if (!viewRef.current) return;
+    
+    const view = viewRef.current;
+    const selection = view.state.selection.main;
+    const selectedText = view.state.sliceDoc(selection.from, selection.to);
+    
+    if (selectedText) {
+      const wrapped = before + selectedText + (after || before);
+      view.dispatch({
+        changes: { from: selection.from, to: selection.to, insert: wrapped },
+        selection: EditorSelection.range(
+          selection.from + before.length,
+          selection.to + before.length
+        ),
+      });
+    }
+  }, []);
+
+  // Smart syntax helpers keymap
+  const syntaxHelpersKeymap = useMemo(() => {
+    return keymap.of([
+      {
+        key: '*',
+        run: (view) => {
+          const selection = view.state.selection.main;
+          const selectedText = view.state.sliceDoc(selection.from, selection.to);
+          
+          // If text is selected, wrap with bold
+          if (selectedText) {
+            wrapSelection('**', '**');
+            return true;
+          }
+          return false;
+        },
+      },
+      {
+        key: '_',
+        run: (view) => {
+          const selection = view.state.selection.main;
+          const selectedText = view.state.sliceDoc(selection.from, selection.to);
+          
+          // If text is selected, wrap with italic
+          if (selectedText) {
+            wrapSelection('_', '_');
+            return true;
+          }
+          return false;
+        },
+      },
+      {
+        key: '`',
+        run: (view) => {
+          const selection = view.state.selection.main;
+          const selectedText = view.state.sliceDoc(selection.from, selection.to);
+          
+          // If text is selected, wrap with inline code
+          if (selectedText) {
+            wrapSelection('`', '`');
+            return true;
+          }
+          return false;
+        },
+      },
+    ]);
+  }, [wrapSelection]);
+
+  // Typewriter mode - keep cursor centered
+  useEffect(() => {
+    if (!typewriterMode || !viewRef.current) return;
+
+    const view = viewRef.current;
+    
+    const handleUpdate = () => {
+      const selection = view.state.selection.main;
+      const coords = view.coordsAtPos(selection.head);
+      
+      if (coords) {
+        const editorRect = view.dom.getBoundingClientRect();
+        const targetY = editorRect.height / 2;
+        const currentY = coords.top - editorRect.top;
+        const scrollOffset = currentY - targetY;
+        
+        if (Math.abs(scrollOffset) > 10) {
+          view.scrollDOM.scrollTop += scrollOffset;
+        }
+      }
+    };
+
+    // Add listener for selection changes
+    const interval = setInterval(() => {
+      if (document.activeElement?.closest('.cm-editor')) {
+        handleUpdate();
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [typewriterMode]);
 
   const handleSlashCommand = (template: string) => {
     if (viewRef.current) {
@@ -732,6 +879,7 @@ export const Editor = () => {
         onClose={() => setSlashMenuPosition(null)}
       />
       <FloatingToolbar onFormat={handleFloatingFormat} />
+      <LinkPreview />
       
       <div 
         ref={editorRef} 
@@ -751,7 +899,7 @@ export const Editor = () => {
           value={content}
           height="100%"
           theme={theme === 'dark' ? oneDark : 'light'}
-          extensions={[markdown()]}
+          extensions={[markdown(), snippetKeymap, syntaxHelpersKeymap]}
           onChange={onChange}
           onCreateEditor={(view) => {
             viewRef.current = view;
