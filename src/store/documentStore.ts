@@ -53,6 +53,19 @@ A modern, powerful markdown editor with live preview and advanced features.
 - Paste into the editor and it automatically converts to clean Markdown
 - No more messy HTML or formatting issues!
 
+### Snippets System
+- **Type trigger + Tab** to expand snippets (e.g., \`date\` + Tab inserts current date)
+- **Built-in snippets**: date, time, note, warning, table2x2, table3x3, codeblock, todo, and more
+- **Manage snippets** in the Snippets menu - create custom snippets with variables
+
+### Table Editing Made Easy
+- **Tab** to move to next cell, **Shift+Tab** for previous cell
+- **Ctrl+Shift+Enter** to add a row below current cell
+- **Ctrl+Shift+\\** to add a column after current cell
+- **Ctrl+Shift+A** to toggle column alignment (left → center → right)
+- **Ctrl+Shift+Backspace** to delete current row
+- Try it on the example table below!
+
 ---
 
 ## ✨ Features Overview
@@ -105,12 +118,22 @@ A modern, powerful markdown editor with live preview and advanced features.
 
 ## 📊 Tables
 
-| Feature | Status | Priority |
-|---------|--------|----------|
-| Markdown Support | ✅ Done | High |
-| Live Preview | ✅ Done | High |
-| Export to PDF | ✅ Done | Medium |
-| Cloud Sync | ⏳ Planned | Low |
+Try the **new table editing features**! Click inside any cell below and:
+- Press **Tab** to move to the next cell
+- Press **Shift+Tab** to move to the previous cell
+- Press **Ctrl+Shift+Enter** to add a row below
+- Press **Ctrl+Shift+\\** to add a column
+- Press **Ctrl+Shift+A** to toggle column alignment
+
+| Feature | Status | Priority | Notes |
+|---------|:------:|----------|-------|
+| Markdown Support | ✅ Done | High | Full GFM support |
+| Live Preview | ✅ Done | High | Real-time rendering |
+| Table Navigation | ✅ Done | High | Tab between cells |
+| Export to PDF | ✅ Done | Medium | High quality output |
+| Cloud Sync | ⏳ Planned | Low | Coming soon |
+
+*Try adding a new row or column using the keyboard shortcuts above!*
 
 ---
 
