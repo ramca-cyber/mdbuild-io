@@ -35,6 +35,26 @@ const defaultContent = `# Welcome to MDBuild.io 🚀
 
 A modern, powerful markdown editor with live preview and advanced features.
 
+## ⚡ New Power User Features
+
+### Quick Commands
+- **Press \`Ctrl+K\`** to open the Command Palette - search all actions and features
+- **Type \`/\` at the start of any line** for the Slash Command Menu - quickly insert headings, lists, tables, and more
+- **Select text** to see the Floating Toolbar - format bold, italic, code, or add links instantly
+
+### Multiple Cursors
+- **Ctrl+Click** to add cursors at multiple positions
+- **Ctrl+D** to select the next occurrence of selected text
+- **Alt+Shift+↑/↓** to add cursors above/below
+- Edit multiple locations simultaneously for maximum productivity!
+
+### Smart Paste
+- **Copy from anywhere** - Word, Google Docs, web pages
+- Paste into the editor and it automatically converts to clean Markdown
+- No more messy HTML or formatting issues!
+
+---
+
 ## ✨ Features Overview
 
 - **GitHub Flavored Markdown** - Full GFM support with tables, strikethrough, and more

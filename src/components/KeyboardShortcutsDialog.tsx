@@ -24,6 +24,13 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
       ],
     },
     {
+      category: 'Quick Actions',
+      items: [
+        { keys: ['Ctrl', 'K'], description: 'Command Palette (Search all commands)' },
+        { keys: ['/'], description: 'Slash Command Menu (at start of line)' },
+      ],
+    },
+    {
       category: 'Edit',
       items: [
         { keys: ['Ctrl', 'Z'], description: 'Undo' },
@@ -31,7 +38,7 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
         { keys: ['Ctrl', 'Y'], description: 'Redo (Alternative)' },
         { keys: ['Ctrl', 'X'], description: 'Cut' },
         { keys: ['Ctrl', 'C'], description: 'Copy' },
-        { keys: ['Ctrl', 'V'], description: 'Paste' },
+        { keys: ['Ctrl', 'V'], description: 'Paste (Smart: converts HTML to Markdown)' },
         { keys: ['Ctrl', 'A'], description: 'Select All' },
         { keys: ['Alt', 'D'], description: 'Insert Date/Time' },
         { keys: ['Ctrl', 'Shift', 'K'], description: 'Delete Line' },
@@ -39,6 +46,15 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
         { keys: ['Ctrl', 'L'], description: 'Select Line' },
         { keys: ['Alt', '↑'], description: 'Move Line Up' },
         { keys: ['Alt', '↓'], description: 'Move Line Down' },
+      ],
+    },
+    {
+      category: 'Multiple Cursors',
+      items: [
+        { keys: ['Ctrl', 'Click'], description: 'Add cursor at click position' },
+        { keys: ['Ctrl', 'D'], description: 'Select next occurrence' },
+        { keys: ['Alt', 'Shift', '↑'], description: 'Add cursor above' },
+        { keys: ['Alt', 'Shift', '↓'], description: 'Add cursor below' },
       ],
     },
     {
@@ -67,6 +83,7 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
       items: [
         { keys: ['Ctrl', 'B'], description: 'Bold' },
         { keys: ['Ctrl', 'I'], description: 'Italic' },
+        { keys: ['Select Text'], description: 'Shows floating toolbar for quick formatting' },
       ],
     },
   ];

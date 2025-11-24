@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useMemo } from 'react';
+import { useCallback, useEffect, useRef, useMemo, useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -11,6 +11,10 @@ import { undo, redo, deleteLine, copyLineDown, moveLineUp, moveLineDown, selectL
 import { SearchReplace } from '@/components/SearchReplace';
 import { debounce } from '@/lib/utils';
 import { CompactToolbar } from '@/components/CompactToolbar';
+import { SlashCommandMenu } from '@/components/SlashCommandMenu';
+import { CommandPalette } from '@/components/CommandPalette';
+import { FloatingToolbar } from '@/components/FloatingToolbar';
+import TurndownService from 'turndown';
 
 export const Editor = () => {
   const { content, setContent } = useDocumentStore();
@@ -33,6 +37,112 @@ export const Editor = () => {
   } = useSearchStore();
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
+  const [slashMenuPosition, setSlashMenuPosition] = useState<{ x: number; y: number } | null>(null);
+  const [slashMenuCursorPos, setSlashMenuCursorPos] = useState<number>(0);
+  const turndownService = useMemo(() => new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' }), []);
+
+  // Slash command menu handler
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === '/' && viewRef.current) {
+        const view = viewRef.current;
+        const selection = view.state.selection.main;
+        const line = view.state.doc.lineAt(selection.from);
+        
+        // Only trigger if at start of line or after whitespace
+        const textBeforeCursor = line.text.substring(0, selection.from - line.from);
+        if (textBeforeCursor.trim() === '') {
+          e.preventDefault();
+          
+          // Get cursor position on screen
+          const coords = view.coordsAtPos(selection.from);
+          if (coords) {
+            setSlashMenuPosition({ x: coords.left, y: coords.bottom + 4 });
+            setSlashMenuCursorPos(selection.from);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keypress', handleKeyPress);
+    return () => window.removeEventListener('keypress', handleKeyPress);
+  }, []);
+
+  const handleSlashCommand = (template: string) => {
+    if (viewRef.current) {
+      const view = viewRef.current;
+      
+      view.dispatch({
+        changes: { from: slashMenuCursorPos, to: slashMenuCursorPos, insert: template },
+        selection: EditorSelection.cursor(slashMenuCursorPos + template.length),
+      });
+      view.focus();
+    }
+    setSlashMenuPosition(null);
+  };
+
+  // Smart paste handler - converts rich text to markdown
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      if (!viewRef.current) return;
+      
+      const html = e.clipboardData?.getData('text/html');
+      const text = e.clipboardData?.getData('text/plain');
+      
+      // If we have HTML content, convert it to markdown
+      if (html && html.trim()) {
+        e.preventDefault();
+        
+        try {
+          const markdown = turndownService.turndown(html);
+          const view = viewRef.current;
+          const selection = view.state.selection.main;
+          
+          view.dispatch({
+            changes: { from: selection.from, to: selection.to, insert: markdown },
+            selection: EditorSelection.cursor(selection.from + markdown.length),
+          });
+        } catch (error) {
+          // Fallback to plain text if conversion fails
+          if (text) {
+            const view = viewRef.current;
+            const selection = view.state.selection.main;
+            
+            view.dispatch({
+              changes: { from: selection.from, to: selection.to, insert: text },
+              selection: EditorSelection.cursor(selection.from + text.length),
+            });
+          }
+        }
+      }
+    };
+
+    const editorDom = editorRef.current?.querySelector('.cm-content');
+    if (editorDom) {
+      editorDom.addEventListener('paste', handlePaste as EventListener);
+      return () => editorDom.removeEventListener('paste', handlePaste as EventListener);
+    }
+  }, [turndownService]);
+
+  // Floating toolbar format handler
+  const handleFloatingFormat = (before: string, after: string, placeholder: string) => {
+    if (!viewRef.current) return;
+    
+    const view = viewRef.current;
+    const selection = view.state.selection.main;
+    const selectedText = view.state.sliceDoc(selection.from, selection.to);
+    const textToInsert = selectedText || placeholder;
+    const fullText = before + textToInsert + after;
+    
+    view.dispatch({
+      changes: { from: selection.from, to: selection.to, insert: fullText },
+      selection: EditorSelection.range(
+        selection.from + before.length,
+        selection.from + before.length + textToInsert.length
+      ),
+    });
+    view.focus();
+  };
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -151,7 +261,7 @@ export const Editor = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [zoomIn, zoomOut, resetZoom]);
+  }, [zoomIn, zoomOut, resetZoom, turndownService]);
 
   // Debounced content update for better performance
   const debouncedSetContent = useMemo(
@@ -614,22 +724,30 @@ export const Editor = () => {
 
 
   return (
-    <div 
-      ref={editorRef} 
-      className="h-full w-full overflow-hidden relative flex flex-col no-print bg-editor-bg"
-    >
-      <div className="px-4 py-2 bg-muted/50 border-b-2 border-border/80 flex-shrink-0 shadow-sm flex items-center justify-between">
-        <h2 className="text-sm font-bold text-foreground/70 uppercase tracking-wider" role="heading" aria-level={2}>
-          Markdown Editor
-        </h2>
-        {/* Import and add CompactToolbar here */}
-        <div className="hidden lg:block">
-          <CompactToolbar />
+    <>
+      <CommandPalette />
+      <SlashCommandMenu
+        position={slashMenuPosition}
+        onSelect={handleSlashCommand}
+        onClose={() => setSlashMenuPosition(null)}
+      />
+      <FloatingToolbar onFormat={handleFloatingFormat} />
+      
+      <div 
+        ref={editorRef} 
+        className="h-full w-full overflow-hidden relative flex flex-col no-print bg-editor-bg"
+      >
+        <div className="px-4 py-2 bg-muted/50 border-b-2 border-border/80 flex-shrink-0 shadow-sm flex items-center justify-between">
+          <h2 className="text-sm font-bold text-foreground/70 uppercase tracking-wider" role="heading" aria-level={2}>
+            Markdown Editor
+          </h2>
+          <div className="hidden lg:block">
+            <CompactToolbar />
+          </div>
         </div>
-      </div>
-      <div className="flex-1 overflow-hidden relative">
-        <SearchReplace />
-        <CodeMirror
+        <div className="flex-1 overflow-hidden relative">
+          <SearchReplace />
+          <CodeMirror
           value={content}
           height="100%"
           theme={theme === 'dark' ? oneDark : 'light'}
@@ -650,6 +768,8 @@ export const Editor = () => {
             closeBrackets: true,
             autocompletion: true,
             highlightSelectionMatches: true,
+            rectangularSelection: true,
+            crosshairCursor: true,
           }}
           style={{
             fontSize: `${fontSize}px`,
@@ -660,7 +780,8 @@ export const Editor = () => {
           }}
           aria-label="Markdown editor text area"
         />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
