@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
+import { Footer } from "@/components/Footer";
 import { ArrowLeft, Github, Heart, Zap, Shield, Code } from "lucide-react";
 
 const About = () => {
@@ -219,6 +220,8 @@ const About = () => {
           </section>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 };
