@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
+import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Mail, MessageSquare, Github, Twitter } from "lucide-react";
+import { ArrowLeft, Mail, MessageSquare } from "lucide-react";
 
 const Contact = () => {
   const contactStructuredData = {
@@ -85,50 +86,6 @@ const Contact = () => {
               </a>
             </CardContent>
           </Card>
-
-          <Card className="hover-scale transition-all duration-300">
-            <CardHeader>
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                <Github className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle>GitHub</CardTitle>
-              <CardDescription>
-                Check out our code, contribute, or open an issue
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <a 
-                href="https://github.com/mdbuild/mdbuild"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline font-medium"
-              >
-                github.com/mdbuild
-              </a>
-            </CardContent>
-          </Card>
-
-          <Card className="hover-scale transition-all duration-300">
-            <CardHeader>
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                <Twitter className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle>Social Media</CardTitle>
-              <CardDescription>
-                Follow us for updates and announcements
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <a 
-                href="https://twitter.com/mdbuild"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline font-medium"
-              >
-                @mdbuild
-              </a>
-            </CardContent>
-          </Card>
         </div>
 
         <section className="mt-12 p-6 bg-muted/30 rounded-lg">
@@ -183,6 +140,8 @@ const Contact = () => {
           </Button>
         </section>
       </main>
+
+      <Footer />
     </div>
   );
 };
