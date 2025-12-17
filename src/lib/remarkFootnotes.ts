@@ -47,10 +47,10 @@ export function remarkFootnotes() {
             });
           }
 
-          // Add footnote reference
+          // Add footnote reference with data attribute for copy mapping
           parts.push({
             type: 'html',
-            value: `<sup><a href="#fn-${id}" id="fnref-${id}" class="footnote-ref">${id}</a></sup>`,
+            value: `<sup data-footnote-ref="${id}"><a href="#fn-${id}" id="fnref-${id}" class="footnote-ref" data-footnote-id="${id}">${id}</a></sup>`,
           });
           
           footnoteRefs.push(id);
@@ -86,9 +86,9 @@ export function remarkFootnotes() {
               ${footnoteRefs.map(id => {
                 const footnote = footnotes[id];
                 return footnote ? `
-                  <li id="fn-${id}">
+                  <li id="fn-${id}" data-footnote-def="${id}">
                     ${footnote.text}
-                    <a href="#fnref-${id}" class="footnote-backref">↩</a>
+                    <a href="#fnref-${id}" class="footnote-backref" data-footnote-backref="${id}">↩</a>
                   </li>
                 ` : '';
               }).join('')}
