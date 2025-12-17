@@ -21,9 +21,9 @@ import { visit } from 'unist-util-visit';
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { ZoomIn, ZoomOut, Printer, Copy } from 'lucide-react';
+import { ZoomIn, ZoomOut, Printer, Copy, FileText } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { handlePreviewCopy, copyMarkdownToClipboard } from '@/lib/markdownCopyUtils';
+import { copyMarkdownToClipboard, copyRichTextToClipboard } from '@/lib/markdownCopyUtils';
 
 // TypeScript interfaces
 interface CodeProps {
@@ -167,6 +167,13 @@ export const Preview = () => {
   const handleCopyMarkdown = useCallback(() => {
     copyMarkdownToClipboard(content, toast);
   }, [content, toast]);
+
+  // Copy as rich text (for Medium, Substack, etc.)
+  const handleCopyRichText = useCallback(() => {
+    if (previewRef.current) {
+      copyRichTextToClipboard(previewRef.current, toast);
+    }
+  }, [toast]);
   
   // Optimized copy buttons with WeakMap tracking to prevent duplicate buttons
   const processedCodeBlocks = useRef(new WeakMap<HTMLPreElement, boolean>());
@@ -448,25 +455,11 @@ export const Preview = () => {
     window.addEventListener('editor-scroll', handleEditorScroll);
     preview.addEventListener('scroll', handlePreviewScroll, { passive: true });
 
-    // Handle copy event to convert to markdown
-    const handleCopy = (e: ClipboardEvent) => {
-      handlePreviewCopy(e, preview, content, toast);
-    };
-    preview.addEventListener('copy', handleCopy);
-
     // Keyboard shortcut: Ctrl+Shift+C for copy as markdown
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && e.key === 'C') {
         e.preventDefault();
-        const selection = window.getSelection();
-        if (selection && !selection.isCollapsed) {
-          // Copy selection as markdown
-          const fakeEvent = new ClipboardEvent('copy', { bubbles: true, cancelable: true });
-          handlePreviewCopy(fakeEvent, preview, content, toast);
-        } else {
-          // Copy full document
-          copyMarkdownToClipboard(content, toast);
-        }
+        copyMarkdownToClipboard(content, toast);
       }
     };
     preview.addEventListener('keydown', handleKeydown);
@@ -476,10 +469,9 @@ export const Preview = () => {
       if (smoothRafId) cancelAnimationFrame(smoothRafId);
       window.removeEventListener('editor-scroll', handleEditorScroll);
       preview.removeEventListener('scroll', handlePreviewScroll);
-      preview.removeEventListener('copy', handleCopy);
       preview.removeEventListener('keydown', handleKeydown);
     };
-  }, [content, toast]); // Add content and toast as dependencies
+  }, [content, toast]);
 
   // Handle clicks to sync cursor position - only when not selecting text
   const handleClick = useCallback((e: React.MouseEvent) => {
@@ -661,6 +653,25 @@ export const Preview = () => {
             </TooltipTrigger>
             <TooltipContent side="bottom">
               <p>Print Preview</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Copy as Rich Text Button (for Medium, Substack) */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCopyRichText}
+                className="h-8 px-2 gap-1.5 hidden md:flex"
+                aria-label="Copy as Rich Text"
+              >
+                <FileText className="h-4 w-4" />
+                <span className="hidden xl:inline text-xs">Copy Rich</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>Copy as Rich Text (for Medium, Substack)</p>
             </TooltipContent>
           </Tooltip>
 
