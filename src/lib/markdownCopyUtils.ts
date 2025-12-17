@@ -200,6 +200,35 @@ export function htmlToMarkdown(html: string): string {
   return turndown.turndown(html);
 }
 
+// Prepare HTML for rich text copy (Medium, Substack, Google Docs)
+// Sanitizes footnotes and internal links to work in external editors
+export function prepareHtmlForRichTextCopy(html: string): string {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  
+  // Convert footnote refs: <sup><a class="footnote-ref">1</a></sup> → just superscript number
+  div.querySelectorAll('sup').forEach(sup => {
+    const anchor = sup.querySelector('a.footnote-ref');
+    if (anchor) {
+      const text = anchor.textContent || '';
+      sup.innerHTML = text;
+    }
+  });
+  
+  // Remove footnote back-links entirely (the ↩ arrows)
+  div.querySelectorAll('a.footnote-backref').forEach(a => a.remove());
+  
+  // Convert internal anchor links to plain text (keep external links)
+  div.querySelectorAll('a[href^="#"]').forEach(a => {
+    const text = a.textContent || '';
+    const span = document.createElement('span');
+    span.textContent = text;
+    a.replaceWith(span);
+  });
+  
+  return div.innerHTML;
+}
+
 // Copy markdown to clipboard with toast notification
 export async function copyMarkdownToClipboard(
   markdown: string, 
@@ -220,42 +249,49 @@ export async function copyMarkdownToClipboard(
   }
 }
 
-// Handle copy event in preview - intercept and convert to markdown
-export function handlePreviewCopy(
-  event: ClipboardEvent,
+// Copy rich text to clipboard (for Medium, Substack, etc.)
+export async function copyRichTextToClipboard(
   previewElement: HTMLElement,
-  sourceContent: string,
   showToast: (options: { title: string; description: string }) => void
-): void {
-  const selection = window.getSelection();
-  if (!selection || selection.isCollapsed) return;
-
-  // Try to map selection to source lines first
-  const sourceMarkdown = getSourceLinesFromSelection(selection, previewElement, sourceContent);
-  
-  if (sourceMarkdown) {
-    event.preventDefault();
-    navigator.clipboard.writeText(sourceMarkdown);
+): Promise<void> {
+  try {
+    const selection = window.getSelection();
+    let html: string;
+    
+    if (selection && !selection.isCollapsed) {
+      // Copy selection
+      const range = selection.getRangeAt(0);
+      const container = document.createElement('div');
+      container.appendChild(range.cloneContents());
+      html = container.innerHTML;
+    } else {
+      // Copy full article
+      const article = previewElement.querySelector('article');
+      html = article?.innerHTML || '';
+    }
+    
+    const sanitizedHtml = prepareHtmlForRichTextCopy(html);
+    
+    // Write both HTML and plain text to clipboard
+    const blob = new Blob([sanitizedHtml], { type: 'text/html' });
+    const textBlob = new Blob([previewElement.querySelector('article')?.textContent || ''], { type: 'text/plain' });
+    
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        'text/html': blob,
+        'text/plain': textBlob,
+      }),
+    ]);
+    
     showToast({
-      title: 'Copied as Markdown',
-      description: 'Source markdown copied to clipboard',
+      title: 'Copied as Rich Text',
+      description: 'Paste into Medium, Substack, or Google Docs',
     });
-    return;
-  }
-
-  // Fallback: convert HTML to markdown using Turndown
-  const range = selection.getRangeAt(0);
-  const container = document.createElement('div');
-  container.appendChild(range.cloneContents());
-  const html = container.innerHTML;
-  
-  if (html) {
-    event.preventDefault();
-    const markdown = htmlToMarkdown(html);
-    navigator.clipboard.writeText(markdown);
+  } catch (error) {
+    console.error('Failed to copy:', error);
     showToast({
-      title: 'Copied as Markdown',
-      description: 'Content converted to markdown',
+      title: 'Copy failed',
+      description: 'Could not copy to clipboard',
     });
   }
 }
