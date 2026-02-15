@@ -172,23 +172,12 @@ All colors MUST be HSL.
     @apply ring-2 ring-primary ring-offset-2;
   }
   
-  /* Ensure minimum tap target size for touch (48x48px) */
+  /* Ensure minimum tap target size for touch (48x48px) — excludes inline text links */
   button,
-  a,
   [role="button"],
   [tabindex]:not([tabindex="-1"]) {
-    min-height: 2.5rem; /* 40px base, close to 48px with padding */
+    min-height: 2.5rem;
     min-width: 2.5rem;
-  }
-  
-  /* Better tablet touch targets */
-  @media (min-width: 768px) and (max-width: 1024px) {
-    button,
-    a,
-    [role="button"] {
-      min-height: 2.75rem; /* Slightly larger for tablets */
-      padding: 0.75rem;
-    }
   }
   
   pre {

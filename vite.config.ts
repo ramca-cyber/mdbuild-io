@@ -31,7 +31,13 @@ export default defineConfig(({ mode }) => ({
             src: '/favicon.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'any'
+          },
+          {
+            src: '/favicon.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
           }
         ],
         categories: ['productivity', 'utilities', 'developer tools'],

@@ -115,7 +115,7 @@ const Contact = () => {
             <div>
               <h3 className="font-semibold mb-2">How do I back up my documents?</h3>
               <p className="text-muted-foreground">
-                You can export any document to Markdown, PDF, HTML, or DOCX format. We recommend regularly downloading important documents as backups.
+                You can export any document to Markdown, PDF, HTML, DOCX, or PNG format. We recommend regularly downloading important documents as backups.
               </p>
             </div>
 

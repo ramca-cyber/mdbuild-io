@@ -261,8 +261,8 @@ const Landing = () => {
                     Full GitHub-flavored Markdown support with tables, strikethrough, task lists
                   </td>
                   <td className="py-4 px-6 text-center">
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">
-                      <span className="text-green-600 dark:text-green-500 text-lg">✓</span>
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30" aria-label="Supported">
+                      <span className="text-green-600 dark:text-green-500 text-lg" aria-hidden="true">✓</span>
                     </span>
                   </td>
                 </tr>
@@ -278,8 +278,8 @@ const Landing = () => {
                     Create beautiful callouts with [!NOTE], [!TIP], [!WARNING], [!IMPORTANT], [!CAUTION]
                   </td>
                   <td className="py-4 px-6 text-center">
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">
-                      <span className="text-green-600 dark:text-green-500 text-lg">✓</span>
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30" aria-label="Supported">
+                      <span className="text-green-600 dark:text-green-500 text-lg" aria-hidden="true">✓</span>
                     </span>
                   </td>
                 </tr>
@@ -294,8 +294,8 @@ const Landing = () => {
                     Flowchart, sequence, class, Gantt, pie charts and more
                   </td>
                   <td className="py-4 px-6 text-center">
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">
-                      <span className="text-green-600 dark:text-green-500 text-lg">✓</span>
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30" aria-label="Supported">
+                      <span className="text-green-600 dark:text-green-500 text-lg" aria-hidden="true">✓</span>
                     </span>
                   </td>
                 </tr>
@@ -310,8 +310,8 @@ const Landing = () => {
                     Inline and block math equations with LaTeX syntax
                   </td>
                   <td className="py-4 px-6 text-center">
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">
-                      <span className="text-green-600 dark:text-green-500 text-lg">✓</span>
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30" aria-label="Supported">
+                      <span className="text-green-600 dark:text-green-500 text-lg" aria-hidden="true">✓</span>
                     </span>
                   </td>
                 </tr>
@@ -327,8 +327,8 @@ const Landing = () => {
                     Clickable checkboxes in task lists - check them off in preview mode
                   </td>
                   <td className="py-4 px-6 text-center">
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">
-                      <span className="text-green-600 dark:text-green-500 text-lg">✓</span>
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30" aria-label="Supported">
+                      <span className="text-green-600 dark:text-green-500 text-lg" aria-hidden="true">✓</span>
                     </span>
                   </td>
                 </tr>
@@ -343,8 +343,8 @@ const Landing = () => {
                     Export to MD, HTML, PDF, DOCX, and PNG (including diagrams!)
                   </td>
                   <td className="py-4 px-6 text-center">
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">
-                      <span className="text-green-600 dark:text-green-500 text-lg">✓</span>
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30" aria-label="Supported">
+                      <span className="text-green-600 dark:text-green-500 text-lg" aria-hidden="true">✓</span>
                     </span>
                   </td>
                 </tr>
@@ -359,8 +359,8 @@ const Landing = () => {
                     100% browser-based, all data stored locally
                   </td>
                   <td className="py-4 px-6 text-center">
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">
-                      <span className="text-green-600 dark:text-green-500 text-lg">✓</span>
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30" aria-label="Supported">
+                      <span className="text-green-600 dark:text-green-500 text-lg" aria-hidden="true">✓</span>
                     </span>
                   </td>
                 </tr>
@@ -375,8 +375,8 @@ const Landing = () => {
                     Install as desktop or mobile app for offline use
                   </td>
                   <td className="py-4 px-6 text-center">
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">
-                      <span className="text-green-600 dark:text-green-500 text-lg">✓</span>
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30" aria-label="Supported">
+                      <span className="text-green-600 dark:text-green-500 text-lg" aria-hidden="true">✓</span>
                     </span>
                   </td>
                 </tr>
@@ -576,7 +576,7 @@ const Landing = () => {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary mt-0.5">✓</span>
-                <span>Fully auditable codebase</span>
+                <span>Client-side only codebase</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary mt-0.5">✓</span>
