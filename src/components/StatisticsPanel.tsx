@@ -7,6 +7,7 @@ import { useSettingsStore } from '@/store/settingsStore';
 import { useSearchStore } from '@/store/searchStore';
 import { GoToLineDialog } from '@/components/GoToLineDialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const StatisticsPanel = () => {
   const { content, hasUnsavedChanges } = useDocumentStore();
@@ -24,6 +25,14 @@ export const StatisticsPanel = () => {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showGoToDialog, setShowGoToDialog] = useState(false);
+  const isMobile = useIsMobile();
+
+  // Collapse statistics on mobile by default
+  useEffect(() => {
+    if (isMobile && statisticsExpanded) {
+      setStatisticsExpanded(false);
+    }
+  }, [isMobile]);
 
   useEffect(() => {
     if (!hasUnsavedChanges && autoSave) {

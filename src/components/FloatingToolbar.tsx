@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Bold, Italic, Code, Link, Strikethrough } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { InsertLinkDialog } from '@/components/InsertLinkDialog';
 
 interface FloatingToolbarProps {
   onFormat: (before: string, after: string, placeholder: string) => void;
@@ -10,6 +11,7 @@ interface FloatingToolbarProps {
 export const FloatingToolbar = ({ onFormat }: FloatingToolbarProps) => {
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [visible, setVisible] = useState(false);
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -89,10 +91,11 @@ export const FloatingToolbar = ({ onFormat }: FloatingToolbarProps) => {
   };
 
   const handleLinkInsert = () => {
-    const url = prompt('Enter URL:');
-    if (url) {
-      onFormat('[', `](${url})`, 'link text');
-    }
+    setLinkDialogOpen(true);
+  };
+
+  const onLinkInsert = (url: string, text: string) => {
+    onFormat('[', `](${url})`, text || 'link text');
     setVisible(false);
   };
 
@@ -192,6 +195,7 @@ export const FloatingToolbar = ({ onFormat }: FloatingToolbarProps) => {
           </Tooltip>
         </TooltipProvider>
       </div>
+      <InsertLinkDialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen} onInsert={onLinkInsert} mode="link" />
     </div>
   );
 };

@@ -34,6 +34,7 @@ import { useErrorStore } from '@/store/errorStore';
 import { useSearchStore } from '@/store/searchStore';
 import { toast } from 'sonner';
 import React from 'react';
+import { InsertLinkDialog } from '@/components/InsertLinkDialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,6 +47,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 export const Toolbar = () => {
   const [mobileMoreOpen, setMobileMoreOpen] = React.useState(false);
+  const [linkDialogOpen, setLinkDialogOpen] = React.useState(false);
+  const [imageDialogOpen, setImageDialogOpen] = React.useState(false);
   const { errors, showErrorPanel, setShowErrorPanel } = useErrorStore();
 
   const errorCount = errors.filter(e => e.type === 'error').length;
@@ -66,32 +69,22 @@ export const Toolbar = () => {
   };
 
   const handleLinkInsert = () => {
-    try {
-      const url = prompt('Enter link URL:', 'https://');
-      if (url && url.trim()) {
-        const linkText = prompt('Enter link text (or leave empty to use URL):', '');
-        const text = linkText?.trim() || url.trim();
-        dispatchWrap('[', `](${url.trim()})`, text);
-        toast.success('Link inserted successfully');
-      }
-    } catch (error) {
-      // Error inserting link
-      toast.error('Failed to insert link. Please try again.');
-    }
+    setLinkDialogOpen(true);
   };
 
   const handleImageUpload = () => {
-    try {
-      const url = prompt('Enter image URL:', 'https://');
-      if (url && url.trim()) {
-        const altText = prompt('Enter image description (optional):', 'image');
-        dispatchBlock(`![${altText || 'image'}](${url.trim()})`);
-        toast.success('Image inserted successfully');
-      }
-    } catch (error) {
-      // Error inserting image
-      toast.error('Failed to insert image. Please try again.');
-    }
+    setImageDialogOpen(true);
+  };
+
+  const onLinkInsert = (url: string, text: string) => {
+    const linkText = text || url;
+    dispatchWrap('[', `](${url})`, linkText);
+    toast.success('Link inserted successfully');
+  };
+
+  const onImageInsert = (url: string, alt: string) => {
+    dispatchBlock(`![${alt || 'image'}](${url})`);
+    toast.success('Image inserted successfully');
   };
 
   const handleEmojiInsert = (emoji: string) => {
@@ -446,6 +439,8 @@ export const Toolbar = () => {
         </Tooltip>
       )}
     </div>
+    <InsertLinkDialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen} onInsert={onLinkInsert} mode="link" />
+    <InsertLinkDialog open={imageDialogOpen} onOpenChange={setImageDialogOpen} onInsert={onImageInsert} mode="image" />
     </TooltipProvider>
   );
 };
