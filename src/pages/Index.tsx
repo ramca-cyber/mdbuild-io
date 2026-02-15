@@ -307,11 +307,11 @@ const Index = () => {
               
               {viewMode === 'split' && isMobile && (
                 <PanelGroup direction="vertical" className="h-full">
-                  <Panel defaultSize={50} minSize={30}>
+                  <Panel defaultSize={65} minSize={30}>
                     <Editor />
                   </Panel>
                   <ResizableHandle withHandle />
-                  <Panel defaultSize={50} minSize={30}>
+                  <Panel defaultSize={35} minSize={20}>
                     <Preview />
                   </Panel>
                 </PanelGroup>

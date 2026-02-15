@@ -20,7 +20,9 @@ import {
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { PWAInstallButton } from '@/components/PWAInstallButton';
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Menu, HelpCircle, Info, Mail } from 'lucide-react';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -104,6 +106,41 @@ const Landing = () => {
                 Help
               </Link>
             </Button>
+            {/* Mobile hamburger menu */}
+            <div className="sm:hidden">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" aria-label="Open navigation menu">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-64">
+                  <SheetHeader>
+                    <SheetTitle>Navigation</SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col gap-2 mt-6">
+                    <Button variant="ghost" className="justify-start" asChild>
+                      <Link to="/help">
+                        <HelpCircle className="h-4 w-4 mr-2" />
+                        Help
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" className="justify-start" asChild>
+                      <Link to="/about">
+                        <Info className="h-4 w-4 mr-2" />
+                        About
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" className="justify-start" asChild>
+                      <Link to="/contact">
+                        <Mail className="h-4 w-4 mr-2" />
+                        Contact
+                      </Link>
+                    </Button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
             <Button onClick={handleStartWriting} size="sm">
               Start Writing
             </Button>
@@ -134,25 +171,22 @@ const Landing = () => {
             <div className="relative rounded-xl overflow-hidden border-2 border-border hover:border-primary transition-all duration-300 shadow-2xl bg-card">
               <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-primary/5 via-accent/5 to-primary/5">
                 <div className="text-center p-8">
-                  <div className="flex items-center justify-center gap-4 mb-6">
+                  <div className="grid grid-cols-2 md:flex items-center justify-center gap-3 md:gap-4 mb-6">
                     <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-background border animate-fade-in" style={{ animationDelay: '0.1s' }}>
                       <FileText className="h-5 w-5 text-primary" />
-                      <span className="font-medium">Type Markdown</span>
+                      <span className="font-medium text-sm md:text-base">Type Markdown</span>
                     </div>
-                    <div className="text-2xl text-muted-foreground animate-fade-in" style={{ animationDelay: '0.3s' }}>→</div>
                     <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-background border animate-fade-in" style={{ animationDelay: '0.5s' }}>
                       <GitBranch className="h-5 w-5 text-primary" />
-                      <span className="font-medium">Add Diagrams</span>
+                      <span className="font-medium text-sm md:text-base">Add Diagrams</span>
                     </div>
-                    <div className="text-2xl text-muted-foreground animate-fade-in" style={{ animationDelay: '0.7s' }}>→</div>
                     <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-background border animate-fade-in" style={{ animationDelay: '0.9s' }}>
                       <Sigma className="h-5 w-5 text-primary" />
-                      <span className="font-medium">Math Equations</span>
+                      <span className="font-medium text-sm md:text-base">Math Equations</span>
                     </div>
-                    <div className="text-2xl text-muted-foreground animate-fade-in" style={{ animationDelay: '1.1s' }}>→</div>
                     <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-background border animate-fade-in" style={{ animationDelay: '1.3s' }}>
                       <Download className="h-5 w-5 text-primary" />
-                      <span className="font-medium">Export PDF</span>
+                      <span className="font-medium text-sm md:text-base">Export PDF</span>
                     </div>
                   </div>
                   <div className="space-y-3 max-w-2xl mx-auto">

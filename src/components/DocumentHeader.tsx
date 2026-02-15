@@ -75,6 +75,7 @@ export function DocumentHeader() {
   const [openDocOpen, setOpenDocOpen] = useState(false);
   const [storageDialogOpen, setStorageDialogOpen] = useState(false);
   const [showDocumentSettings, setShowDocumentSettings] = useState(false);
+  const [newDocConfirm, setNewDocConfirm] = useState(false);
 
   const currentDoc = savedDocuments.find((doc) => doc.id === currentDocId);
 
@@ -148,7 +149,17 @@ export function DocumentHeader() {
   };
 
   const handleNewDocument = () => {
+    if (hasUnsavedChanges) {
+      setNewDocConfirm(true);
+    } else {
+      createNewDocument();
+      toast.success('New document created');
+    }
+  };
+
+  const confirmNewDocument = () => {
     createNewDocument();
+    setNewDocConfirm(false);
     toast.success('New document created');
   };
 
@@ -716,6 +727,23 @@ export function DocumentHeader() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={() => deleteConfirm && handleDelete(deleteConfirm)}>
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={newDocConfirm} onOpenChange={setNewDocConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved changes. Creating a new document will discard them. Do you want to continue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmNewDocument}>
+              Create New
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -15,11 +15,14 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { useSearchStore } from '@/store/searchStore';
 import { EmojiPicker } from './EmojiPicker';
+import { InsertLinkDialog } from './InsertLinkDialog';
 import { useState } from 'react';
 
 export function CompactToolbar() {
   const { setShowSearchReplace } = useSearchStore();
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
 
   const dispatchWrap = (before: string, after: string = '', placeholder: string = '') => {
     window.dispatchEvent(
@@ -46,18 +49,19 @@ export function CompactToolbar() {
   };
 
   const handleLink = () => {
-    const url = window.prompt('Enter URL:');
-    if (url) {
-      dispatchWrap('[', `](${url})`, 'link text');
-    }
+    setLinkDialogOpen(true);
   };
 
   const handleImage = () => {
-    const url = window.prompt('Enter image URL:');
-    if (url) {
-      const alt = window.prompt('Enter image description (optional):') || 'image';
-      dispatchBlock(`![${alt}](${url})`);
-    }
+    setImageDialogOpen(true);
+  };
+
+  const onLinkInsert = (url: string, text: string) => {
+    dispatchWrap('[', `](${url})`, text || 'link text');
+  };
+
+  const onImageInsert = (url: string, alt: string) => {
+    dispatchBlock(`![${alt || 'image'}](${url})`);
   };
 
   const handleEmojiInsert = (emoji: string) => {
@@ -66,8 +70,8 @@ export function CompactToolbar() {
   };
 
   return (
+    <>
     <div className="hidden lg:flex items-center gap-1 px-2">
-      {/* Essential Formatting */}
       <div className="flex items-center gap-0.5">
         <Tooltip>
           <TooltipTrigger asChild>
@@ -314,5 +318,8 @@ export function CompactToolbar() {
         </Tooltip>
       </div>
     </div>
+    <InsertLinkDialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen} onInsert={onLinkInsert} mode="link" />
+    <InsertLinkDialog open={imageDialogOpen} onOpenChange={setImageDialogOpen} onInsert={onImageInsert} mode="image" />
+    </>
   );
 }
