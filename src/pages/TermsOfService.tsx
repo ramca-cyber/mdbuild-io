@@ -27,7 +27,7 @@ const TermsOfService = () => {
       <main className="container max-w-4xl mx-auto px-4 py-12">
         <h1 className="text-4xl font-bold mb-8">Terms of Service</h1>
         <div className="prose prose-slate dark:prose-invert max-w-none space-y-6">
-          <p className="text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
+          <p className="text-muted-foreground">Last updated: February 15, 2026</p>
 
           <section>
             <h2 className="text-2xl font-semibold mb-4">Acceptance of Terms</h2>
@@ -45,7 +45,7 @@ const TermsOfService = () => {
               <li>Live markdown editing and preview</li>
               <li>Mermaid diagram support</li>
               <li>Math equation rendering with KaTeX</li>
-              <li>Export functionality (PDF, HTML, DOCX, Markdown)</li>
+              <li>Export functionality (PDF, HTML, DOCX, PNG, Markdown)</li>
               <li>Local storage of documents</li>
             </ul>
             <p>
@@ -124,7 +124,7 @@ const TermsOfService = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-4">Export Functionality</h2>
             <p>
-              The export features (PDF, DOCX, HTML) are provided as a convenience. While we strive for accuracy, exported documents may not perfectly match the preview due to format limitations. You are responsible for verifying exported content.
+              The export features (PDF, DOCX, HTML, PNG) are provided as a convenience. While we strive for accuracy, exported documents may not perfectly match the preview due to format limitations. You are responsible for verifying exported content.
             </p>
           </section>
 

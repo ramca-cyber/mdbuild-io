@@ -6,7 +6,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { 
   FileText, GitBranch, Sigma, Code, Download, Keyboard, 
   BookOpen, ExternalLink, Home, Zap, Layout, Search, 
-  Edit3, FileCode, Settings, Moon, Save, Copy, Eye, Zap as ZapIcon, Lock, Edit, Eye as EyeIcon, AlertCircle, Shield, Database
+  Edit3, FileCode, Settings, Moon, Save, Copy, Eye, Lock, Edit, AlertCircle, Shield, Database
 } from "lucide-react";
 
 const Help = () => {
@@ -43,7 +43,7 @@ const Help = () => {
   const articleData = {
     headline: "Help & Documentation - MDBuild.io Markdown Editor",
     datePublished: "2025-01-01",
-    dateModified: "2025-01-20",
+    dateModified: "2026-02-15",
     author: "MDBuild.io"
   };
 

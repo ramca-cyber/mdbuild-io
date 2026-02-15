@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
 import { Footer } from "@/components/Footer";
-import { ArrowLeft, Github, Heart, Zap, Shield, Code } from "lucide-react";
+import { ArrowLeft, Heart, Zap, Shield, Code } from "lucide-react";
 
 const About = () => {
   const aboutStructuredData = {
@@ -21,7 +21,7 @@ const About = () => {
   const articleData = {
     headline: "About MDBuild.io - Modern Markdown Editor",
     datePublished: "2025-01-01",
-    dateModified: "2025-01-20",
+    dateModified: "2026-02-15",
     author: "MDBuild.io",
     image: "https://mdbuild.io/og-image.png"
   };

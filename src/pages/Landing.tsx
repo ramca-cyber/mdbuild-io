@@ -218,7 +218,7 @@ const Landing = () => {
               </div>
             </div>
             <img 
-              src={`/editor-preview.png?v=${Date.now()}`}
+              src="/editor-preview.png"
               alt="MDBuild.io Editor Interface - Split view showing markdown editor and live preview"
               className="w-full h-auto"
               loading="eager"
@@ -494,7 +494,7 @@ const Landing = () => {
             </div>
             <div className="space-y-2">
               <FileText className="h-8 w-8 text-primary mx-auto" />
-              <h3 className="font-semibold">4MB Storage</h3>
+              <h3 className="font-semibold">5MB Storage</h3>
               <p className="text-sm text-muted-foreground">Free local storage for your docs</p>
             </div>
           </div>
@@ -576,7 +576,7 @@ const Landing = () => {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary mt-0.5">✓</span>
-                <span>Open source & auditable</span>
+                <span>Fully auditable codebase</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary mt-0.5">✓</span>
