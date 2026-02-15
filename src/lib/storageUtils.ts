@@ -14,8 +14,13 @@ const CRITICAL_THRESHOLD = 0.95; // 95%
 
 export const calculateStorageUsage = (): StorageInfo => {
   try {
-    const data = localStorage.getItem('mdbuild-storage') || '';
-    const bytes = new Blob([data]).size;
+    let totalSize = 0;
+    const storageKeys = ['document-storage', 'settings-storage', 'error-storage', 'search-storage', 'snippets-storage'];
+    for (const key of storageKeys) {
+      const data = localStorage.getItem(key) || '';
+      totalSize += new Blob([data]).size;
+    }
+    const bytes = totalSize;
     const mb = bytes / (1024 * 1024);
     const percentage = (bytes / STORAGE_LIMIT) * 100;
     

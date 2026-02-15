@@ -38,19 +38,13 @@ const Index = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // System theme detection and sync
+  // System theme detection - only on first visit (respect persisted preference)
   useEffect(() => {
+    const hasPersistedSettings = localStorage.getItem('settings-storage');
+    if (hasPersistedSettings) return; // User already has a saved theme preference
+    
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
-    const handleChange = (e: MediaQueryListEvent) => {
-      setTheme(e.matches ? 'dark' : 'light');
-    };
-    
-    // Set initial theme based on system preference
     setTheme(mediaQuery.matches ? 'dark' : 'light');
-    
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
   }, [setTheme]);
 
   // Handle ESC key to exit focus/zen mode, F11 for focus mode, Shift+F11 for zen mode
@@ -148,7 +142,7 @@ const Index = () => {
         <div className="lg:hidden">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label="Open menu">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
