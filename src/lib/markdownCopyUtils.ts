@@ -206,16 +206,35 @@ export function prepareHtmlForRichTextCopy(html: string): string {
   const div = document.createElement('div');
   div.innerHTML = html;
   
-  // Convert footnote refs: <sup><a class="footnote-ref">1</a></sup> → just superscript number
+  // Build a map of footnote definitions: id → text
+  const footnoteMap: Record<string, string> = {};
+  div.querySelectorAll('li[id^="fn-"]').forEach(li => {
+    const id = li.id.replace('fn-', '');
+    const clone = li.cloneNode(true) as HTMLElement;
+    clone.querySelector('.footnote-backref')?.remove();
+    footnoteMap[id] = clone.textContent?.trim() || '';
+  });
+  
+  // Replace footnote refs with inline parenthetical text
   div.querySelectorAll('sup').forEach(sup => {
     const anchor = sup.querySelector('a.footnote-ref');
     if (anchor) {
-      const text = anchor.textContent || '';
-      sup.innerHTML = text;
+      const id = anchor.getAttribute('data-footnote-id') || anchor.textContent || '';
+      const footnoteText = footnoteMap[id];
+      if (footnoteText) {
+        const span = document.createElement('span');
+        span.textContent = ` (${footnoteText})`;
+        sup.replaceWith(span);
+      } else {
+        sup.remove();
+      }
     }
   });
   
-  // Remove footnote back-links entirely (the ↩ arrows)
+  // Remove the entire footnotes section
+  div.querySelectorAll('.footnotes').forEach(el => el.remove());
+  
+  // Remove footnote back-links if any remain
   div.querySelectorAll('a.footnote-backref').forEach(a => a.remove());
   
   // Convert internal anchor links to plain text (keep external links)
