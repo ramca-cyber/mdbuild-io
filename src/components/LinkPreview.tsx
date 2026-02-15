@@ -19,9 +19,20 @@ export const LinkPreview = () => {
           const line = linkElement.closest('.cm-line');
           if (line) {
             const text = line.textContent || '';
-            const linkMatch = text.match(/\[([^\]]+)\]\(([^)]+)\)/);
-            if (linkMatch) {
-              const linkUrl = linkMatch[2];
+            const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+            const matches = [...text.matchAll(linkRegex)];
+            if (matches.length > 0) {
+              // Find the link whose match range is closest to the cursor
+              const cursorOffset = window.getSelection()?.focusOffset ?? 0;
+              let closest = matches[0];
+              let minDist = Infinity;
+              for (const m of matches) {
+                const start = m.index ?? 0;
+                const end = start + m[0].length;
+                const dist = cursorOffset < start ? start - cursorOffset : cursorOffset > end ? cursorOffset - end : 0;
+                if (dist < minDist) { minDist = dist; closest = m; }
+              }
+              const linkUrl = closest[2];
               setUrl(linkUrl);
               
               // Clear existing timeout

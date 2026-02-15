@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { MermaidDiagram } from '@/components/MermaidDiagram';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lintMarkdown } from '@/lib/markdownLinter';
+import { rehypeHeadingIds } from '@/lib/rehypeHeadingIds';
 import { visit } from 'unist-util-visit';
 
 import { Button } from '@/components/ui/button';
@@ -523,7 +524,7 @@ export const Preview = () => {
   }, []);
   
   const rehypePlugins = useMemo(() => {
-    const plugins: any[] = [rehypeRaw, rehypeKatex, rehypeAddLineNumbers];
+    const plugins: any[] = [rehypeRaw, rehypeKatex, rehypeHeadingIds, rehypeAddLineNumbers];
     // Conditionally add syntax highlighting based on document settings
     if (documentSettings.syntaxHighlighting) {
       plugins.push(rehypeHighlight);
