@@ -514,12 +514,6 @@ export const Editor = () => {
       const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
       const modifier = isMac ? e.metaKey : e.ctrlKey;
 
-      // Save
-      if (modifier && e.key === 's') {
-        e.preventDefault();
-        useDocumentStore.getState().saveVersion();
-      }
-      
       // Undo
       if (modifier && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
@@ -538,10 +532,13 @@ export const Editor = () => {
         window.dispatchEvent(new CustomEvent('editor-redo'));
       }
       
-      // Select All
+      // Select All - only when editor is focused
       if (modifier && e.key === 'a') {
-        e.preventDefault();
-        window.dispatchEvent(new CustomEvent('editor-select-all'));
+        const activeEl = document.activeElement;
+        if (activeEl?.closest('.cm-editor')) {
+          e.preventDefault();
+          window.dispatchEvent(new CustomEvent('editor-select-all'));
+        }
       }
       
       // Find & Replace

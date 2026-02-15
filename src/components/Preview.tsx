@@ -576,7 +576,7 @@ export const Preview = () => {
         {content}
       </ReactMarkdown>
     ),
-    [content]
+    [content, remarkPlugins, rehypePlugins]
   );
 
   return (
@@ -724,10 +724,10 @@ export const Preview = () => {
       <div className="border-t bg-background px-4 py-2 flex-shrink-0 no-print">
         <div className="flex items-center justify-end gap-4 text-sm">
           <span className="text-muted-foreground">
-            Words: <span className="font-medium text-foreground">{renderedStats.words.toLocaleString()}</span>
+            Visible Words: <span className="font-medium text-foreground">{renderedStats.words.toLocaleString()}</span>
           </span>
           <span className="text-muted-foreground">
-            Characters: <span className="font-medium text-foreground">{renderedStats.characters.toLocaleString()}</span>
+            Visible Characters: <span className="font-medium text-foreground">{renderedStats.characters.toLocaleString()}</span>
           </span>
         </div>
       </div>

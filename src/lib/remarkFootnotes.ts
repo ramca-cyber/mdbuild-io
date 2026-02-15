@@ -5,10 +5,12 @@ import { visit } from 'unist-util-visit';
 export function remarkFootnotes() {
   return (tree: any) => {
     const footnotes: { [key: string]: any } = {};
-    const footnoteRefs: any[] = [];
+    const footnoteRefs: string[] = [];
 
-    // First pass: collect footnote definitions
-    visit(tree, 'paragraph', (node, index, parent) => {
+    // First pass: collect footnote definitions and mark for removal
+    const nodesToRemove: Set<any> = new Set();
+    
+    visit(tree, 'paragraph', (node, _index, parent) => {
       if (node.children && node.children.length > 0) {
         const firstChild = node.children[0];
         if (firstChild.type === 'text' && firstChild.value) {
@@ -19,16 +21,22 @@ export function remarkFootnotes() {
               id,
               text: text + node.children.slice(1).map((c: any) => c.value || '').join(''),
             };
-            // Mark for removal
-            if (parent && typeof index === 'number') {
-              parent.children.splice(index, 1);
-            }
+            nodesToRemove.add(node);
           }
         }
       }
     });
 
-    // Second pass: replace footnote references with sup links
+    // Remove footnote definition nodes in a separate pass
+    visit(tree, (node: any) => {
+      if (node.children) {
+        node.children = node.children.filter((child: any) => !nodesToRemove.has(child));
+      }
+    });
+
+    // Second pass: collect text node replacements
+    const replacements: { parent: any; index: number; parts: any[] }[] = [];
+
     visit(tree, 'text', (node, index, parent) => {
       if (node.value) {
         const regex = /\[\^(\w+)\]/g;
@@ -57,9 +65,8 @@ export function remarkFootnotes() {
           lastIndex = match.index + fullMatch.length;
         }
 
-        // Replace node if we found matches
+        // Collect replacement if we found matches
         if (parts.length > 0) {
-          // Add remaining text
           if (lastIndex < node.value.length) {
             parts.push({
               type: 'text',
@@ -67,13 +74,18 @@ export function remarkFootnotes() {
             });
           }
 
-          // Replace the text node with the parts
           if (parent && typeof index === 'number') {
-            parent.children.splice(index, 1, ...parts);
+            replacements.push({ parent, index, parts });
           }
         }
       }
     });
+
+    // Apply text node replacements in reverse order to preserve indices
+    for (let i = replacements.length - 1; i >= 0; i--) {
+      const { parent, index, parts } = replacements[i];
+      parent.children.splice(index, 1, ...parts);
+    }
 
     // Third pass: add footnotes section at the end if there are any
     if (Object.keys(footnotes).length > 0) {
