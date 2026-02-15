@@ -4,6 +4,16 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { List, ChevronRight } from 'lucide-react';
 
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 interface Heading {
   level: number;
   text: string;
@@ -50,14 +60,21 @@ export const OutlinePanel = () => {
   useEffect(() => {
     const lines = content.split('\n');
     const found: Heading[] = [];
+    const slugCounts = new Map<string, number>();
     
-    lines.forEach((line, index) => {
+    lines.forEach((line) => {
       const match = line.match(/^(#{1,6})\s+(.+)$/);
       if (match) {
+        let slug = slugify(match[2]);
+        if (!slug) return;
+        const count = slugCounts.get(slug) || 0;
+        slugCounts.set(slug, count + 1);
+        if (count > 0) slug = `${slug}-${count}`;
+        
         found.push({
           level: match[1].length,
           text: match[2],
-          id: `heading-${index}`,
+          id: slug,
         });
       }
     });
@@ -66,14 +83,11 @@ export const OutlinePanel = () => {
     setTree(buildHeadingTree(found));
   }, [content]);
 
-  const scrollToHeading = (text: string) => {
+  const scrollToHeading = (id: string) => {
     const preview = document.querySelector('.preview-content') as HTMLElement | null;
     if (!preview) return;
 
-    const headingElements = preview.querySelectorAll('h1, h2, h3, h4, h5, h6');
-    const target = Array.from(headingElements).find(
-      (el) => el.textContent?.trim() === text
-    ) as HTMLElement | undefined;
+    const target = preview.querySelector(`#${CSS.escape(id)}`) as HTMLElement | null;
 
     if (target) {
       // Compute unscaled offset relative to the scroll container
@@ -95,7 +109,7 @@ export const OutlinePanel = () => {
       // Leaf node - simple clickable button
       return (
         <button
-          onClick={() => scrollToHeading(node.heading.text)}
+          onClick={() => scrollToHeading(node.heading.id)}
           className="block w-full text-left px-2 py-1.5 text-sm hover:bg-muted rounded transition-colors"
           style={{ paddingLeft: `${depth * 12 + 8}px` }}
         >
@@ -114,7 +128,7 @@ export const OutlinePanel = () => {
           onClick={(e) => {
             // Allow clicking the heading text to scroll
             if ((e.target as HTMLElement).closest('button') && !(e.target as HTMLElement).closest('svg')) {
-              scrollToHeading(node.heading.text);
+              scrollToHeading(node.heading.id);
             }
           }}
         >
