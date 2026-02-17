@@ -73,6 +73,7 @@ export const ViewModeSwitcher = () => {
                   }`}
                   aria-label={mode.tooltip}
                   aria-pressed={isActive}
+                  aria-current={isActive ? 'page' : undefined}
                 >
                   <Icon className="h-4 w-4" />
                   <span className="hidden sm:inline text-xs font-medium">{mode.label}</span>

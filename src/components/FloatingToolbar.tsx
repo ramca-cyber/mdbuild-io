@@ -36,9 +36,11 @@ export const FloatingToolbar = ({ onFormat }: FloatingToolbarProps) => {
         const toolbarWidth = 240; // Approximate width
         const toolbarHeight = 48; // Approximate height
         
+        const calcX = rect.left + rect.width / 2 - toolbarWidth / 2;
+        const calcY = rect.top - toolbarHeight - 8;
         setPosition({
-          x: rect.left + rect.width / 2 - toolbarWidth / 2,
-          y: rect.top - toolbarHeight - 8,
+          x: Math.max(8, Math.min(window.innerWidth - toolbarWidth - 8, calcX)),
+          y: calcY < 8 ? rect.bottom + 8 : calcY,
         });
         setVisible(true);
       } else {
