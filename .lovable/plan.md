@@ -1,104 +1,93 @@
 
+# Controls Audit Implementation Plan
 
-# UI/UX Review Implementation Plan
+## Current Status
 
-## Summary
+The audit identifies 20 prioritized fixes. Several items from Parts 1-2 were already addressed in the previous UI/UX review work (table commands in CommandPalette now work, panel labels removed, Toolbar/CompactToolbar removed, FloatingToolbar enhanced). Here's what remains.
 
-This plan addresses the most impactful findings from the UI/UX review, organized into phases. The review identifies ~40% of screen space consumed by chrome, 4 overlapping toolbar surfaces, and several interaction bugs.
+## Remaining Issues (Grouped by Priority)
 
-## Phase 1: Quick Wins (High Impact, Low Effort)
+### Group A: Dead Controls (Broken -- Fix Now)
 
-### 1A. Remove "Markdown Editor" and "Preview" panel header labels
-- **Editor.tsx**: Remove the `<h2>Markdown Editor</h2>` text from the editor panel header (line 257-263). Keep the CompactToolbar row but make it slimmer.
-- **Preview.tsx**: Remove the `<h2>Preview</h2>` text from the preview panel header (line 552-555). Keep the tool buttons.
-- **Savings**: ~16px per panel, reduced visual noise.
+**A1. CommandPalette "export-document" events are dead (4 items)**
+The export commands (PDF, DOCX, HTML, MD) dispatch `export-document` custom events that nothing listens for. The actual export functions live in `useDocumentActions`.
+- **Fix**: Import and call the export functions directly from `useDocumentActions` instead of dispatching events.
 
-### 1B. Fix FloatingToolbar viewport clamping
-- **FloatingToolbar.tsx**: Add bounds checking to the position calculation (lines 39-42):
-  - Clamp X to `Math.max(8, Math.min(window.innerWidth - toolbarWidth - 8, calculated_x))`
-  - Flip Y below selection if it would go above viewport: `calculated_y < 8 ? rect.bottom + 8 : calculated_y`
+**A2. CommandPalette "Open Settings" is dead**
+Dispatches `show-settings` with no listener.
+- **Fix**: Add a `showEditorSettings` state to a shared store or toggle it via a new Zustand flag in `settingsStore`, so the command palette can open it directly.
 
-### 1C. Stop AnimatedPreview infinite loop
-- **AnimatedPreview.tsx**: Add a cycle counter. After 2 full cycles, clear the interval and leave the final text displayed. This stops unnecessary CPU usage on the landing page.
+**A3. FormatMenu "Text Cleanup" -- Already Fixed**
+The audit says these are dead, but they now call `textCleanup()` directly from `editorViewStore` (verified in current FormatMenu.tsx). No action needed.
 
-### 1D. Fix command palette hardcoded array slicing
-- **CommandPalette.tsx**: Add a `group` property to each command object (`'formatting' | 'headings' | 'lists' | 'insert' | 'alerts' | 'table' | 'edit' | 'view' | 'document' | 'settings'`). Replace all `commands.slice(N, M)` calls with `commands.filter(c => c.group === 'formatting')` etc. Also fix the `icon: any` type to `icon: LucideIcon`.
+### Group B: Shortcut Conflicts and Mismatches (Fix Now)
 
-### 1E. Fix non-functional table commands in CommandPalette
-- **CommandPalette.tsx**: The table commands (Add Row Below, Add Row Above, etc.) dispatch custom events that nothing listens for. Replace with direct calls to the table utility functions from `editorViewStore` or remove them if they can only work contextually (when cursor is inside a table).
+**B1. Ctrl+D conflict (Select Next Occurrence vs Split View)**
+KeyboardShortcutsDialog lists Ctrl+D for both "Select next occurrence" and "Split View."
+- **Fix**: Change Split View shortcut display to Ctrl+Shift+D in KeyboardShortcutsDialog and ViewMenu. Update the actual binding in `useEditorKeyboardShortcuts`.
 
-### 1F. Scope the global `min-height`/`min-width` CSS rule
-- **index.css** (line 176-181): The rule `button, [role="button"], [tabindex] { min-height: 2.5rem; min-width: 2.5rem; }` affects every clickable element globally, causing oversized accordion triggers, dropdown items, and inline toolbar buttons. Scope it to only primary action buttons (e.g., `.primary-touch-target`) or remove it entirely since individual components already define their own sizing.
+**B2. Ctrl+P conflict (Print vs Preview Only)**
+- **Fix**: Remove Ctrl+P as Preview shortcut. Keep it for Print only. Update KeyboardShortcutsDialog and ViewMenu.
 
-### 1G. Fix StatisticsPanel stale time display
-- **StatisticsPanel.tsx**: The `formatTime` function shows "Saved 2m ago" but never re-renders to update. Add a `setInterval` (every 30s) that forces a re-render so the "Saved X ago" text stays current.
+**B3. EditMenu Delete Line shortcut label wrong**
+Shows Ctrl+D but actual binding is Ctrl+Shift+K.
+- **Fix**: Change the MenubarShortcut in EditMenu from `{modKey}+D` to `{modKey}+Shift+K`.
 
-## Phase 2: Layout & Vertical Space Optimization
+**B4. Outline toggle tooltip said "Ctrl+B"**
+- **Fix**: Already resolved in previous work (tooltip now just says "Toggle Outline"). Verify -- no action needed.
 
-### 2A. Merge Header and DocumentHeader into one bar
-- **Index.tsx**: Remove the separate `<header>` element (lines 129-282) that contains the logo, Home/Help links, theme toggle, and keyboard shortcuts button.
-- **DocumentHeader.tsx**: Absorb these elements into the existing DocumentHeader bar:
-  - Add the "M" logo icon on the far left (before the File menu)
-  - Move theme toggle, Home/Help links, PWA install, and keyboard shortcuts button into the right side of DocumentHeader
-  - This saves ~56px of vertical space
+### Group C: Toast Spam (User Experience)
 
-### 2B. Auto-collapse StatisticsPanel
-- **StatisticsPanel.tsx**: Make the default state collapsed (single line showing `Ln X, Col Y | N words | Saved just now`). The expanded grid with paragraphs/sentences/headings only appears on click of the expand button. Ensure `statisticsExpanded` defaults to `false` in the settings store.
+**C1. Remove unnecessary toasts**
+Remove toasts from: Undo, Redo, Cut, Copy, Paste, Select All, Insert Link/Image/Emoji, Insert Date/Time. Keep toasts for: Save, Export, Import, Delete, Template, Clear, and errors.
+- **Files**: `EditMenu.tsx` (remove from handleUndo, handleRedo, handleCut, handleCopy, handlePaste, handleSelectAll, handleInsertDateTime)
 
-### 2C. Remove Preview footer visible word count
-- If there's a visible-words footer in the Preview component, remove it. (The review mentions "Visible Words/Characters" but checking Preview.tsx, this may have already been removed or may be rendered elsewhere.)
+### Group D: Missing PNG Export (Fix Now)
 
-## Phase 3: Interaction Pattern Fixes
+**D1. Add PNG export to File menu and Command Palette**
+The `exportUtils.tsx` already has `toPng` from `html-to-image`. An export function exists but is not exposed in the File menu.
+- **Fix**: Add `handleExportPNG` to `useDocumentActions`, wire it into `FileMenu` and `CommandPalette`.
 
-### 3A. Fix OutlinePanel editor-only mode
-- **OutlinePanel.tsx**: The `scrollToHeading` function only queries `.preview-content`. In editor-only mode (`viewMode === 'editor'`), it should instead use `editorViewStore.goToLine()` to scroll the editor to the heading's source line. Detect the current view mode and branch accordingly.
+### Group E: Settings UX (Fix Soon)
 
-### 3B. Add `aria-current="page"` to active view mode button
-- **ViewModeSwitcher.tsx**: Add `aria-current="page"` attribute to the currently active view mode button for accessibility.
+**E1. Reset All Settings uses `confirm()` instead of AlertDialog**
+- **Fix**: Replace `confirm()` in `SettingsMenu.tsx` with an AlertDialog for consistency.
 
-### 3C. Show ViewModeSwitcher on mobile
-- **Index.tsx / DocumentHeader.tsx**: Move the ViewModeSwitcher out of the desktop-only area so it's visible on mobile. Switching between editor and preview is the most common mobile action and shouldn't require opening the hamburger menu.
+**E2. Snippets menu is a 1-item menu**
+- **Fix**: Merge "Manage Snippets..." into Settings menu. Remove SnippetsMenu from DocumentHeader.
 
-## Phase 4: Toolbar Consolidation (Larger Effort)
+### Group F: Keyboard Shortcuts Dialog Improvements
 
-This is the review's most significant structural recommendation. It can be done in a follow-up iteration.
+**F1. Mac key labels**
+Always shows "Ctrl" even on Mac. Should show the Command symbol.
+- **Fix**: Detect Mac and replace "Ctrl" with the Command symbol in KeyboardShortcutsDialog.
 
-### 4A. Remove the main Toolbar component
-- The Toolbar (Format/Structure/Lists/Insert groups) duplicates functionality available in:
-  - DocumentHeader menus (File/Edit/Format/View)
-  - CompactToolbar (inline formatting)
-  - FloatingToolbar (selection formatting)
-  - SlashCommandMenu (block insertion)
-- Remove `<Toolbar />` from `Index.tsx` and delete the component. Move the error badge to the DocumentHeader or StatisticsPanel.
+**F2. Fix documented conflicts**
+Remove duplicate Ctrl+D and Ctrl+P entries that list different actions.
 
-### 4B. Enhance FloatingToolbar
-- Add a heading dropdown and list toggle to the FloatingToolbar so it fully replaces the CompactToolbar for selection-based formatting.
+## Files to Change
 
-### 4C. Remove CompactToolbar
-- After enhancing FloatingToolbar, remove CompactToolbar from Editor.tsx.
+| File | Changes |
+|------|---------|
+| `src/components/CommandPalette.tsx` | Replace `handleExport` event dispatch with direct calls; replace `show-settings` with store toggle; add PNG export |
+| `src/components/EditMenu.tsx` | Remove toasts from undo/redo/cut/copy/paste/selectAll/insertDateTime; fix Delete Line shortcut label |
+| `src/components/ViewMenu.tsx` | Fix Ctrl+D to Ctrl+Shift+D for Split View; remove Ctrl+P from Preview |
+| `src/components/KeyboardShortcutsDialog.tsx` | Fix shortcut conflicts; add Mac key detection |
+| `src/components/SettingsMenu.tsx` | Replace `confirm()` with AlertDialog; absorb "Manage Snippets" item |
+| `src/components/DocumentHeader.tsx` | Remove SnippetsMenu from menu bar |
+| `src/hooks/useDocumentActions.ts` | Add handleExportPNG function |
+| `src/components/FileMenu.tsx` | Add PNG export option |
+| `src/store/settingsStore.ts` | Add `showEditorSettings` flag for command palette access |
+| `src/hooks/useEditorKeyboardShortcuts.ts` | Fix Ctrl+D to Ctrl+Shift+D for split view; remove Ctrl+P for preview |
 
-## Files Changed
+## Implementation Order
 
-| Phase | File | Change |
-|-------|------|--------|
-| 1A | `src/components/Editor.tsx` | Remove "Markdown Editor" h2 label |
-| 1A | `src/components/Preview.tsx` | Remove "Preview" h2 label |
-| 1B | `src/components/FloatingToolbar.tsx` | Add viewport bounds clamping |
-| 1C | `src/components/AnimatedPreview.tsx` | Stop loop after 2 cycles |
-| 1D, 1E | `src/components/CommandPalette.tsx` | Add group property, fix types, fix table commands |
-| 1F | `src/index.css` | Scope or remove global min-height/min-width rule |
-| 1G | `src/components/StatisticsPanel.tsx` | Add interval for stale time refresh |
-| 2A | `src/pages/Index.tsx` | Remove separate header, merge into DocumentHeader |
-| 2A | `src/components/DocumentHeader.tsx` | Absorb logo, theme toggle, nav links |
-| 2B | `src/components/StatisticsPanel.tsx` | Default collapsed, compact single-line |
-| 3A | `src/components/OutlinePanel.tsx` | Support editor-only scroll-to-heading |
-| 3B | `src/components/ViewModeSwitcher.tsx` | Add aria-current |
-| 3C | `src/pages/Index.tsx` or `DocumentHeader.tsx` | Show ViewModeSwitcher on mobile |
-| 4A | `src/pages/Index.tsx` | Remove Toolbar |
-| 4B | `src/components/FloatingToolbar.tsx` | Add heading/list options |
-| 4C | `src/components/Editor.tsx` | Remove CompactToolbar |
+1. **Group A + D** -- Fix dead controls and add PNG export (highest impact, breaks trust)
+2. **Group B** -- Fix shortcut conflicts and mislabels
+3. **Group C** -- Remove toast spam
+4. **Group E** -- Settings UX improvements (AlertDialog, merge Snippets)
+5. **Group F** -- Keyboard shortcuts dialog Mac awareness and conflict cleanup
 
-## Recommended Implementation Order
+## Out of Scope (Future Iterations)
 
-Phases 1 and 2 can be done first as they are independent quick wins. Phase 3 is small fixes. Phase 4 (toolbar consolidation) is a larger structural change that should be a separate iteration.
-
+The audit also recommends: right-click context menu, drag-and-drop file support, top-level Insert menu, cursor breadcrumb, share actions, presentation mode, and searchable shortcuts dialog. These are enhancements for a follow-up iteration, not broken controls.
