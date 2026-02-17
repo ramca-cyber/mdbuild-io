@@ -29,17 +29,15 @@ import { FormatMenu } from './FormatMenu';
 import { InsertMenu } from './InsertMenu';
 import { ViewMenu } from './ViewMenu';
 import { SettingsMenu } from './SettingsMenu';
-import { DocumentSettingsDialog } from './DocumentSettingsDialog';
+
 import { ViewModeSwitcher } from './ViewModeSwitcher';
 import { PWAInstallButton } from './PWAInstallButton';
 
 interface DocumentHeaderProps {
-  showKeyboardShortcuts: boolean;
-  setShowKeyboardShortcuts: (show: boolean) => void;
   setMobilePanel: (panel: 'documents' | 'templates' | 'outline' | null) => void;
 }
 
-export function DocumentHeader({ showKeyboardShortcuts, setShowKeyboardShortcuts, setMobilePanel }: DocumentHeaderProps) {
+export function DocumentHeader({ setMobilePanel }: DocumentHeaderProps) {
   const {
     theme,
     setTheme,
@@ -50,13 +48,14 @@ export function DocumentHeader({ showKeyboardShortcuts, setShowKeyboardShortcuts
     setShowOutline,
     syncScroll,
     setSyncScroll,
+    setShowKeyboardShortcuts,
   } = useSettingsStore();
 
   const actions = useDocumentActions();
 
   const [storageInfo, setStorageInfo] = useState(calculateStorageUsage());
   const [storageDialogOpen, setStorageDialogOpen] = useState(false);
-  const [showDocumentSettings, setShowDocumentSettings] = useState(false);
+  
 
   useEffect(() => {
     const interval = setInterval(() => setStorageInfo(calculateStorageUsage()), 5000);
@@ -295,7 +294,7 @@ export function DocumentHeader({ showKeyboardShortcuts, setShowKeyboardShortcuts
 
       <StorageDialog open={storageDialogOpen} onOpenChange={setStorageDialogOpen} storageInfo={storageInfo} documentCount={actions.savedDocuments.length} />
 
-      <DocumentSettingsDialog open={showDocumentSettings} onOpenChange={setShowDocumentSettings} />
+      
     </>
   );
 }

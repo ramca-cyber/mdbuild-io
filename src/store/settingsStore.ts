@@ -19,6 +19,8 @@ interface SettingsState {
   statisticsExpanded: boolean;
   previewRefreshKey: number;
   showEditorSettings: boolean;
+  showKeyboardShortcuts: boolean;
+  showDocumentSettings: boolean;
   
   // Word/Character Limit Warnings
   wordLimitWarningsEnabled: boolean;
@@ -77,6 +79,8 @@ interface SettingsState {
   setDocumentSettings: (settings: Partial<SettingsState['documentSettings']>) => void;
   setPreviewSettings: (settings: Partial<SettingsState['previewSettings']>) => void;
   setShowEditorSettings: (show: boolean) => void;
+  setShowKeyboardShortcuts: (show: boolean) => void;
+  setShowDocumentSettings: (show: boolean) => void;
   resetToDefaults: () => void;
 }
 
@@ -98,6 +102,8 @@ export const useSettingsStore = create<SettingsState>()(
       statisticsExpanded: false,
       previewRefreshKey: 0,
       showEditorSettings: false,
+      showKeyboardShortcuts: false,
+      showDocumentSettings: false,
       wordLimitWarningsEnabled: false,
       customWordLimit: null,
       customCharLimit: null,
@@ -154,6 +160,8 @@ export const useSettingsStore = create<SettingsState>()(
       setPreviewSettings: (settings) =>
         set({ previewSettings: { ...get().previewSettings, ...settings } }),
       setShowEditorSettings: (showEditorSettings) => set({ showEditorSettings }),
+      setShowKeyboardShortcuts: (showKeyboardShortcuts) => set({ showKeyboardShortcuts }),
+      setShowDocumentSettings: (showDocumentSettings) => set({ showDocumentSettings }),
       
       resetToDefaults: () => set({
         theme: 'light',
