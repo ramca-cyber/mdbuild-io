@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
+import { useEditorViewStore } from '@/store/editorViewStore';
 
 export const useExportProgress = () => {
   const [isExporting, setIsExporting] = useState(false);
@@ -29,14 +30,13 @@ export const useExportProgress = () => {
     ): Promise<T | null> => {
       try {
         // Flush any pending debounced content before export
-        window.dispatchEvent(new CustomEvent('editor-flush-content'));
+        useEditorViewStore.getState().flushContent();
         startExport();
         const result = await exportFn(updateProgress);
         finishExport();
         toast.success(successMessage);
         return result;
       } catch (error) {
-        // Error in export progress hook
         toast.error('Export failed. Please try again.');
         setIsExporting(false);
         setProgress(0);

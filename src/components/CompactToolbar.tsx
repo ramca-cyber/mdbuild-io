@@ -14,38 +14,24 @@ import {
 } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
 import { useSearchStore } from '@/store/searchStore';
+import { useEditorViewStore } from '@/store/editorViewStore';
 import { EmojiPicker } from './EmojiPicker';
 import { InsertLinkDialog } from './InsertLinkDialog';
 import { useState } from 'react';
 
 export function CompactToolbar() {
   const { setShowSearchReplace } = useSearchStore();
+  const { undo, redo, insert } = useEditorViewStore();
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
 
   const dispatchWrap = (before: string, after: string = '', placeholder: string = '') => {
-    window.dispatchEvent(
-      new CustomEvent('editor-insert', {
-        detail: { kind: 'wrap', before, after, placeholder },
-      })
-    );
+    insert('wrap', { before, after, placeholder });
   };
 
   const dispatchBlock = (block: string) => {
-    window.dispatchEvent(
-      new CustomEvent('editor-insert', {
-        detail: { kind: 'block', block },
-      })
-    );
-  };
-
-  const handleUndo = () => {
-    window.dispatchEvent(new CustomEvent('editor-undo'));
-  };
-
-  const handleRedo = () => {
-    window.dispatchEvent(new CustomEvent('editor-redo'));
+    insert('block', { block });
   };
 
   const handleLink = () => {
@@ -274,7 +260,7 @@ export function CompactToolbar() {
             <Button
               size="sm"
               variant="ghost"
-              onClick={handleUndo}
+              onClick={() => undo()}
               className="h-8 w-8 p-0"
             >
               <Undo2 className="h-4 w-4" />
@@ -290,7 +276,7 @@ export function CompactToolbar() {
             <Button
               size="sm"
               variant="ghost"
-              onClick={handleRedo}
+              onClick={() => redo()}
               className="h-8 w-8 p-0"
             >
               <Redo2 className="h-4 w-4" />

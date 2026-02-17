@@ -4,12 +4,10 @@ import {
   Scissors,
   Copy,
   Clipboard,
-  AlignLeft,
   Search,
   Calendar,
   FileText,
   Trash2,
-  CopyPlus,
   ArrowUp,
   ArrowDown,
   Square,
@@ -30,8 +28,9 @@ import {
 } from '@/components/ui/menubar';
 import { useDocumentStore } from '@/store/documentStore';
 import { useSearchStore } from '@/store/searchStore';
+import { useEditorViewStore } from '@/store/editorViewStore';
 import { toast } from 'sonner';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,30 +45,16 @@ import {
 export const EditMenu = () => {
   const { content, setContent } = useDocumentStore();
   const { setShowSearchReplace } = useSearchStore();
+  const { canUndo, canRedo, undo, redo, selectAll, deleteLine, duplicateLine, selectLine, moveLineUp, moveLineDown, insert } = useEditorViewStore();
   const [showClearDialog, setShowClearDialog] = useState(false);
-  const [canUndo, setCanUndo] = useState(false);
-  const [canRedo, setCanRedo] = useState(false);
-
-  // Listen for history state updates from the editor
-  useEffect(() => {
-    const handleHistoryChange = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      const { canUndo: undo, canRedo: redo } = customEvent.detail;
-      setCanUndo(undo);
-      setCanRedo(redo);
-    };
-
-    window.addEventListener('editor-history-change', handleHistoryChange);
-    return () => window.removeEventListener('editor-history-change', handleHistoryChange);
-  }, []);
 
   const handleUndo = () => {
-    window.dispatchEvent(new CustomEvent('editor-undo'));
+    undo();
     toast.success('Undone');
   };
 
   const handleRedo = () => {
-    window.dispatchEvent(new CustomEvent('editor-redo'));
+    redo();
     toast.success('Redone');
   };
 
@@ -95,9 +80,7 @@ export const EditMenu = () => {
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
-      window.dispatchEvent(new CustomEvent('editor-insert', { 
-        detail: { kind: 'text', text } 
-      }));
+      insert('text', { text });
       toast.success('Pasted from clipboard');
     } catch (error) {
       toast.error('Failed to paste');
@@ -105,7 +88,7 @@ export const EditMenu = () => {
   };
 
   const handleSelectAll = () => {
-    window.dispatchEvent(new CustomEvent('editor-select-all'));
+    selectAll();
     toast.success('Selected all');
   };
 
@@ -125,9 +108,7 @@ export const EditMenu = () => {
   const handleInsertDateTime = () => {
     const now = new Date();
     const dateTime = now.toLocaleString();
-    window.dispatchEvent(new CustomEvent('editor-insert', { 
-      detail: { kind: 'text', text: dateTime } 
-    }));
+    insert('text', { text: dateTime });
     toast.success('Date/time inserted');
   };
 
@@ -138,30 +119,9 @@ export const EditMenu = () => {
     toast.success(`Words: ${words} | Characters: ${chars} | Lines: ${lines}`);
   };
 
-  const handleDeleteLine = () => {
-    window.dispatchEvent(new CustomEvent('editor-delete-line'));
-  };
-
-  const handleDuplicateLine = () => {
-    window.dispatchEvent(new CustomEvent('editor-duplicate-line'));
-  };
-
-  const handleSelectLine = () => {
-    window.dispatchEvent(new CustomEvent('editor-select-line'));
-  };
-
-  const handleMoveLineUp = () => {
-    window.dispatchEvent(new CustomEvent('editor-move-line-up'));
-  };
-
-  const handleMoveLineDown = () => {
-    window.dispatchEvent(new CustomEvent('editor-move-line-down'));
-  };
-
   const handleClearContent = () => {
     setShowClearDialog(true);
   };
-
 
   const confirmClear = () => {
     setContent('');
@@ -229,27 +189,27 @@ export const EditMenu = () => {
                 Line Operations
               </MenubarSubTrigger>
               <MenubarSubContent>
-                <MenubarItem onClick={handleDeleteLine}>
+                <MenubarItem onClick={() => deleteLine()}>
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete Line
                   <MenubarShortcut>{modKey}+D</MenubarShortcut>
                 </MenubarItem>
-                <MenubarItem onClick={handleDuplicateLine}>
+                <MenubarItem onClick={() => duplicateLine()}>
                   <Copy className="h-4 w-4 mr-2" />
                   Duplicate Line
                   <MenubarShortcut>{modKey}+Shift+D</MenubarShortcut>
                 </MenubarItem>
-                <MenubarItem onClick={handleSelectLine}>
+                <MenubarItem onClick={() => selectLine()}>
                   <Square className="h-4 w-4 mr-2" />
                   Select Line
                   <MenubarShortcut>{modKey}+L</MenubarShortcut>
                 </MenubarItem>
-                <MenubarItem onClick={handleMoveLineUp}>
+                <MenubarItem onClick={() => moveLineUp()}>
                   <ArrowUp className="h-4 w-4 mr-2" />
                   Move Line Up
                   <MenubarShortcut>Alt+↑</MenubarShortcut>
                 </MenubarItem>
-                <MenubarItem onClick={handleMoveLineDown}>
+                <MenubarItem onClick={() => moveLineDown()}>
                   <ArrowDown className="h-4 w-4 mr-2" />
                   Move Line Down
                   <MenubarShortcut>Alt+↓</MenubarShortcut>

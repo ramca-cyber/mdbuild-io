@@ -6,9 +6,9 @@ import { useDocumentStore } from '@/store/documentStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useSearchStore } from '@/store/searchStore';
 import { useSnippetsStore } from '@/store/snippetsStore';
+import { useEditorViewStore } from '@/store/editorViewStore';
 import { EditorView, ViewUpdate, keymap } from '@codemirror/view';
 import { EditorSelection, Prec } from '@codemirror/state';
-import { undo, redo, undoDepth, redoDepth, deleteLine, copyLineDown, moveLineUp, moveLineDown, selectLine } from '@codemirror/commands';
 import { SearchReplace } from '@/components/SearchReplace';
 import { debounce } from '@/lib/utils';
 import { CompactToolbar } from '@/components/CompactToolbar';
@@ -52,6 +52,7 @@ export const Editor = () => {
     setSelectedWords,
   } = useSearchStore();
   const { getSnippetByTrigger } = useSnippetsStore();
+  const { setView, setDebouncedSetContent, setShowGoToDialog, insert } = useEditorViewStore();
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const [slashMenuPosition, setSlashMenuPosition] = useState<{ x: number; y: number } | null>(null);
@@ -103,18 +104,16 @@ export const Editor = () => {
               const snippet = getSnippetByTrigger(trigger);
               
               if (snippet) {
-                // Replace trigger with snippet content
-                let content = snippet.content;
+                let snippetContent = snippet.content;
                 
-                // Handle ${date} variable
-                if (content.includes('${date}')) {
-                  content = content.replace(/\$\{date\}/g, new Date().toLocaleDateString());
+                if (snippetContent.includes('${date}')) {
+                  snippetContent = snippetContent.replace(/\$\{date\}/g, new Date().toLocaleDateString());
                 }
                 
                 const from = selection.from - trigger.length;
                 view.dispatch({
-                  changes: { from, to: selection.from, insert: content },
-                  selection: EditorSelection.cursor(from + content.length),
+                  changes: { from, to: selection.from, insert: snippetContent },
+                  selection: EditorSelection.cursor(from + snippetContent.length),
                 });
                 
                 return true;
@@ -156,8 +155,6 @@ export const Editor = () => {
         run: (view) => {
           const selection = view.state.selection.main;
           const selectedText = view.state.sliceDoc(selection.from, selection.to);
-          
-          // If text is selected, wrap with bold
           if (selectedText) {
             wrapSelection('**', '**');
             return true;
@@ -170,8 +167,6 @@ export const Editor = () => {
         run: (view) => {
           const selection = view.state.selection.main;
           const selectedText = view.state.sliceDoc(selection.from, selection.to);
-          
-          // If text is selected, wrap with italic
           if (selectedText) {
             wrapSelection('_', '_');
             return true;
@@ -184,8 +179,6 @@ export const Editor = () => {
         run: (view) => {
           const selection = view.state.selection.main;
           const selectedText = view.state.sliceDoc(selection.from, selection.to);
-          
-          // If text is selected, wrap with inline code
           if (selectedText) {
             wrapSelection('`', '`');
             return true;
@@ -229,18 +222,11 @@ export const Editor = () => {
           run: (view) => {
             const selection = view.state.selection.main;
             const text = view.state.doc.toString();
-            
-            // Check if we're in a table
-            if (!isInTable(text, selection.from)) {
-              return false;
-            }
-            
+            if (!isInTable(text, selection.from)) return false;
             const table = findTableAtCursor(text, selection.from);
             if (!table) return false;
-            
             const cell = findCellAtCursor(table, selection.from);
             if (!cell) return false;
-            
             const nextCell = getNextCell(table, cell.row, cell.col);
             if (nextCell) {
               view.dispatch({
@@ -249,7 +235,6 @@ export const Editor = () => {
               });
               return true;
             }
-            
             return false;
           },
         },
@@ -258,17 +243,11 @@ export const Editor = () => {
           run: (view) => {
             const selection = view.state.selection.main;
             const text = view.state.doc.toString();
-            
-            if (!isInTable(text, selection.from)) {
-              return false;
-            }
-            
+            if (!isInTable(text, selection.from)) return false;
             const table = findTableAtCursor(text, selection.from);
             if (!table) return false;
-            
             const cell = findCellAtCursor(table, selection.from);
             if (!cell) return false;
-            
             const prevCell = getPreviousCell(table, cell.row, cell.col);
             if (prevCell) {
               view.dispatch({
@@ -277,7 +256,6 @@ export const Editor = () => {
               });
               return true;
             }
-            
             return false;
           },
         },
@@ -286,24 +264,17 @@ export const Editor = () => {
           run: (view) => {
             const selection = view.state.selection.main;
             const text = view.state.doc.toString();
-            
-            if (!isInTable(text, selection.from)) {
-              return false;
-            }
-            
+            if (!isInTable(text, selection.from)) return false;
             const table = findTableAtCursor(text, selection.from);
             if (!table) return false;
-            
             const cell = findCellAtCursor(table, selection.from);
             if (!cell) return false;
-            
             const result = addRowBelow(text, table, cell.row);
             view.dispatch({
               changes: { from: 0, to: text.length, insert: result.text },
               selection: EditorSelection.cursor(result.cursorPos),
               scrollIntoView: true,
             });
-            
             toast.success('Row added below');
             return true;
           },
@@ -313,24 +284,17 @@ export const Editor = () => {
           run: (view) => {
             const selection = view.state.selection.main;
             const text = view.state.doc.toString();
-            
-            if (!isInTable(text, selection.from)) {
-              return false;
-            }
-            
+            if (!isInTable(text, selection.from)) return false;
             const table = findTableAtCursor(text, selection.from);
             if (!table) return false;
-            
             const cell = findCellAtCursor(table, selection.from);
             if (!cell) return false;
-            
             const result = addRowAbove(text, table, cell.row);
             view.dispatch({
               changes: { from: 0, to: text.length, insert: result.text },
               selection: EditorSelection.cursor(result.cursorPos),
               scrollIntoView: true,
             });
-            
             toast.success('Row added above');
             return true;
           },
@@ -340,24 +304,17 @@ export const Editor = () => {
           run: (view) => {
             const selection = view.state.selection.main;
             const text = view.state.doc.toString();
-            
-            if (!isInTable(text, selection.from)) {
-              return false;
-            }
-            
+            if (!isInTable(text, selection.from)) return false;
             const table = findTableAtCursor(text, selection.from);
             if (!table) return false;
-            
             const cell = findCellAtCursor(table, selection.from);
             if (!cell) return false;
-            
             const result = addColumnAfter(text, table, cell.col);
             view.dispatch({
               changes: { from: 0, to: text.length, insert: result.text },
               selection: EditorSelection.cursor(result.cursorPos),
               scrollIntoView: true,
             });
-            
             toast.success('Column added');
             return true;
           },
@@ -367,23 +324,16 @@ export const Editor = () => {
           run: (view) => {
             const selection = view.state.selection.main;
             const text = view.state.doc.toString();
-            
-            if (!isInTable(text, selection.from)) {
-              return false;
-            }
-            
+            if (!isInTable(text, selection.from)) return false;
             const table = findTableAtCursor(text, selection.from);
             if (!table) return false;
-            
             const cell = findCellAtCursor(table, selection.from);
             if (!cell) return false;
-            
             const result = toggleColumnAlignment(text, table, cell.col);
             view.dispatch({
               changes: { from: 0, to: text.length, insert: result.text },
               selection: EditorSelection.cursor(selection.from),
             });
-            
             toast.success('Column alignment toggled');
             return true;
           },
@@ -393,29 +343,21 @@ export const Editor = () => {
           run: (view) => {
             const selection = view.state.selection.main;
             const text = view.state.doc.toString();
-            
-            if (!isInTable(text, selection.from)) {
-              return false;
-            }
-            
+            if (!isInTable(text, selection.from)) return false;
             const table = findTableAtCursor(text, selection.from);
             if (!table) return false;
-            
             const cell = findCellAtCursor(table, selection.from);
             if (!cell) return false;
-            
             if (table.rows.length <= 2) {
               toast.error('Cannot delete row - table must have at least 2 rows');
               return true;
             }
-            
             const result = deleteRow(text, table, cell.row);
             view.dispatch({
               changes: { from: 0, to: text.length, insert: result.text },
               selection: EditorSelection.cursor(result.cursorPos),
               scrollIntoView: true,
             });
-            
             toast.success('Row deleted');
             return true;
           },
@@ -427,7 +369,6 @@ export const Editor = () => {
   const handleSlashCommand = (template: string) => {
     if (viewRef.current) {
       const view = viewRef.current;
-      
       view.dispatch({
         changes: { from: slashMenuCursorPos, to: slashMenuCursorPos, insert: template },
         selection: EditorSelection.cursor(slashMenuCursorPos + template.length),
@@ -445,21 +386,19 @@ export const Editor = () => {
       const html = e.clipboardData?.getData('text/html');
       const text = e.clipboardData?.getData('text/plain');
       
-      // If we have HTML content, convert it to markdown
       if (html && html.trim()) {
         e.preventDefault();
         
         try {
-          const markdown = turndownService.turndown(html);
+          const md = turndownService.turndown(html);
           const view = viewRef.current;
           const selection = view.state.selection.main;
           
           view.dispatch({
-            changes: { from: selection.from, to: selection.to, insert: markdown },
-            selection: EditorSelection.cursor(selection.from + markdown.length),
+            changes: { from: selection.from, to: selection.to, insert: md },
+            selection: EditorSelection.cursor(selection.from + md.length),
           });
         } catch (error) {
-          // Fallback to plain text if conversion fails
           if (text) {
             const view = viewRef.current;
             const selection = view.state.selection.main;
@@ -500,100 +439,85 @@ export const Editor = () => {
     view.focus();
   };
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts - now calls store methods directly
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
       const modifier = isMac ? e.metaKey : e.ctrlKey;
 
-      // Undo
       if (modifier && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
-        window.dispatchEvent(new CustomEvent('editor-undo'));
+        useEditorViewStore.getState().undo();
       }
       
-      // Redo
       if (modifier && e.shiftKey && e.key === 'z') {
         e.preventDefault();
-        window.dispatchEvent(new CustomEvent('editor-redo'));
+        useEditorViewStore.getState().redo();
       }
       
-      // Alternative Redo (Ctrl+Y)
       if (modifier && e.key === 'y') {
         e.preventDefault();
-        window.dispatchEvent(new CustomEvent('editor-redo'));
+        useEditorViewStore.getState().redo();
       }
       
-      // Select All - only when editor is focused
       if (modifier && e.key === 'a') {
         const activeEl = document.activeElement;
         if (activeEl?.closest('.cm-editor')) {
           e.preventDefault();
-          window.dispatchEvent(new CustomEvent('editor-select-all'));
+          useEditorViewStore.getState().selectAll();
         }
       }
       
-      // Find & Replace
       if (modifier && e.key === 'f') {
         e.preventDefault();
         useSearchStore.getState().setShowSearchReplace(true);
       }
       
-      // Go To Line
       if (modifier && e.key === 'g') {
         e.preventDefault();
-        window.dispatchEvent(new CustomEvent('show-goto-dialog'));
+        useEditorViewStore.getState().setShowGoToDialog(true);
       }
       
-      // Zoom In
       if (modifier && (e.key === '+' || e.key === '=')) {
         e.preventDefault();
         zoomIn();
       }
       
-      // Zoom Out
       if (modifier && e.key === '-') {
         e.preventDefault();
         zoomOut();
       }
       
-      // Reset Zoom
       if (modifier && e.key === '0') {
         e.preventDefault();
         resetZoom();
       }
       
-      // Delete Line
       if (modifier && e.shiftKey && e.key === 'K') {
         e.preventDefault();
-        window.dispatchEvent(new CustomEvent('editor-delete-line'));
+        useEditorViewStore.getState().deleteLine();
       }
       
-      // Duplicate Line
       if (modifier && e.shiftKey && e.key === 'D') {
         e.preventDefault();
-        window.dispatchEvent(new CustomEvent('editor-duplicate-line'));
+        useEditorViewStore.getState().duplicateLine();
       }
       
-      // Select Line
       if (modifier && e.key === 'l') {
         e.preventDefault();
-        window.dispatchEvent(new CustomEvent('editor-select-line'));
+        useEditorViewStore.getState().selectLine();
       }
       
-      // Move Line Up
       if (e.altKey && e.key === 'ArrowUp') {
         e.preventDefault();
-        window.dispatchEvent(new CustomEvent('editor-move-line-up'));
+        useEditorViewStore.getState().moveLineUp();
       }
       
-      // Move Line Down
       if (e.altKey && e.key === 'ArrowDown') {
         e.preventDefault();
-        window.dispatchEvent(new CustomEvent('editor-move-line-down'));
+        useEditorViewStore.getState().moveLineDown();
       }
       
-      // Insert Date/Time (moved to Alt+D)
       if (e.altKey && e.key === 'd') {
         e.preventDefault();
         const now = new Date();
@@ -604,17 +528,13 @@ export const Editor = () => {
           hour: '2-digit',
           minute: '2-digit',
         });
-        window.dispatchEvent(
-          new CustomEvent('editor-insert', {
-            detail: { kind: 'wrap', before: formatted, after: '', placeholder: '' },
-          })
-        );
+        useEditorViewStore.getState().insert('wrap', { before: formatted, after: '', placeholder: '' });
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [zoomIn, zoomOut, resetZoom, turndownService]);
+  }, [zoomIn, zoomOut, resetZoom]);
 
   // Debounced content update for better performance
   const debouncedSetContent = useMemo(
@@ -624,14 +544,11 @@ export const Editor = () => {
     [setContent]
   );
 
-  // Flush debounced content on export events
+  // Register debouncedSetContent in store for flush support
   useEffect(() => {
-    const handleFlush = () => {
-      debouncedSetContent.flush();
-    };
-    window.addEventListener('editor-flush-content', handleFlush);
-    return () => window.removeEventListener('editor-flush-content', handleFlush);
-  }, [debouncedSetContent]);
+    setDebouncedSetContent(debouncedSetContent);
+    return () => setDebouncedSetContent(null);
+  }, [debouncedSetContent, setDebouncedSetContent]);
 
   const onChange = useCallback(
     (value: string) => {
@@ -651,14 +568,12 @@ export const Editor = () => {
       const selection = view.state.selection.main;
       const doc = view.state.doc;
       
-      // Get cursor position
       const line = doc.lineAt(selection.head);
       const lineNum = line.number;
       const col = selection.head - line.from + 1;
       
       setCursorPosition(lineNum, col);
       
-      // Get selected text word count
       if (selection.from !== selection.to) {
         const selectedText = doc.sliceString(selection.from, selection.to);
         const words = selectedText.trim().split(/\s+/).filter(w => w.length > 0).length;
@@ -668,7 +583,6 @@ export const Editor = () => {
       }
     };
     
-    // Also listen to selection changes via document event
     const handleSelectionChange = () => {
       requestAnimationFrame(updateCursorInfo);
     };
@@ -680,15 +594,12 @@ export const Editor = () => {
         requestAnimationFrame(tryAttach);
         return;
       }
-      // Listen to multiple events for robust tracking
       view.dom.addEventListener('click', updateCursorInfo);
       view.dom.addEventListener('keyup', updateCursorInfo);
       view.dom.addEventListener('focus', updateCursorInfo);
       view.dom.addEventListener('mouseup', updateCursorInfo);
       document.addEventListener('selectionchange', handleSelectionChange);
       handlersAttached = true;
-      
-      // Initial update
       updateCursorInfo();
     };
 
@@ -705,26 +616,14 @@ export const Editor = () => {
     };
   }, [setCursorPosition, setSelectedWords]);
 
-  // Listen for preview clicks to set cursor position
+  // Listen for preview clicks to set cursor position (kept as window event - scroll sync)
   useEffect(() => {
     const handlePreviewClick = (e: Event) => {
       const customEvent = e as CustomEvent;
       const line = customEvent.detail;
       
       if (viewRef.current && typeof line === 'number') {
-        const view = viewRef.current;
-        const doc = view.state.doc;
-        const lineCount = doc.lines;
-        
-        // Ensure line is within bounds
-        const targetLine = Math.min(Math.max(1, line), lineCount);
-        const pos = doc.line(targetLine).from;
-        
-        view.dispatch({
-          selection: { anchor: pos },
-          scrollIntoView: true,
-        });
-        view.focus();
+        useEditorViewStore.getState().goToLine(line);
       }
     };
 
@@ -732,7 +631,7 @@ export const Editor = () => {
     return () => window.removeEventListener('preview-click', handlePreviewClick);
   }, []);
 
-  // Smooth scroll sync using RAF + interpolation
+  // Smooth scroll sync using RAF + interpolation (kept as window events)
   useEffect(() => {
     if (!syncScroll || !editorRef.current) return;
 
@@ -749,7 +648,6 @@ export const Editor = () => {
       let currentScrollTop = editorScroll.scrollTop;
       let targetScrollTop = editorScroll.scrollTop;
 
-      // Smooth scroll animation
       const animateScroll = () => {
         const diff = Math.abs(targetScrollTop - currentScrollTop);
         
@@ -757,14 +655,12 @@ export const Editor = () => {
           currentScrollTop = targetScrollTop;
           editorScroll.scrollTop = currentScrollTop;
           smoothRafId = null;
-          // Release sync lock
           requestAnimationFrame(() => {
             isSyncing = false;
           });
           return;
         }
 
-        // Smooth interpolation
         currentScrollTop += (targetScrollTop - currentScrollTop) * 0.15;
         editorScroll.scrollTop = currentScrollTop;
         
@@ -782,7 +678,6 @@ export const Editor = () => {
           const maxScroll = editorScroll.scrollHeight - editorScroll.clientHeight;
           const scrollPercentage = maxScroll > 0 ? editorScroll.scrollTop / maxScroll : 0;
 
-          // Compute top visible line for higher precision
           let topLine = 1;
           if (viewRef.current) {
             const view = viewRef.current;
@@ -820,19 +715,16 @@ export const Editor = () => {
             const rect = editorScroll.getBoundingClientRect();
             if (coords) {
               const delta = coords.top - rect.top;
-              // Set target and start smooth animation
               targetScrollTop = editorScroll.scrollTop + delta;
               currentScrollTop = editorScroll.scrollTop;
               animateScroll();
             } else if (maxScroll > 0 && detail.ratio != null) {
-              // Set target and start smooth animation
               targetScrollTop = detail.ratio * maxScroll;
               currentScrollTop = editorScroll.scrollTop;
               animateScroll();
             }
           } else {
             const ratio = typeof detail === 'number' ? detail : detail?.ratio ?? 0;
-            // Set target and start smooth animation
             targetScrollTop = ratio * maxScroll;
             currentScrollTop = editorScroll.scrollTop;
             animateScroll();
@@ -876,213 +768,6 @@ export const Editor = () => {
     }
   }, [currentSearchIndex, searchResults]);
 
-  // Edit commands handler
-  useEffect(() => {
-    const handleUndo = () => {
-      if (viewRef.current) {
-        undo(viewRef.current);
-        emitHistoryState();
-      }
-    };
-
-    const handleRedo = () => {
-      if (viewRef.current) {
-        redo(viewRef.current);
-        emitHistoryState();
-      }
-    };
-
-    const handleSelectAll = () => {
-      if (viewRef.current) {
-        const view = viewRef.current;
-        const doc = view.state.doc;
-        view.dispatch({
-          selection: { anchor: 0, head: doc.length },
-        });
-        view.focus();
-      }
-    };
-    
-    const handleDeleteLine = () => {
-      if (viewRef.current) {
-        deleteLine(viewRef.current);
-        emitHistoryState();
-      }
-    };
-    
-    const handleDuplicateLine = () => {
-      if (viewRef.current) {
-        copyLineDown(viewRef.current);
-        emitHistoryState();
-      }
-    };
-    
-    const handleSelectLine = () => {
-      if (viewRef.current) {
-        selectLine(viewRef.current);
-      }
-    };
-    
-    const handleMoveLineUp = () => {
-      if (viewRef.current) {
-        moveLineUp(viewRef.current);
-        emitHistoryState();
-      }
-    };
-    
-    const handleMoveLineDown = () => {
-      if (viewRef.current) {
-        moveLineDown(viewRef.current);
-        emitHistoryState();
-      }
-    };
-    
-    const handleGoToLine = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      const { line } = customEvent.detail;
-      
-      if (viewRef.current && typeof line === 'number') {
-        const view = viewRef.current;
-        const doc = view.state.doc;
-        const lineCount = doc.lines;
-        
-        const targetLine = Math.min(Math.max(1, line), lineCount);
-        const pos = doc.line(targetLine).from;
-        
-        view.dispatch({
-          selection: { anchor: pos },
-          scrollIntoView: true,
-        });
-        view.focus();
-      }
-    };
-    
-    const handleConvertCase = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      const { caseType } = customEvent.detail;
-      
-      if (!viewRef.current) return;
-      
-      const view = viewRef.current;
-      const selection = view.state.selection.main;
-      
-      if (selection.from === selection.to) return; // No selection
-      
-      const selectedText = view.state.sliceDoc(selection.from, selection.to);
-      let convertedText = selectedText;
-      
-      switch (caseType) {
-        case 'upper':
-          convertedText = selectedText.toUpperCase();
-          break;
-        case 'lower':
-          convertedText = selectedText.toLowerCase();
-          break;
-        case 'title':
-          convertedText = selectedText.replace(/\w\S*/g, (txt) => 
-            txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-          );
-          break;
-      }
-      
-      view.dispatch({
-        changes: { from: selection.from, to: selection.to, insert: convertedText },
-        selection: { anchor: selection.from, head: selection.from + convertedText.length },
-      });
-      
-      emitHistoryState();
-    };
-
-    window.addEventListener('editor-undo', handleUndo);
-    window.addEventListener('editor-redo', handleRedo);
-    window.addEventListener('editor-select-all', handleSelectAll);
-    window.addEventListener('editor-delete-line', handleDeleteLine);
-    window.addEventListener('editor-duplicate-line', handleDuplicateLine);
-    window.addEventListener('editor-select-line', handleSelectLine);
-    window.addEventListener('editor-move-line-up', handleMoveLineUp);
-    window.addEventListener('editor-move-line-down', handleMoveLineDown);
-    window.addEventListener('editor-goto-line', handleGoToLine);
-    window.addEventListener('editor-convert-case', handleConvertCase);
-
-    return () => {
-      window.removeEventListener('editor-undo', handleUndo);
-      window.removeEventListener('editor-redo', handleRedo);
-      window.removeEventListener('editor-select-all', handleSelectAll);
-      window.removeEventListener('editor-delete-line', handleDeleteLine);
-      window.removeEventListener('editor-duplicate-line', handleDuplicateLine);
-      window.removeEventListener('editor-select-line', handleSelectLine);
-      window.removeEventListener('editor-move-line-up', handleMoveLineUp);
-      window.removeEventListener('editor-move-line-down', handleMoveLineDown);
-      window.removeEventListener('editor-goto-line', handleGoToLine);
-      window.removeEventListener('editor-convert-case', handleConvertCase);
-    };
-  }, []);
-
-  // Emit history state changes for Edit menu
-  const emitHistoryState = () => {
-    if (viewRef.current) {
-      window.dispatchEvent(
-        new CustomEvent('editor-history-change', {
-          detail: {
-            canUndo: undoDepth(viewRef.current.state) > 0,
-            canRedo: redoDepth(viewRef.current.state) > 0,
-          },
-        })
-      );
-    }
-  };
-
-  // Insertion bus - handles all toolbar insertions at the correct cursor position
-  useEffect(() => {
-    const handleInsert = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      const { kind, before, after, placeholder, block } = customEvent.detail;
-      
-      if (!viewRef.current) return;
-      
-      const view = viewRef.current;
-      const state = view.state;
-      const selection = state.selection.main;
-      
-      if (kind === 'wrap') {
-        // Wrap selection or insert with placeholder
-        const selectedText = state.sliceDoc(selection.from, selection.to);
-        const textToInsert = selectedText || (placeholder || 'text');
-        const fullText = before + textToInsert + (after || '');
-        
-        view.dispatch({
-          changes: { from: selection.from, to: selection.to, insert: fullText },
-          selection: EditorSelection.cursor(selection.from + before.length + textToInsert.length + (after?.length || 0)),
-          scrollIntoView: true,
-        });
-      } else if (kind === 'block') {
-        // Insert block with proper newlines
-        const doc = state.doc;
-        const line = doc.lineAt(selection.from);
-        const isStartOfLine = selection.from === line.from;
-        const isEndOfDoc = selection.from === doc.length;
-        
-        // Add newlines as needed
-        const prefix = isStartOfLine || line.text.trim() === '' ? '' : '\n\n';
-        const suffix = isEndOfDoc ? '' : '\n\n';
-        const fullBlock = prefix + block + suffix;
-        
-        view.dispatch({
-          changes: { from: selection.from, to: selection.from, insert: fullBlock },
-          selection: EditorSelection.cursor(selection.from + fullBlock.length),
-          scrollIntoView: true,
-        });
-      }
-      
-      view.focus();
-      emitHistoryState();
-    };
-
-    window.addEventListener('editor-insert', handleInsert);
-    return () => window.removeEventListener('editor-insert', handleInsert);
-  }, []);
-
-
   return (
     <>
       <CommandPalette />
@@ -1116,6 +801,7 @@ export const Editor = () => {
           onChange={onChange}
           onCreateEditor={(view) => {
             viewRef.current = view;
+            setView(view);
           }}
           className="h-full text-base"
           basicSetup={{
