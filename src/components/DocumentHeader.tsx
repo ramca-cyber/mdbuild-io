@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useSettingsStore } from '@/store/settingsStore';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -14,7 +15,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Database, ListTree, Link } from 'lucide-react';
+import { Database, ListTree, Link as LinkIcon, Home, HelpCircle, Moon, Sun, Keyboard, Menu } from 'lucide-react';
 import { toast } from 'sonner';
 import { calculateStorageUsage, formatStorageSize } from '@/lib/storageUtils';
 import { useDocumentActions } from '@/hooks/useDocumentActions';
@@ -30,9 +31,18 @@ import { SettingsMenu } from './SettingsMenu';
 import { SnippetsMenu } from './SnippetsMenu';
 import { DocumentSettingsDialog } from './DocumentSettingsDialog';
 import { ViewModeSwitcher } from './ViewModeSwitcher';
+import { PWAInstallButton } from './PWAInstallButton';
 
-export function DocumentHeader() {
+interface DocumentHeaderProps {
+  showKeyboardShortcuts: boolean;
+  setShowKeyboardShortcuts: (show: boolean) => void;
+  setMobilePanel: (panel: 'documents' | 'templates' | 'outline' | null) => void;
+}
+
+export function DocumentHeader({ showKeyboardShortcuts, setShowKeyboardShortcuts, setMobilePanel }: DocumentHeaderProps) {
   const {
+    theme,
+    setTheme,
     autoSave,
     setAutoSave,
     viewMode,
@@ -66,38 +76,53 @@ export function DocumentHeader() {
 
   return (
     <>
-      <div className="h-12 border-b bg-background flex items-center justify-between px-4 gap-4 no-print">
-        {/* LEFT: Menus */}
+      <div className="h-12 border-b bg-background flex items-center justify-between px-3 gap-2 no-print">
+        {/* LEFT: Logo + Menus */}
         <div className="flex items-center gap-2">
-          <FileMenu
-            currentDoc={actions.currentDoc}
-            savedDocuments={actions.savedDocuments}
-            currentDocId={actions.currentDocId}
-            hasUnsavedChanges={actions.hasUnsavedChanges}
-            onNewDocument={actions.handleNewDocument}
-            onQuickSave={actions.handleQuickSave}
-            onOpenSaveAs={() => actions.setSaveAsOpen(true)}
-            onOpenDocDialog={() => actions.setOpenDocOpen(true)}
-            onDuplicate={actions.handleDuplicateDocument}
-            onPrint={actions.handlePrint}
-            onImport={actions.handleImport}
-            onExportMarkdown={actions.handleExportMarkdown}
-            onExportHTML={actions.handleExportHTML}
-            onExportPDF={actions.handleExportPDF}
-            onExportDOCX={actions.handleExportDOCX}
-            onDeleteCurrent={() => actions.currentDoc && actions.setDeleteConfirm(actions.currentDoc.id)}
-            loadDocument={actions.loadDocument}
-            getRecentDocuments={actions.getRecentDocuments}
-          />
-          <EditMenu />
-          <FormatMenu />
-          <ViewMenu />
-          <SnippetsMenu />
-          <SettingsMenu />
+          <Link to="/landing" className="flex items-center gap-1.5 mr-1">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">M</span>
+            </div>
+          </Link>
+          
+          <div className="hidden sm:flex items-center gap-1">
+            <FileMenu
+              currentDoc={actions.currentDoc}
+              savedDocuments={actions.savedDocuments}
+              currentDocId={actions.currentDocId}
+              hasUnsavedChanges={actions.hasUnsavedChanges}
+              onNewDocument={actions.handleNewDocument}
+              onQuickSave={actions.handleQuickSave}
+              onOpenSaveAs={() => actions.setSaveAsOpen(true)}
+              onOpenDocDialog={() => actions.setOpenDocOpen(true)}
+              onDuplicate={actions.handleDuplicateDocument}
+              onPrint={actions.handlePrint}
+              onImport={actions.handleImport}
+              onExportMarkdown={actions.handleExportMarkdown}
+              onExportHTML={actions.handleExportHTML}
+              onExportPDF={actions.handleExportPDF}
+              onExportDOCX={actions.handleExportDOCX}
+              onDeleteCurrent={() => actions.currentDoc && actions.setDeleteConfirm(actions.currentDoc.id)}
+              loadDocument={actions.loadDocument}
+              getRecentDocuments={actions.getRecentDocuments}
+            />
+            <EditMenu />
+            <FormatMenu />
+            <ViewMenu />
+            <SnippetsMenu />
+            <SettingsMenu />
+          </div>
+
+          {/* Mobile hamburger */}
+          <div className="sm:hidden">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMobilePanel('documents')} aria-label="Open menu">
+              <Menu className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* CENTER: Document Name */}
-        <div className="flex-1 flex items-center justify-center gap-2">
+        <div className="flex-1 flex items-center justify-center gap-2 min-w-0">
           <DocumentNameEditor
             currentDoc={actions.currentDoc}
             hasUnsavedChanges={actions.hasUnsavedChanges}
@@ -108,54 +133,96 @@ export function DocumentHeader() {
         </div>
 
         {/* RIGHT: Controls */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Switch id="auto-save" checked={autoSave} onCheckedChange={setAutoSave} aria-label="Toggle auto-save" />
-            <Label htmlFor="auto-save" className="text-xs cursor-pointer text-muted-foreground">Auto-save</Label>
+        <div className="flex items-center gap-1.5">
+          <div className="hidden xl:flex items-center gap-1.5">
+            <Switch id="auto-save" checked={autoSave} onCheckedChange={setAutoSave} aria-label="Toggle auto-save" className="scale-90" />
+            <Label htmlFor="auto-save" className="text-xs cursor-pointer text-muted-foreground">Auto</Label>
           </div>
 
-          <button
-            onClick={() => setStorageDialogOpen(true)}
-            className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md transition-colors hover:bg-accent ${
-              storageInfo.isCritical
-                ? 'text-destructive font-semibold'
-                : storageInfo.isNearLimit
-                ? 'text-yellow-600 dark:text-yellow-500 font-medium'
-                : 'text-muted-foreground'
-            }`}
-            title={`Storage: ${formatStorageSize(storageInfo.bytes)} used (${storageInfo.percentage.toFixed(0)}%). Click for details.`}
-            aria-label={`Storage usage: ${storageInfo.percentage.toFixed(0)}% used. Click to view details.`}
-          >
-            <Database className="h-3.5 w-3.5" />
-            <span className="font-mono">{storageInfo.percentage.toFixed(0)}%</span>
-          </button>
+          <div className="hidden lg:block">
+            <button
+              onClick={() => setStorageDialogOpen(true)}
+              className={`flex items-center gap-1 text-xs px-2 py-1 rounded-md transition-colors hover:bg-accent ${
+                storageInfo.isCritical
+                  ? 'text-destructive font-semibold'
+                  : storageInfo.isNearLimit
+                  ? 'text-yellow-600 dark:text-yellow-500 font-medium'
+                  : 'text-muted-foreground'
+              }`}
+              title={`Storage: ${formatStorageSize(storageInfo.bytes)} used`}
+              aria-label={`Storage usage: ${storageInfo.percentage.toFixed(0)}% used`}
+            >
+              <Database className="h-3.5 w-3.5" />
+              <span className="font-mono">{storageInfo.percentage.toFixed(0)}%</span>
+            </button>
+          </div>
 
-          <div className="w-px h-6 bg-border mx-2" />
+          <div className="w-px h-5 bg-border" />
           <ViewModeSwitcher />
-          <div className="w-px h-6 bg-border mx-2" />
+          <div className="w-px h-5 bg-border hidden lg:block" />
 
-          <div className="flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-0.5">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant={showOutline ? 'default' : 'ghost'} size="sm" onClick={() => setShowOutline(!showOutline)} className="h-8 gap-1.5" aria-label="Toggle outline panel">
+                <Button variant={showOutline ? 'default' : 'ghost'} size="sm" onClick={() => setShowOutline(!showOutline)} className="h-8 gap-1" aria-label="Toggle outline panel">
                   <ListTree className="h-4 w-4" />
-                  <span className="hidden lg:inline text-xs">Outline</span>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent><p>Toggle Outline (Ctrl+B)</p></TooltipContent>
+              <TooltipContent><p>Toggle Outline</p></TooltipContent>
             </Tooltip>
 
             {viewMode === 'split' && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant={syncScroll ? 'default' : 'ghost'} size="sm" onClick={() => setSyncScroll(!syncScroll)} className="h-8 gap-1.5" aria-label="Toggle sync scrolling">
-                    <Link className="h-4 w-4" />
-                    <span className="hidden lg:inline text-xs">Sync</span>
+                  <Button variant={syncScroll ? 'default' : 'ghost'} size="sm" onClick={() => setSyncScroll(!syncScroll)} className="h-8 gap-1" aria-label="Toggle sync scrolling">
+                    <LinkIcon className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent><p>Sync Scrolling</p></TooltipContent>
               </Tooltip>
             )}
+          </div>
+
+          <div className="w-px h-5 bg-border hidden lg:block" />
+
+          {/* Nav & Utility */}
+          <div className="hidden lg:flex items-center gap-0.5">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" asChild>
+                  <Link to="/landing"><Home className="h-4 w-4" /></Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Home</p></TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" asChild>
+                  <Link to="/help"><HelpCircle className="h-4 w-4" /></Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Help</p></TooltipContent>
+            </Tooltip>
+            <PWAInstallButton />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => {
+                  const nextTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'sepia' : 'light';
+                  setTheme(nextTheme);
+                }}>
+                  {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Toggle Theme</p></TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setShowKeyboardShortcuts(true)}>
+                  <Keyboard className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Keyboard Shortcuts</p></TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </div>

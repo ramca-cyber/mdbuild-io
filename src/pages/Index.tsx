@@ -1,11 +1,9 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Panel, PanelGroup } from 'react-resizable-panels';
 import { ResizableHandle } from '@/components/ui/resizable';
-import { Link } from 'react-router-dom';
 import { SEO } from '@/components/SEO';
 import { Editor } from '@/components/Editor';
 import { Preview } from '@/components/Preview';
-import { Toolbar } from '@/components/Toolbar';
 import { DocumentHeader } from '@/components/DocumentHeader';
 import { OutlinePanel } from '@/components/OutlinePanel';
 import { TemplatesDrawer } from '@/components/TemplatesDrawer';
@@ -15,12 +13,11 @@ import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog';
 import { ErrorConsole } from '@/components/ErrorConsole';
 import { useDocumentStore } from '@/store/documentStore';
 import { useSettingsStore } from '@/store/settingsStore';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, FileText, Settings, BookTemplate, List, Home, X, Moon, Sun, Keyboard, HelpCircle } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { calculateStatistics } from '@/lib/statisticsUtils';
-import { PWAInstallButton } from '@/components/PWAInstallButton';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
@@ -124,165 +121,15 @@ const Index = () => {
         Skip to content
       </a>
       
-      {/* Header */}
+      
+      {/* Document Header (merged with app header) */}
       {!focusMode && (
-      <header className="no-print flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border bg-gradient-to-r from-primary/10 to-accent/10" role="banner">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-base sm:text-lg">M</span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              MDBuild.io
-            </h1>
-          </div>
-        </div>
-
-        {/* Mobile menu - Consolidated */}
-        <div className="lg:hidden">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Open menu">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-64">
-              <SheetHeader>
-                <SheetTitle>Menu</SheetTitle>
-              </SheetHeader>
-              <div className="flex flex-col gap-2 mt-6">
-                <Button variant="ghost" className="justify-start" asChild>
-                  <Link to="/landing">
-                    <Home className="h-4 w-4 mr-2" />
-                    Home
-                  </Link>
-                </Button>
-                
-                <Button variant="ghost" className="justify-start" asChild>
-                  <Link to="/help">
-                    <HelpCircle className="h-4 w-4 mr-2" />
-                    Help
-                  </Link>
-                </Button>
-                
-                <Button
-                  variant="ghost" 
-                  className="justify-start"
-                  onClick={() => setMobilePanel('documents')}
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Documents
-                </Button>
-                
-                <Button 
-                  variant="ghost" 
-                  className="justify-start"
-                  onClick={() => setMobilePanel('templates')}
-                >
-                  <BookTemplate className="h-4 w-4 mr-2" />
-                  Templates
-                </Button>
-                
-                {/* Visual Separator */}
-                <div className="h-px bg-border my-2" />
-                
-                <Button 
-                  variant="ghost" 
-                  className="justify-start"
-                  onClick={() => setMobilePanel('outline')}
-                >
-                  <List className="h-4 w-4 mr-2" />
-                  Outline
-                </Button>
-                
-                <Button 
-                  variant="ghost" 
-                  className="justify-start"
-                  onClick={() => {
-                    const nextTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'sepia' : 'light';
-                    setTheme(nextTheme);
-                  }}
-                >
-                  {theme === 'light' ? <Moon className="h-4 w-4 mr-2" /> : theme === 'dark' ? <Sun className="h-4 w-4 mr-2" /> : <Sun className="h-4 w-4 mr-2" />}
-                  Theme ({theme === 'light' ? 'Light' : theme === 'dark' ? 'Dark' : 'Sepia'})
-                </Button>
-                
-                <Button 
-                  variant="ghost" 
-                  className="justify-start"
-                  onClick={() => {
-                    setShowKeyboardShortcuts(true);
-                  }}
-                >
-                  <Keyboard className="h-4 w-4 mr-2" />
-                  Keyboard Shortcuts
-                </Button>
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-
-        {/* Desktop menu */}
-        <div className="hidden lg:flex items-center gap-2">
-          {/* Primary Navigation Group */}
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/landing" className="flex items-center gap-2">
-              <Home className="h-4 w-4" />
-              <span>Home</span>
-            </Link>
-          </Button>
-          
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/help" className="flex items-center gap-2">
-              <HelpCircle className="h-4 w-4" />
-              <span>Help</span>
-            </Link>
-          </Button>
-          
-          {/* Visual Separator */}
-          <div className="w-px h-6 bg-border mx-1" />
-          
-          {/* Utility Group */}
-          <PWAInstallButton />
-          
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => {
-                  const nextTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'sepia' : 'light';
-                  setTheme(nextTheme);
-                }}
-              >
-                {theme === 'light' ? <Moon className="h-4 w-4" /> : theme === 'dark' ? <Sun className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Toggle Theme (Light/Dark/Sepia)</p>
-            </TooltipContent>
-          </Tooltip>
-          
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => setShowKeyboardShortcuts(true)}
-              >
-                <Keyboard className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Keyboard Shortcuts</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-      </header>
+        <DocumentHeader 
+          showKeyboardShortcuts={showKeyboardShortcuts}
+          setShowKeyboardShortcuts={setShowKeyboardShortcuts}
+          setMobilePanel={setMobilePanel}
+        />
       )}
-
-      {/* Document Header */}
-      {!focusMode && <DocumentHeader />}
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">

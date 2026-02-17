@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDocumentStore } from '@/store/documentStore';
+import { useSettingsStore } from '@/store/settingsStore';
+import { useEditorViewStore } from '@/store/editorViewStore';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { List, ChevronRight } from 'lucide-react';
@@ -54,15 +56,19 @@ const buildHeadingTree = (headings: Heading[]): TreeNode[] => {
 
 export const OutlinePanel = () => {
   const { content } = useDocumentStore();
+  const { viewMode } = useSettingsStore();
+  const { goToLine } = useEditorViewStore();
   const [headings, setHeadings] = useState<Heading[]>([]);
   const [tree, setTree] = useState<TreeNode[]>([]);
+  const [headingLineMap, setHeadingLineMap] = useState<Map<string, number>>(new Map());
 
   useEffect(() => {
     const lines = content.split('\n');
     const found: Heading[] = [];
     const slugCounts = new Map<string, number>();
+    const lineMap = new Map<string, number>();
     
-    lines.forEach((line) => {
+    lines.forEach((line, lineIndex) => {
       const match = line.match(/^(#{1,6})\s+(.+)$/);
       if (match) {
         let slug = slugify(match[2]);
@@ -76,21 +82,29 @@ export const OutlinePanel = () => {
           text: match[2],
           id: slug,
         });
+        lineMap.set(slug, lineIndex + 1); // 1-indexed
       }
     });
     
     setHeadings(found);
     setTree(buildHeadingTree(found));
+    setHeadingLineMap(lineMap);
   }, [content]);
 
   const scrollToHeading = (id: string) => {
+    // In editor-only mode, scroll the editor to the heading's source line
+    if (viewMode === 'editor') {
+      const line = headingLineMap.get(id);
+      if (line) goToLine(line);
+      return;
+    }
+
     const preview = document.querySelector('.preview-content') as HTMLElement | null;
     if (!preview) return;
 
     const target = preview.querySelector(`#${CSS.escape(id)}`) as HTMLElement | null;
 
     if (target) {
-      // Compute unscaled offset relative to the scroll container
       let top = 0;
       let node: HTMLElement | null = target;
       while (node && node !== preview) {

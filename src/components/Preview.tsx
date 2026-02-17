@@ -546,15 +546,7 @@ export const Preview = () => {
 
   return (
     <div className="h-full w-full flex flex-col overflow-hidden bg-preview-bg">
-      <div className="px-4 py-2 bg-muted/50 border-b-2 border-border/80 flex-shrink-0 no-print shadow-sm flex items-center justify-between gap-3">
-        {/* Left side: Preview title */}
-        <div className="flex items-center gap-3">
-          <h2 className="text-sm font-bold text-foreground/70 uppercase tracking-wider">
-            Preview
-          </h2>
-        </div>
-
-        {/* Right side: Tools */}
+      <div className="px-2 py-1.5 bg-muted/50 border-b border-border/60 flex-shrink-0 no-print flex items-center justify-end gap-2">
         <div className="flex items-center gap-2">
 
 

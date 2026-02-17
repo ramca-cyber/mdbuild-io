@@ -16,12 +16,17 @@ graph LR
 
   useEffect(() => {
     let currentIndex = 0;
+    let cycles = 0;
     const interval = setInterval(() => {
       if (currentIndex <= fullMarkdown.length) {
         setTypedText(fullMarkdown.slice(0, currentIndex));
         currentIndex++;
       } else {
-        // Reset after a pause
+        cycles++;
+        if (cycles >= 2) {
+          clearInterval(interval);
+          return;
+        }
         setTimeout(() => {
           currentIndex = 0;
           setTypedText("");

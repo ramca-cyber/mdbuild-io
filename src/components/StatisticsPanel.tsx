@@ -26,6 +26,7 @@ export const StatisticsPanel = () => {
   const { showGoToDialog, setShowGoToDialog } = useEditorViewStore();
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [, setTick] = useState(0);
   const isMobile = useIsMobile();
 
   // Collapse statistics on mobile by default
@@ -43,6 +44,13 @@ export const StatisticsPanel = () => {
       setIsSaving(true);
     }
   }, [hasUnsavedChanges, autoSave]);
+
+  // Refresh "saved X ago" text periodically
+  useEffect(() => {
+    if (!lastSaved) return;
+    const interval = setInterval(() => setTick(t => t + 1), 30000);
+    return () => clearInterval(interval);
+  }, [lastSaved]);
 
   const stats = useMemo(() => calculateStatistics(content), [content]);
   const totalLines = content.split('\n').length;
