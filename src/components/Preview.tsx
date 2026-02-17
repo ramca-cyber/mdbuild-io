@@ -26,6 +26,7 @@ import { Separator } from '@/components/ui/separator';
 import { ZoomIn, ZoomOut, Printer, Copy, FileText } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { copyMarkdownToClipboard, copyRichTextToClipboard } from '@/lib/markdownCopyUtils';
+import { PreviewContextMenu } from '@/components/EditorContextMenu';
 
 // TypeScript interfaces
 interface CodeProps {
@@ -545,6 +546,7 @@ export const Preview = () => {
   );
 
   return (
+    <PreviewContextMenu>
     <div className="h-full w-full flex flex-col overflow-hidden bg-preview-bg">
       <div className="px-2 py-1.5 bg-muted/50 border-b border-border/60 flex-shrink-0 no-print flex items-center justify-end gap-2">
         <div className="flex items-center gap-2">
@@ -678,5 +680,6 @@ export const Preview = () => {
         </div>
       </div>
     </div>
+    </PreviewContextMenu>
   );
 };

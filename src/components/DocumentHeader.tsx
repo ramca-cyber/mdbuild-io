@@ -26,6 +26,7 @@ import { SaveAsDialog } from './SaveAsDialog';
 import { OpenDocumentDialog } from './OpenDocumentDialog';
 import { EditMenu } from './EditMenu';
 import { FormatMenu } from './FormatMenu';
+import { InsertMenu } from './InsertMenu';
 import { ViewMenu } from './ViewMenu';
 import { SettingsMenu } from './SettingsMenu';
 import { DocumentSettingsDialog } from './DocumentSettingsDialog';
@@ -108,6 +109,7 @@ export function DocumentHeader({ showKeyboardShortcuts, setShowKeyboardShortcuts
             />
             <EditMenu />
             <FormatMenu />
+            <InsertMenu />
             <ViewMenu />
             <SettingsMenu />
           </div>

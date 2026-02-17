@@ -23,12 +23,6 @@ import {
   List,
   ListOrdered,
   ListTodo,
-  Link,
-  Image,
-  Quote,
-  Code2,
-  Minus,
-  Table,
   Type,
   Eraser,
 } from 'lucide-react';
@@ -117,39 +111,6 @@ export const FormatMenu = () => {
               <MenubarItem onClick={() => insertAtCursor('- [ ] ', '')}>
                 <ListTodo className="h-4 w-4 mr-2" />
                 Task List
-              </MenubarItem>
-            </MenubarSubContent>
-          </MenubarSub>
-
-          <MenubarSub>
-            <MenubarSubTrigger>
-              <Link className="h-4 w-4 mr-2" />
-              Insert
-            </MenubarSubTrigger>
-            <MenubarSubContent>
-              <MenubarItem onClick={() => insertAtCursor('[', '](url)')}>
-                <Link className="h-4 w-4 mr-2" />
-                Link
-              </MenubarItem>
-              <MenubarItem onClick={() => insertAtCursor('![alt](', ')')}>
-                <Image className="h-4 w-4 mr-2" />
-                Image
-              </MenubarItem>
-              <MenubarItem onClick={() => insertAtCursor('> ', '')}>
-                <Quote className="h-4 w-4 mr-2" />
-                Blockquote
-              </MenubarItem>
-              <MenubarItem onClick={() => insertAtCursor('```\n', '\n```')}>
-                <Code2 className="h-4 w-4 mr-2" />
-                Code Block
-              </MenubarItem>
-              <MenubarItem onClick={() => insertAtCursor('---\n', '')}>
-                <Minus className="h-4 w-4 mr-2" />
-                Horizontal Rule
-              </MenubarItem>
-              <MenubarItem onClick={() => insertAtCursor('| Column 1 | Column 2 |\n|----------|----------|\n| ', ' |  |')}>
-                <Table className="h-4 w-4 mr-2" />
-                Table
               </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
