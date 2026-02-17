@@ -1,140 +1,104 @@
 
 
-# Refactor: Replace Global Event Bus with Zustand EditorView Store
+# UI/UX Review Implementation Plan
 
-## Overview
+## Summary
 
-Replace 18 custom `window.dispatchEvent`/`addEventListener` event types with a Zustand store that holds the CodeMirror `EditorView` ref and exposes typed action methods. All toolbar/menu components will call store methods directly instead of dispatching untyped `CustomEvent`s.
+This plan addresses the most impactful findings from the UI/UX review, organized into phases. The review identifies ~40% of screen space consumed by chrome, 4 overlapping toolbar surfaces, and several interaction bugs.
 
-## Architecture
+## Phase 1: Quick Wins (High Impact, Low Effort)
 
-The core idea: create an `editorViewStore` that holds a reference to the CodeMirror `EditorView`. Any component that needs to command the editor (insert text, undo, scroll, etc.) imports the store and calls a typed method.
+### 1A. Remove "Markdown Editor" and "Preview" panel header labels
+- **Editor.tsx**: Remove the `<h2>Markdown Editor</h2>` text from the editor panel header (line 257-263). Keep the CompactToolbar row but make it slimmer.
+- **Preview.tsx**: Remove the `<h2>Preview</h2>` text from the preview panel header (line 552-555). Keep the tool buttons.
+- **Savings**: ~16px per panel, reduced visual noise.
 
-```text
-Before:
-  Toolbar --dispatchEvent('editor-insert')--> window --> Editor (addEventListener)
+### 1B. Fix FloatingToolbar viewport clamping
+- **FloatingToolbar.tsx**: Add bounds checking to the position calculation (lines 39-42):
+  - Clamp X to `Math.max(8, Math.min(window.innerWidth - toolbarWidth - 8, calculated_x))`
+  - Flip Y below selection if it would go above viewport: `calculated_y < 8 ? rect.bottom + 8 : calculated_y`
 
-After:
-  Toolbar --useEditorViewStore().insert()--> directly operates on EditorView
-```
+### 1C. Stop AnimatedPreview infinite loop
+- **AnimatedPreview.tsx**: Add a cycle counter. After 2 full cycles, clear the interval and leave the final text displayed. This stops unnecessary CPU usage on the landing page.
 
-## New Store: `src/store/editorViewStore.ts`
+### 1D. Fix command palette hardcoded array slicing
+- **CommandPalette.tsx**: Add a `group` property to each command object (`'formatting' | 'headings' | 'lists' | 'insert' | 'alerts' | 'table' | 'edit' | 'view' | 'document' | 'settings'`). Replace all `commands.slice(N, M)` calls with `commands.filter(c => c.group === 'formatting')` etc. Also fix the `icon: any` type to `icon: LucideIcon`.
 
-A Zustand store (NOT persisted) that holds:
+### 1E. Fix non-functional table commands in CommandPalette
+- **CommandPalette.tsx**: The table commands (Add Row Below, Add Row Above, etc.) dispatch custom events that nothing listens for. Replace with direct calls to the table utility functions from `editorViewStore` or remove them if they can only work contextually (when cursor is inside a table).
 
-- `view: EditorView | null` -- the CodeMirror view reference
-- `setView(view)` -- called once when CodeMirror mounts
-- **Command methods** that operate directly on the view:
-  - `insert(kind, before, after, placeholder, block)` -- replaces `editor-insert`
-  - `undo()` / `redo()` -- replaces `editor-undo` / `editor-redo`
-  - `selectAll()` -- replaces `editor-select-all`
-  - `deleteLine()` / `duplicateLine()` / `selectLine()` -- replaces corresponding events
-  - `moveLineUp()` / `moveLineDown()` -- replaces corresponding events
-  - `goToLine(line)` -- replaces `editor-goto-line`
-  - `convertCase(type)` -- replaces `editor-convert-case`
-  - `textCleanup(type)` -- replaces `editor-text-cleanup` (also fixes missing listener bug)
-  - `flushContent()` -- replaces `editor-flush-content`
-- **State getters:**
-  - `canUndo: boolean` / `canRedo: boolean` -- replaces `editor-history-change` event
-  - `updateHistoryState()` -- called after mutations, updates canUndo/canRedo
+### 1F. Scope the global `min-height`/`min-width` CSS rule
+- **index.css** (line 176-181): The rule `button, [role="button"], [tabindex] { min-height: 2.5rem; min-width: 2.5rem; }` affects every clickable element globally, causing oversized accordion triggers, dropdown items, and inline toolbar buttons. Scope it to only primary action buttons (e.g., `.primary-touch-target`) or remove it entirely since individual components already define their own sizing.
 
-**Scroll sync** (`editor-scroll`, `preview-scroll`, `preview-click`) will remain as window events for now. These are bidirectional between Editor and Preview (two separate DOM scroll containers), and converting them to store-based would require both components to share scroll position state with RAF timing -- a separate, more complex refactor. The audit's main concern was the command bus (toolbar-to-editor), not scroll sync.
+### 1G. Fix StatisticsPanel stale time display
+- **StatisticsPanel.tsx**: The `formatTime` function shows "Saved 2m ago" but never re-renders to update. Add a `setInterval` (every 30s) that forces a re-render so the "Saved X ago" text stays current.
 
-**`show-goto-dialog`** will move to a simple boolean in the search store (it already has `showSearchReplace`).
+## Phase 2: Layout & Vertical Space Optimization
 
-## Files to Change
+### 2A. Merge Header and DocumentHeader into one bar
+- **Index.tsx**: Remove the separate `<header>` element (lines 129-282) that contains the logo, Home/Help links, theme toggle, and keyboard shortcuts button.
+- **DocumentHeader.tsx**: Absorb these elements into the existing DocumentHeader bar:
+  - Add the "M" logo icon on the far left (before the File menu)
+  - Move theme toggle, Home/Help links, PWA install, and keyboard shortcuts button into the right side of DocumentHeader
+  - This saves ~56px of vertical space
 
-| File | Change |
-|------|--------|
-| `src/store/editorViewStore.ts` | **New file** -- Zustand store with EditorView ref + all command methods |
-| `src/components/Editor.tsx` | Remove 10 event listeners + 10 keyboard dispatchers. Call `setView()` on mount. Move command logic into store. Keep scroll sync events. |
-| `src/components/EditMenu.tsx` | Replace all `dispatchEvent` calls with `useEditorViewStore()` method calls. Read `canUndo`/`canRedo` from store instead of event listener. |
-| `src/components/CompactToolbar.tsx` | Replace `dispatchEvent` calls with store methods |
-| `src/components/Toolbar.tsx` | Replace `dispatchEvent` calls with store methods |
-| `src/components/FormatMenu.tsx` | Replace `dispatchEvent` calls with store methods |
-| `src/components/ErrorConsole.tsx` | Replace `preview-click` dispatch with store `goToLine()` |
-| `src/components/StatisticsPanel.tsx` | Replace `show-goto-dialog` listener with store boolean |
-| `src/hooks/useExportProgress.ts` | Replace `editor-flush-content` dispatch with store `flushContent()` |
-| `src/hooks/useEditorCommands.ts` | Update to use store methods instead of `dispatchEvent` |
-| `src/store/searchStore.ts` | Add `showGoToDialog` boolean (replaces `show-goto-dialog` event) |
+### 2B. Auto-collapse StatisticsPanel
+- **StatisticsPanel.tsx**: Make the default state collapsed (single line showing `Ln X, Col Y | N words | Saved just now`). The expanded grid with paragraphs/sentences/headings only appears on click of the expand button. Ensure `statisticsExpanded` defaults to `false` in the settings store.
 
-## What Gets Removed
+### 2C. Remove Preview footer visible word count
+- If there's a visible-words footer in the Preview component, remove it. (The review mentions "Visible Words/Characters" but checking Preview.tsx, this may have already been removed or may be rendered elsewhere.)
 
-- 10 `window.addEventListener` registrations in Editor.tsx (the command handler block ~lines 880-1019)
-- 10+ `window.dispatchEvent` calls in Editor.tsx keyboard handler (~lines 504-617)
-- All `window.dispatchEvent(new CustomEvent('editor-*'))` calls in EditMenu, Toolbar, CompactToolbar, FormatMenu
-- The `editor-history-change` event pattern (replaced by reactive store state)
-- The `useEditorCommands` hook (replaced by direct store usage)
+## Phase 3: Interaction Pattern Fixes
 
-## What Stays (for now)
+### 3A. Fix OutlinePanel editor-only mode
+- **OutlinePanel.tsx**: The `scrollToHeading` function only queries `.preview-content`. In editor-only mode (`viewMode === 'editor'`), it should instead use `editorViewStore.goToLine()` to scroll the editor to the heading's source line. Detect the current view mode and branch accordingly.
 
-- `editor-scroll` / `preview-scroll` / `preview-click` -- scroll sync between Editor and Preview. These are performance-sensitive bidirectional events between two scroll containers. Converting them requires a separate refactor.
+### 3B. Add `aria-current="page"` to active view mode button
+- **ViewModeSwitcher.tsx**: Add `aria-current="page"` attribute to the currently active view mode button for accessibility.
 
-## Technical Details
+### 3C. Show ViewModeSwitcher on mobile
+- **Index.tsx / DocumentHeader.tsx**: Move the ViewModeSwitcher out of the desktop-only area so it's visible on mobile. Switching between editor and preview is the most common mobile action and shouldn't require opening the hamburger menu.
 
-The store will use `getState()` for imperative access (needed because CodeMirror commands are synchronous):
+## Phase 4: Toolbar Consolidation (Larger Effort)
 
-```typescript
-// In editorViewStore.ts
-export const useEditorViewStore = create<EditorViewState>((set, get) => ({
-  view: null,
-  canUndo: false,
-  canRedo: false,
-  debouncedSetContent: null,
+This is the review's most significant structural recommendation. It can be done in a follow-up iteration.
 
-  setView: (view) => set({ view }),
-  setDebouncedSetContent: (fn) => set({ debouncedSetContent: fn }),
+### 4A. Remove the main Toolbar component
+- The Toolbar (Format/Structure/Lists/Insert groups) duplicates functionality available in:
+  - DocumentHeader menus (File/Edit/Format/View)
+  - CompactToolbar (inline formatting)
+  - FloatingToolbar (selection formatting)
+  - SlashCommandMenu (block insertion)
+- Remove `<Toolbar />` from `Index.tsx` and delete the component. Move the error badge to the DocumentHeader or StatisticsPanel.
 
-  undo: () => {
-    const { view } = get();
-    if (!view) return;
-    undo(view);
-    get().updateHistoryState();
-  },
+### 4B. Enhance FloatingToolbar
+- Add a heading dropdown and list toggle to the FloatingToolbar so it fully replaces the CompactToolbar for selection-based formatting.
 
-  insert: (kind, opts) => {
-    const { view } = get();
-    if (!view) return;
-    // ... insertion logic moved from Editor.tsx
-  },
+### 4C. Remove CompactToolbar
+- After enhancing FloatingToolbar, remove CompactToolbar from Editor.tsx.
 
-  updateHistoryState: () => {
-    const { view } = get();
-    if (!view) return;
-    set({
-      canUndo: undoDepth(view.state) > 0,
-      canRedo: redoDepth(view.state) > 0,
-    });
-  },
+## Files Changed
 
-  flushContent: () => {
-    get().debouncedSetContent?.flush();
-  },
-}));
-```
+| Phase | File | Change |
+|-------|------|--------|
+| 1A | `src/components/Editor.tsx` | Remove "Markdown Editor" h2 label |
+| 1A | `src/components/Preview.tsx` | Remove "Preview" h2 label |
+| 1B | `src/components/FloatingToolbar.tsx` | Add viewport bounds clamping |
+| 1C | `src/components/AnimatedPreview.tsx` | Stop loop after 2 cycles |
+| 1D, 1E | `src/components/CommandPalette.tsx` | Add group property, fix types, fix table commands |
+| 1F | `src/index.css` | Scope or remove global min-height/min-width rule |
+| 1G | `src/components/StatisticsPanel.tsx` | Add interval for stale time refresh |
+| 2A | `src/pages/Index.tsx` | Remove separate header, merge into DocumentHeader |
+| 2A | `src/components/DocumentHeader.tsx` | Absorb logo, theme toggle, nav links |
+| 2B | `src/components/StatisticsPanel.tsx` | Default collapsed, compact single-line |
+| 3A | `src/components/OutlinePanel.tsx` | Support editor-only scroll-to-heading |
+| 3B | `src/components/ViewModeSwitcher.tsx` | Add aria-current |
+| 3C | `src/pages/Index.tsx` or `DocumentHeader.tsx` | Show ViewModeSwitcher on mobile |
+| 4A | `src/pages/Index.tsx` | Remove Toolbar |
+| 4B | `src/components/FloatingToolbar.tsx` | Add heading/list options |
+| 4C | `src/components/Editor.tsx` | Remove CompactToolbar |
 
-Components consume it reactively:
+## Recommended Implementation Order
 
-```typescript
-// In EditMenu.tsx
-const { undo, redo, canUndo, canRedo } = useEditorViewStore();
-
-// No more useEffect for editor-history-change
-<MenubarItem onClick={undo} disabled={!canUndo}>Undo</MenubarItem>
-```
-
-## Benefits
-
-- Full type safety on all editor commands (no more string event names)
-- Compile-time errors if a command signature changes
-- `canUndo`/`canRedo` are reactive store state -- no event listener needed
-- Text cleanup bug is fixed (the `editor-text-cleanup` event was dispatched but never listened to)
-- Easier debugging (store state is inspectable)
-- ~150 lines of event wiring removed from Editor.tsx
-
-## Risk Mitigation
-
-- Scroll sync events are left unchanged to avoid breaking the sensitive RAF-based scroll interpolation
-- All command logic is moved verbatim from Editor.tsx into the store -- no behavioral changes
-- The store is non-persisted (vanilla Zustand, no middleware) since it holds a runtime ref
+Phases 1 and 2 can be done first as they are independent quick wins. Phase 3 is small fixes. Phase 4 (toolbar consolidation) is a larger structural change that should be a separate iteration.
 
