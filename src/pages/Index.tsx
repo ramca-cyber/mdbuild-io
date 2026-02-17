@@ -39,11 +39,30 @@ const Index = () => {
   // System theme detection - only on first visit (respect persisted preference)
   useEffect(() => {
     const hasPersistedSettings = localStorage.getItem('settings-storage');
-    if (hasPersistedSettings) return; // User already has a saved theme preference
+    if (hasPersistedSettings) return;
     
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     setTheme(mediaQuery.matches ? 'dark' : 'light');
   }, [setTheme]);
+
+  // Resolve effective theme (handle 'system')
+  const resolvedTheme = useMemo(() => {
+    if (theme !== 'system') return theme;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }, [theme]);
+
+  // Listen for system theme changes when theme === 'system'
+  useEffect(() => {
+    if (theme !== 'system') return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => {
+      // Force re-render by toggling a harmless state
+      document.documentElement.classList.remove('dark', 'sepia');
+      if (mq.matches) document.documentElement.classList.add('dark');
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [theme]);
 
   // Handle ESC key to exit focus/zen mode, F11 for focus mode, Shift+F11 for zen mode
   useEffect(() => {
@@ -73,12 +92,12 @@ const Index = () => {
 
   useEffect(() => {
     document.documentElement.classList.remove('dark', 'sepia');
-    if (theme === 'dark') {
+    if (resolvedTheme === 'dark') {
       document.documentElement.classList.add('dark');
-    } else if (theme === 'sepia') {
+    } else if (resolvedTheme === 'sepia') {
       document.documentElement.classList.add('sepia');
     }
-  }, [theme]);
+  }, [resolvedTheme]);
 
   // Handle print mode
   useEffect(() => {

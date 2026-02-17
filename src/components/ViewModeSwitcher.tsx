@@ -14,12 +14,9 @@ export const ViewModeSwitcher = () => {
         if (e.key === 'e') {
           e.preventDefault();
           setViewMode('editor');
-        } else if (e.key === 'd') {
+        } else if (e.key === 'D' && e.shiftKey) {
           e.preventDefault();
           setViewMode('split');
-        } else if (e.key === 'p') {
-          e.preventDefault();
-          setViewMode('preview');
         }
       }
     };
@@ -39,13 +36,13 @@ export const ViewModeSwitcher = () => {
       value: 'split' as const, 
       icon: Columns3, 
       label: 'Split',
-      tooltip: 'Split View (Ctrl+D)'
+      tooltip: 'Split View (Ctrl+Shift+D)'
     },
     { 
       value: 'preview' as const, 
       icon: Eye, 
       label: 'Preview',
-      tooltip: 'Preview Only (Ctrl+P)'
+      tooltip: 'Preview Only'
     },
   ];
 
@@ -73,7 +70,6 @@ export const ViewModeSwitcher = () => {
                   }`}
                   aria-label={mode.tooltip}
                   aria-pressed={isActive}
-                  aria-current={isActive ? 'page' : undefined}
                 >
                   <Icon className="h-4 w-4" />
                   <span className="hidden sm:inline text-xs font-medium">{mode.label}</span>

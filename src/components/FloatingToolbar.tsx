@@ -210,7 +210,7 @@ export const FloatingToolbar = ({ onFormat }: FloatingToolbarProps) => {
                 <Link className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent><p>Link <kbd className="ml-1">Ctrl+K</kbd></p></TooltipContent>
+            <TooltipContent><p>Link</p></TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>

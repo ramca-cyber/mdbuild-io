@@ -4,6 +4,7 @@ import {
   MenubarItem,
   MenubarMenu,
   MenubarSeparator,
+  MenubarShortcut,
   MenubarSub,
   MenubarSubContent,
   MenubarSubTrigger,
@@ -45,10 +46,12 @@ export const FormatMenu = () => {
           <MenubarItem onClick={() => insertAtCursor('**', '**')}>
             <Bold className="h-4 w-4 mr-2" />
             Bold
+            <MenubarShortcut>Ctrl+B</MenubarShortcut>
           </MenubarItem>
           <MenubarItem onClick={() => insertAtCursor('*', '*')}>
             <Italic className="h-4 w-4 mr-2" />
             Italic
+            <MenubarShortcut>Ctrl+I</MenubarShortcut>
           </MenubarItem>
           <MenubarItem onClick={() => insertAtCursor('~~', '~~')}>
             <Strikethrough className="h-4 w-4 mr-2" />

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useEditorViewStore } from '@/store/editorViewStore';
 import { useSearchStore } from '@/store/searchStore';
+import { toast } from 'sonner';
 
 /**
  * Registers global keyboard shortcuts for the editor.
@@ -87,6 +88,61 @@ export function useEditorKeyboardShortcuts(
       if (e.altKey && e.key === 'ArrowDown') {
         e.preventDefault();
         useEditorViewStore.getState().moveLineDown();
+      }
+
+      // Word count (Ctrl+Shift+W)
+      if (modifier && e.shiftKey && e.key === 'W') {
+        e.preventDefault();
+        const content = useEditorViewStore.getState().view?.state.doc.toString() || '';
+        const words = content.trim().split(/\s+/).filter(w => w.length > 0).length;
+        const chars = content.length;
+        const lines = content.split('\n').length;
+        toast.success(`Words: ${words} | Characters: ${chars} | Lines: ${lines}`);
+      }
+
+      // Comment toggle (Ctrl+/)
+      if (modifier && e.key === '/') {
+        e.preventDefault();
+        useEditorViewStore.getState().insert('wrap', { before: '<!-- ', after: ' -->' });
+      }
+
+      // Indent (Ctrl+])
+      if (modifier && e.key === ']') {
+        e.preventDefault();
+        const view = useEditorViewStore.getState().view;
+        if (view) {
+          const sel = view.state.selection.main;
+          const doc = view.state.doc;
+          const fromLine = doc.lineAt(sel.from).number;
+          const toLine = doc.lineAt(sel.to).number;
+          const changes: { from: number; insert: string }[] = [];
+          for (let i = fromLine; i <= toLine; i++) {
+            changes.push({ from: doc.line(i).from, insert: '  ' });
+          }
+          view.dispatch({ changes });
+        }
+      }
+
+      // Outdent (Ctrl+[)
+      if (modifier && e.key === '[') {
+        e.preventDefault();
+        const view = useEditorViewStore.getState().view;
+        if (view) {
+          const sel = view.state.selection.main;
+          const doc = view.state.doc;
+          const fromLine = doc.lineAt(sel.from).number;
+          const toLine = doc.lineAt(sel.to).number;
+          const changes: { from: number; to: number }[] = [];
+          for (let i = fromLine; i <= toLine; i++) {
+            const line = doc.line(i);
+            if (line.text.startsWith('  ')) {
+              changes.push({ from: line.from, to: line.from + 2 });
+            } else if (line.text.startsWith('\t')) {
+              changes.push({ from: line.from, to: line.from + 1 });
+            }
+          }
+          if (changes.length) view.dispatch({ changes });
+        }
       }
 
       if (e.altKey && e.key === 'd') {

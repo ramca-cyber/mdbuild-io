@@ -53,8 +53,13 @@ export const EditMenu = () => {
 
   const handleCut = async () => {
     try {
-      await navigator.clipboard.writeText(window.getSelection()?.toString() || '');
-      document.execCommand('cut');
+      const view = useEditorViewStore.getState().view;
+      if (!view) return;
+      const sel = view.state.selection.main;
+      const text = view.state.sliceDoc(sel.from, sel.to);
+      if (!text) return;
+      await navigator.clipboard.writeText(text);
+      view.dispatch({ changes: { from: sel.from, to: sel.to, insert: '' } });
     } catch (error) {
       toast.error('Failed to cut');
     }
@@ -62,7 +67,12 @@ export const EditMenu = () => {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(window.getSelection()?.toString() || '');
+      const view = useEditorViewStore.getState().view;
+      if (!view) return;
+      const sel = view.state.selection.main;
+      const text = view.state.sliceDoc(sel.from, sel.to);
+      if (!text) return;
+      await navigator.clipboard.writeText(text);
     } catch (error) {
       toast.error('Failed to copy');
     }
@@ -94,7 +104,10 @@ export const EditMenu = () => {
 
   const handleInsertDateTime = () => {
     const now = new Date();
-    const dateTime = now.toLocaleString();
+    const dateTime = now.toLocaleString('en-US', {
+      year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
     insert('text', { text: dateTime });
   };
 
