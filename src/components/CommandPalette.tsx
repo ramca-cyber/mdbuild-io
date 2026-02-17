@@ -5,7 +5,7 @@ import {
   Link, Image, Table, Minus, FileDown, Save, Search, 
   Settings, Eye, FileText, Undo2, Redo2, Trash2, Copy,
   ZoomIn, ZoomOut, AlertCircle, FileCode, Quote, Plus, ArrowDown, ArrowUp,
-  Columns, AlignCenter, LucideIcon
+  Columns, AlignCenter, LucideIcon, ImageDown
 } from 'lucide-react';
 import { useEditorCommands } from '@/hooks/useEditorCommands';
 import { useDocumentStore } from '@/store/documentStore';
@@ -15,7 +15,7 @@ import { useEditorViewStore } from '@/store/editorViewStore';
 import { toast } from 'sonner';
 import { findTableAtCursor, findCellAtCursor, addRowBelow, addRowAbove, addColumnAfter, toggleColumnAlignment, deleteRow } from '@/lib/tableUtils';
 
-type CommandGroup = 'formatting' | 'headings' | 'lists' | 'insert' | 'alerts' | 'table' | 'edit' | 'view' | 'document' | 'settings';
+type CommandGroupKey = 'formatting' | 'headings' | 'lists' | 'insert' | 'alerts' | 'table' | 'edit' | 'view' | 'document' | 'settings';
 
 interface Command {
   icon: LucideIcon;
@@ -23,7 +23,7 @@ interface Command {
   description: string;
   action: () => void;
   shortcut?: string;
-  group: CommandGroup;
+  group: CommandGroupKey;
 }
 
 export const CommandPalette = () => {
@@ -31,12 +31,83 @@ export const CommandPalette = () => {
   const { insertText, undo, redo, deleteLine, duplicateLine } = useEditorCommands();
   const { saveVersion } = useDocumentStore();
   const { setShowSearchReplace } = useSearchStore();
-  const { zoomIn, zoomOut, resetZoom } = useSettingsStore();
+  const { zoomIn, zoomOut, resetZoom, setShowEditorSettings } = useSettingsStore();
   const { view } = useEditorViewStore();
 
-  const handleExport = (format: string) => {
-    window.dispatchEvent(new CustomEvent('export-document', { detail: { format } }));
-    toast.success(`Exporting as ${format.toUpperCase()}...`);
+  const handleExportPNG = async () => {
+    try {
+      const previewElement = document.querySelector('.preview-content')?.parentElement;
+      if (!previewElement) { toast.error('Preview not available'); return; }
+      const toastId = toast.loading('Exporting PNG...');
+      const { convertElementToImage } = await import('@/lib/exportUtils');
+      const dataUrl = await convertElementToImage(previewElement as HTMLElement);
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      const content = useDocumentStore.getState().content;
+      const fileName = content.match(/^#\s+(.+)$/m)?.[1] || 'document';
+      a.download = `${fileName}.png`;
+      a.click();
+      toast.success('Exported as PNG', { id: toastId });
+    } catch {
+      toast.error('Failed to export PNG');
+    }
+  };
+
+  const handleExportAction = async (format: string) => {
+    const content = useDocumentStore.getState().content;
+    const currentDoc = useDocumentStore.getState().savedDocuments.find(
+      d => d.id === useDocumentStore.getState().currentDocId
+    );
+    const fileName = currentDoc?.name || content.match(/^#\s+(.+)$/m)?.[1] || 'document';
+
+    switch (format) {
+      case 'md': {
+        const blob = new Blob([content], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${fileName}.md`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast.success('Exported as Markdown');
+        break;
+      }
+      case 'html': {
+        const previewElement = document.querySelector('.preview-content')?.parentElement;
+        if (!previewElement) { toast.error('Preview not available'); return; }
+        const toastId = toast.loading('Exporting HTML...');
+        const { exportToHtmlWithInlineStyles } = await import('@/lib/exportUtils');
+        await exportToHtmlWithInlineStyles(previewElement as HTMLElement, fileName, (p) => toast.loading(`Exporting HTML... ${p}%`, { id: toastId }));
+        toast.success('Exported as HTML', { id: toastId });
+        break;
+      }
+      case 'pdf': {
+        const previewElement = document.querySelector('.preview-content')?.parentElement;
+        if (!previewElement) { toast.error('Preview not available'); return; }
+        const toastId = toast.loading('Generating PDF...');
+        const { exportToPdfWithRendering } = await import('@/lib/exportUtils');
+        const { documentSettings } = useSettingsStore.getState();
+        await exportToPdfWithRendering(previewElement as HTMLElement, fileName, (p) => toast.loading(`Generating PDF... ${p}%`, { id: toastId }), documentSettings);
+        toast.success('Exported as PDF', { id: toastId });
+        break;
+      }
+      case 'docx': {
+        const previewElement = document.querySelector('.preview-content')?.parentElement;
+        if (!previewElement) { toast.error('Preview not available'); return; }
+        const toastId = toast.loading('Preparing DOCX...');
+        const { createDocxFromPreview } = await import('@/lib/exportUtils');
+        const { documentSettings } = useSettingsStore.getState();
+        const blob = await createDocxFromPreview(previewElement as HTMLElement, fileName, (p) => toast.loading(`Preparing DOCX... ${p}%`, { id: toastId }), documentSettings);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${fileName}.docx`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast.success('Exported as DOCX', { id: toastId });
+        break;
+      }
+    }
   };
 
   const runTableCommand = (type: 'addRowBelow' | 'addRowAbove' | 'addColumn' | 'toggleAlignment' | 'deleteRow') => {
@@ -114,13 +185,14 @@ export const CommandPalette = () => {
     
     // Document
     { icon: Save, label: 'Save Version', description: 'Save current version', action: saveVersion, shortcut: 'Ctrl+S', group: 'document' },
-    { icon: FileDown, label: 'Export as PDF', description: 'Export document as PDF', action: () => handleExport('pdf'), group: 'document' },
-    { icon: FileDown, label: 'Export as DOCX', description: 'Export as Word document', action: () => handleExport('docx'), group: 'document' },
-    { icon: FileDown, label: 'Export as HTML', description: 'Export as HTML file', action: () => handleExport('html'), group: 'document' },
-    { icon: FileText, label: 'Export as Markdown', description: 'Export as .md file', action: () => handleExport('md'), group: 'document' },
+    { icon: FileDown, label: 'Export as PDF', description: 'Export document as PDF', action: () => handleExportAction('pdf'), group: 'document' },
+    { icon: FileDown, label: 'Export as DOCX', description: 'Export as Word document', action: () => handleExportAction('docx'), group: 'document' },
+    { icon: FileDown, label: 'Export as HTML', description: 'Export as HTML file', action: () => handleExportAction('html'), group: 'document' },
+    { icon: FileText, label: 'Export as Markdown', description: 'Export as .md file', action: () => handleExportAction('md'), group: 'document' },
+    { icon: ImageDown, label: 'Export as PNG', description: 'Export as PNG image', action: handleExportPNG, group: 'document' },
     
     // Settings
-    { icon: Settings, label: 'Open Settings', description: 'Open editor settings', action: () => window.dispatchEvent(new CustomEvent('show-settings')), group: 'settings' },
+    { icon: Settings, label: 'Open Settings', description: 'Open editor settings', action: () => setShowEditorSettings(true), group: 'settings' },
   ];
 
   useEffect(() => {
@@ -141,7 +213,7 @@ export const CommandPalette = () => {
     setOpen(false);
   };
 
-  const groups: { key: CommandGroup; heading: string }[] = [
+  const groups: { key: CommandGroupKey; heading: string }[] = [
     { key: 'formatting', heading: 'Formatting' },
     { key: 'headings', heading: 'Headings' },
     { key: 'lists', heading: 'Lists' },

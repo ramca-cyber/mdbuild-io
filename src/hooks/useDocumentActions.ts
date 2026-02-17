@@ -169,6 +169,24 @@ export function useDocumentActions() {
     }
   };
 
+  const handleExportPNG = async () => {
+    try {
+      const fileName = currentDoc?.name || content.match(/^#\s+(.+)$/m)?.[1] || 'document';
+      const previewElement = document.querySelector('.preview-content')?.parentElement;
+      if (!previewElement) { toast.error('Preview not available'); return; }
+      const toastId = toast.loading('Exporting PNG...');
+      const { convertElementToImage } = await import('@/lib/exportUtils');
+      const dataUrl = await convertElementToImage(previewElement as HTMLElement);
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `${fileName}.png`;
+      a.click();
+      toast.success('Exported as PNG', { id: toastId });
+    } catch {
+      toast.error('Failed to export PNG');
+    }
+  };
+
   const handleImport = () => {
     try {
       const input = document.createElement('input');
@@ -270,6 +288,7 @@ export function useDocumentActions() {
     handleExportMarkdown,
     handleExportHTML,
     handleExportPDF,
+    handleExportPNG,
     handleExportDOCX,
     handleImport,
     handleCopyToClipboard,

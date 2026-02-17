@@ -7,14 +7,27 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { useMemo } from 'react';
 
 interface KeyboardShortcutsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+
+function formatKey(key: string): string {
+  if (!isMac) return key;
+  switch (key) {
+    case 'Ctrl': return '⌘';
+    case 'Alt': return '⌥';
+    case 'Shift': return '⇧';
+    default: return key;
+  }
+}
+
 export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcutsDialogProps) {
-  const shortcuts = [
+  const shortcuts = useMemo(() => [
     {
       category: 'File Operations',
       items: [
@@ -68,8 +81,6 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
       category: 'View',
       items: [
         { keys: ['Ctrl', 'E'], description: 'Editor Only View' },
-        { keys: ['Ctrl', 'D'], description: 'Split View' },
-        { keys: ['Ctrl', 'P'], description: 'Preview Only View' },
         { keys: ['F11'], description: 'Toggle Focus Mode' },
         { keys: ['Shift', 'F11'], description: 'Toggle Zen Mode' },
         { keys: ['Esc'], description: 'Exit Focus/Zen Mode' },
@@ -107,7 +118,7 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
         { keys: ['Ctrl', 'Shift', 'Backspace'], description: 'Delete current row' },
       ],
     },
-  ];
+  ], []);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -135,7 +146,7 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
                         {item.keys.map((key, keyIndex) => (
                           <span key={keyIndex} className="flex items-center gap-1">
                             <kbd className="px-2 py-1 text-xs font-semibold bg-muted border border-border rounded">
-                              {key}
+                              {formatKey(key)}
                             </kbd>
                             {keyIndex < item.keys.length - 1 && (
                               <span className="text-muted-foreground">+</span>

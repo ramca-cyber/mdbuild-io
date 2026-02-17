@@ -68,12 +68,11 @@ export function ViewMenu() {
                 <MenubarRadioItem value="split">
                   <SplitSquareHorizontal className="h-4 w-4 mr-2" />
                   Split View
-                  <MenubarShortcut>Ctrl+D</MenubarShortcut>
+                  <MenubarShortcut>Ctrl+Shift+D</MenubarShortcut>
                 </MenubarRadioItem>
                 <MenubarRadioItem value="preview">
                   <Eye className="h-4 w-4 mr-2" />
                   Preview Only
-                  <MenubarShortcut>Ctrl+P</MenubarShortcut>
                 </MenubarRadioItem>
               </MenubarRadioGroup>
             </MenubarSubContent>

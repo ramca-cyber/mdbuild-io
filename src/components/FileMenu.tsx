@@ -16,7 +16,7 @@ import { templates } from '@/lib/templates';
 import { toast } from 'sonner';
 import {
   Menu, Plus, Save, Trash2, FolderOpen, Clock, FileText, FileUp, FileDown,
-  FileType, Code, BookTemplate, Files, Printer,
+  FileType, Code, BookTemplate, Files, Printer, ImageDown,
 } from 'lucide-react';
 
 interface FileMenuProps {
@@ -34,6 +34,7 @@ interface FileMenuProps {
   onExportMarkdown: () => void;
   onExportHTML: () => void;
   onExportPDF: () => void;
+  onExportPNG: () => void;
   onExportDOCX: () => void;
   onDeleteCurrent: () => void;
   loadDocument: (id: string) => void;
@@ -55,6 +56,7 @@ export function FileMenu({
   onExportMarkdown,
   onExportHTML,
   onExportPDF,
+  onExportPNG,
   onExportDOCX,
   onDeleteCurrent,
   loadDocument,
@@ -186,6 +188,10 @@ export function FileMenu({
             <DropdownMenuItem onClick={onExportPDF} className="cursor-pointer">
               <FileText className="h-4 w-4 mr-2" />
               PDF (.pdf)
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onExportPNG} className="cursor-pointer">
+              <ImageDown className="h-4 w-4 mr-2" />
+              PNG (.png)
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onExportDOCX} className="cursor-pointer">
               <FileText className="h-4 w-4 mr-2" />
