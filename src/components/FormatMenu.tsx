@@ -32,30 +32,13 @@ import {
   Type,
   Eraser,
 } from 'lucide-react';
-import { useDocumentStore } from '@/store/documentStore';
+import { useEditorViewStore } from '@/store/editorViewStore';
 
 export const FormatMenu = () => {
-  const { content, setContent } = useDocumentStore();
+  const { insert, convertCase, textCleanup } = useEditorViewStore();
 
   const insertAtCursor = (before: string, after: string = '') => {
-    const event = new CustomEvent('editor-insert', {
-      detail: { before, after }
-    });
-    window.dispatchEvent(event);
-  };
-
-  const handleConvertCase = (caseType: 'upper' | 'lower' | 'title') => {
-    const event = new CustomEvent('editor-convert-case', {
-      detail: { caseType }
-    });
-    window.dispatchEvent(event);
-  };
-
-  const handleTextCleanup = (cleanupType: 'trailing' | 'empty' | 'trim') => {
-    const event = new CustomEvent('editor-text-cleanup', {
-      detail: { cleanupType }
-    });
-    window.dispatchEvent(event);
+    insert('wrap', { before, after });
   };
 
   return (
@@ -179,13 +162,13 @@ export const FormatMenu = () => {
               Convert Case
             </MenubarSubTrigger>
             <MenubarSubContent>
-              <MenubarItem onClick={() => handleConvertCase('upper')}>
+              <MenubarItem onClick={() => convertCase('upper')}>
                 UPPERCASE
               </MenubarItem>
-              <MenubarItem onClick={() => handleConvertCase('lower')}>
+              <MenubarItem onClick={() => convertCase('lower')}>
                 lowercase
               </MenubarItem>
-              <MenubarItem onClick={() => handleConvertCase('title')}>
+              <MenubarItem onClick={() => convertCase('title')}>
                 Title Case
               </MenubarItem>
             </MenubarSubContent>
@@ -197,13 +180,13 @@ export const FormatMenu = () => {
               Text Cleanup
             </MenubarSubTrigger>
             <MenubarSubContent>
-              <MenubarItem onClick={() => handleTextCleanup('trailing')}>
+              <MenubarItem onClick={() => textCleanup('trailing')}>
                 Remove Trailing Spaces
               </MenubarItem>
-              <MenubarItem onClick={() => handleTextCleanup('empty')}>
+              <MenubarItem onClick={() => textCleanup('empty')}>
                 Remove Empty Lines
               </MenubarItem>
-              <MenubarItem onClick={() => handleTextCleanup('trim')}>
+              <MenubarItem onClick={() => textCleanup('trim')}>
                 Trim Whitespace
               </MenubarItem>
             </MenubarSubContent>

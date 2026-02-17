@@ -1,13 +1,15 @@
 import { useErrorStore } from '@/store/errorStore';
+import { useEditorViewStore } from '@/store/editorViewStore';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { AlertTriangle, AlertCircle, Info, X, ChevronDown, ChevronUp, Trash2, Copy } from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info, X, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 export const ErrorConsole = () => {
   const { errors, showErrorPanel, setShowErrorPanel, clearErrors, removeError } = useErrorStore();
+  const { goToLine } = useEditorViewStore();
   const [filter, setFilter] = useState<'all' | 'error' | 'warning' | 'info'>('all');
 
   const filteredErrors = errors.filter(err => filter === 'all' || err.type === filter);
@@ -40,7 +42,7 @@ export const ErrorConsole = () => {
 
   const handleErrorClick = (line?: number) => {
     if (line) {
-      window.dispatchEvent(new CustomEvent('preview-click', { detail: line }));
+      goToLine(line);
     }
   };
 

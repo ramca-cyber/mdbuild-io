@@ -1,52 +1,30 @@
-import { useCallback } from 'react';
+import { useEditorViewStore } from '@/store/editorViewStore';
 
+/**
+ * @deprecated Use useEditorViewStore directly instead.
+ * This hook is kept for backward compatibility.
+ */
 export const useEditorCommands = () => {
-  const dispatchCommand = useCallback((command: string, payload?: any) => {
-    window.dispatchEvent(new CustomEvent(command, { detail: payload }));
-  }, []);
+  const store = useEditorViewStore();
 
-  const insertText = useCallback((before: string, after: string = '', placeholder: string = '') => {
-    dispatchCommand('editor-insert', { before, after, placeholder });
-  }, [dispatchCommand]);
+  const insertText = (before: string, after: string = '', placeholder: string = '') => {
+    store.insert('wrap', { before, after, placeholder });
+  };
 
-  const undo = useCallback(() => {
-    dispatchCommand('editor-undo');
-  }, [dispatchCommand]);
-
-  const redo = useCallback(() => {
-    dispatchCommand('editor-redo');
-  }, [dispatchCommand]);
-
-  const deleteLine = useCallback(() => {
-    dispatchCommand('editor-delete-line');
-  }, [dispatchCommand]);
-
-  const moveLineUp = useCallback(() => {
-    dispatchCommand('editor-move-line-up');
-  }, [dispatchCommand]);
-
-  const moveLineDown = useCallback(() => {
-    dispatchCommand('editor-move-line-down');
-  }, [dispatchCommand]);
-
-  const duplicateLine = useCallback(() => {
-    dispatchCommand('editor-duplicate-line');
-  }, [dispatchCommand]);
-
-  const insertDate = useCallback(() => {
+  const insertDate = () => {
     const date = new Date().toLocaleDateString();
-    insertText(date);
-  }, [insertText]);
+    store.insert('text', { text: date });
+  };
 
   return {
-    dispatchCommand,
+    dispatchCommand: () => {}, // no-op, kept for compat
     insertText,
-    undo,
-    redo,
-    deleteLine,
-    moveLineUp,
-    moveLineDown,
-    duplicateLine,
+    undo: store.undo,
+    redo: store.redo,
+    deleteLine: store.deleteLine,
+    moveLineUp: store.moveLineUp,
+    moveLineDown: store.moveLineDown,
+    duplicateLine: store.duplicateLine,
     insertDate,
   };
 };

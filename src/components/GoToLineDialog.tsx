@@ -9,6 +9,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { useEditorViewStore } from '@/store/editorViewStore';
 
 interface GoToLineDialogProps {
   open: boolean;
@@ -18,6 +19,7 @@ interface GoToLineDialogProps {
 
 export function GoToLineDialog({ open, onOpenChange, totalLines }: GoToLineDialogProps) {
   const [lineNumber, setLineNumber] = useState('');
+  const { goToLine } = useEditorViewStore();
 
   useEffect(() => {
     if (open) {
@@ -28,11 +30,7 @@ export function GoToLineDialog({ open, onOpenChange, totalLines }: GoToLineDialo
   const handleGoTo = () => {
     const line = parseInt(lineNumber);
     if (!isNaN(line) && line >= 1 && line <= totalLines) {
-      window.dispatchEvent(
-        new CustomEvent('editor-goto-line', {
-          detail: { line },
-        })
-      );
+      goToLine(line);
       onOpenChange(false);
     }
   };

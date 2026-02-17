@@ -12,26 +12,18 @@ import {
   Quote,
   Table,
   Minus,
-  Eye,
-  SplitSquareHorizontal,
-  ListTree,
   Strikethrough,
   Heading,
   ChevronDown,
-  Printer,
-  Maximize2,
-  Minimize2,
   Plus,
   MoreHorizontal,
-  Check,
   AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Toggle } from '@/components/ui/toggle';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useErrorStore } from '@/store/errorStore';
-import { useSearchStore } from '@/store/searchStore';
+import { useEditorViewStore } from '@/store/editorViewStore';
 import { toast } from 'sonner';
 import React from 'react';
 import { InsertLinkDialog } from '@/components/InsertLinkDialog';
@@ -50,22 +42,17 @@ export const Toolbar = () => {
   const [linkDialogOpen, setLinkDialogOpen] = React.useState(false);
   const [imageDialogOpen, setImageDialogOpen] = React.useState(false);
   const { errors, showErrorPanel, setShowErrorPanel } = useErrorStore();
+  const { insert } = useEditorViewStore();
 
   const errorCount = errors.filter(e => e.type === 'error').length;
   const warningCount = errors.filter(e => e.type === 'warning').length;
 
-  // Dispatch wrap insertion (for inline formatting)
   const dispatchWrap = (before: string, after: string = '', placeholder: string = 'text') => {
-    window.dispatchEvent(new CustomEvent('editor-insert', { 
-      detail: { kind: 'wrap', before, after, placeholder } 
-    }));
+    insert('wrap', { before, after, placeholder });
   };
 
-  // Dispatch block insertion (for block elements)
   const dispatchBlock = (block: string) => {
-    window.dispatchEvent(new CustomEvent('editor-insert', { 
-      detail: { kind: 'block', block } 
-    }));
+    insert('block', { block });
   };
 
   const handleLinkInsert = () => {

@@ -5,6 +5,7 @@ import { calculateStatistics, checkWordLimit, checkCharLimit } from '@/lib/stati
 import { useDocumentStore } from '@/store/documentStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useSearchStore } from '@/store/searchStore';
+import { useEditorViewStore } from '@/store/editorViewStore';
 import { GoToLineDialog } from '@/components/GoToLineDialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -22,9 +23,9 @@ export const StatisticsPanel = () => {
     viewMode,
   } = useSettingsStore();
   const { cursorLine, cursorColumn, selectedWords } = useSearchStore();
+  const { showGoToDialog, setShowGoToDialog } = useEditorViewStore();
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [showGoToDialog, setShowGoToDialog] = useState(false);
   const isMobile = useIsMobile();
 
   // Collapse statistics on mobile by default
@@ -42,12 +43,6 @@ export const StatisticsPanel = () => {
       setIsSaving(true);
     }
   }, [hasUnsavedChanges, autoSave]);
-  
-  useEffect(() => {
-    const handleShowGoTo = () => setShowGoToDialog(true);
-    window.addEventListener('show-goto-dialog', handleShowGoTo);
-    return () => window.removeEventListener('show-goto-dialog', handleShowGoTo);
-  }, []);
 
   const stats = useMemo(() => calculateStatistics(content), [content]);
   const totalLines = content.split('\n').length;
