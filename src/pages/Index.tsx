@@ -2,6 +2,8 @@ import { useEffect, useState, useMemo } from 'react';
 import { Panel, PanelGroup } from 'react-resizable-panels';
 import { ResizableHandle } from '@/components/ui/resizable';
 import { SEO } from '@/components/SEO';
+import { UnifiedSettingsDialog } from '@/components/UnifiedSettingsDialog';
+import { DocumentSettingsDialog } from '@/components/DocumentSettingsDialog';
 import { Editor } from '@/components/Editor';
 import { Preview } from '@/components/Preview';
 import { DocumentHeader } from '@/components/DocumentHeader';
@@ -21,11 +23,10 @@ import { calculateStatistics } from '@/lib/statisticsUtils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
-  const { theme, setTheme, viewMode, showOutline, focusMode, setFocusMode, zenMode, setZenMode } = useSettingsStore();
+  const { theme, setTheme, viewMode, showOutline, focusMode, setFocusMode, zenMode, setZenMode, showKeyboardShortcuts, setShowKeyboardShortcuts, showEditorSettings, setShowEditorSettings, showDocumentSettings, setShowDocumentSettings } = useSettingsStore();
   const { content } = useDocumentStore();
   const [mobilePanel, setMobilePanel] = useState<'documents' | 'templates' | 'outline' | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
-  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
   const isMobile = useIsMobile();
 
   // Calculate word count for focus mode
@@ -125,8 +126,6 @@ const Index = () => {
       {/* Document Header (merged with app header) */}
       {!focusMode && (
         <DocumentHeader 
-          showKeyboardShortcuts={showKeyboardShortcuts}
-          setShowKeyboardShortcuts={setShowKeyboardShortcuts}
           setMobilePanel={setMobilePanel}
         />
       )}
@@ -249,6 +248,16 @@ const Index = () => {
       <KeyboardShortcutsDialog 
         open={showKeyboardShortcuts} 
         onOpenChange={setShowKeyboardShortcuts} 
+      />
+
+      <UnifiedSettingsDialog
+        open={showEditorSettings}
+        onOpenChange={setShowEditorSettings}
+      />
+
+      <DocumentSettingsDialog
+        open={showDocumentSettings}
+        onOpenChange={setShowDocumentSettings}
       />
 
       {/* Mobile Sheets */}
