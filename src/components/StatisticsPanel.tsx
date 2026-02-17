@@ -1,11 +1,13 @@
 import { useMemo, useEffect, useState } from 'react';
 import { ChevronUp, ChevronDown, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { calculateStatistics, checkWordLimit, checkCharLimit } from '@/lib/statisticsUtils';
 import { useDocumentStore } from '@/store/documentStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useSearchStore } from '@/store/searchStore';
 import { useEditorViewStore } from '@/store/editorViewStore';
+import { useErrorStore } from '@/store/errorStore';
 import { GoToLineDialog } from '@/components/GoToLineDialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -24,6 +26,7 @@ export const StatisticsPanel = () => {
   } = useSettingsStore();
   const { cursorLine, cursorColumn, selectedWords } = useSearchStore();
   const { showGoToDialog, setShowGoToDialog } = useEditorViewStore();
+  const { errors, showErrorPanel, setShowErrorPanel } = useErrorStore();
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [, setTick] = useState(0);
@@ -134,15 +137,31 @@ export const StatisticsPanel = () => {
 
           </div>
           
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setStatisticsExpanded(!statisticsExpanded)}
-            className="h-8 px-2"
-            aria-label={statisticsExpanded ? 'Hide detailed statistics' : 'Show detailed statistics'}
-          >
-            {statisticsExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-          </Button>
+          <div className="flex items-center gap-1">
+            {errors.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowErrorPanel(!showErrorPanel)}
+                className="h-7 px-2 gap-1"
+              >
+                <AlertTriangle className={`h-3.5 w-3.5 ${errors.some(e => e.type === 'error') ? 'text-destructive' : 'text-yellow-500'}`} />
+                <Badge variant={errors.some(e => e.type === 'error') ? 'destructive' : 'secondary'} className="h-4 text-[10px] px-1.5">
+                  {errors.length}
+                </Badge>
+              </Button>
+            )}
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setStatisticsExpanded(!statisticsExpanded)}
+              className="h-7 px-2"
+              aria-label={statisticsExpanded ? 'Hide detailed statistics' : 'Show detailed statistics'}
+            >
+              {statisticsExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
 
         {statisticsExpanded && (

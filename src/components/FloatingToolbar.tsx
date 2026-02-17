@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
-import { Bold, Italic, Code, Link, Strikethrough } from 'lucide-react';
+import { Bold, Italic, Code, Link, Strikethrough, Heading, List, ListOrdered, CheckSquare, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { InsertLinkDialog } from '@/components/InsertLinkDialog';
 
 interface FloatingToolbarProps {
@@ -25,7 +26,6 @@ export const FloatingToolbar = ({ onFormat }: FloatingToolbarProps) => {
       const range = selection.getRangeAt(0);
       const selectedText = selection.toString().trim();
 
-      // Only show if text is selected and it's in the editor
       const container = range.commonAncestorContainer;
       const isInEditor = container.nodeType === Node.TEXT_NODE 
         ? container.parentElement?.closest('.cm-content')
@@ -33,8 +33,8 @@ export const FloatingToolbar = ({ onFormat }: FloatingToolbarProps) => {
 
       if (selectedText && isInEditor) {
         const rect = range.getBoundingClientRect();
-        const toolbarWidth = 240; // Approximate width
-        const toolbarHeight = 48; // Approximate height
+        const toolbarWidth = 340;
+        const toolbarHeight = 48;
         
         const calcX = rect.left + rect.width / 2 - toolbarWidth / 2;
         const calcY = rect.top - toolbarHeight - 8;
@@ -92,10 +92,6 @@ export const FloatingToolbar = ({ onFormat }: FloatingToolbarProps) => {
     setVisible(false);
   };
 
-  const handleLinkInsert = () => {
-    setLinkDialogOpen(true);
-  };
-
   const onLinkInsert = (url: string, text: string) => {
     onFormat('[', `](${url})`, text || 'link text');
     setVisible(false);
@@ -112,88 +108,109 @@ export const FloatingToolbar = ({ onFormat }: FloatingToolbarProps) => {
         top: `${position.y}px`,
       }}
     >
-      <div className="flex items-center gap-1 p-1 rounded-lg border bg-popover shadow-lg">
+      <div className="flex items-center gap-0.5 p-1 rounded-lg border bg-popover shadow-lg">
         <TooltipProvider delayDuration={300}>
+          {/* Inline formatting */}
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={() => handleFormat('**', '**', 'bold text')}
-              >
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleFormat('**', '**', 'bold text')}>
                 <Bold className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              <p>Bold <kbd className="ml-1">Ctrl+B</kbd></p>
-            </TooltipContent>
+            <TooltipContent><p>Bold <kbd className="ml-1">Ctrl+B</kbd></p></TooltipContent>
           </Tooltip>
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={() => handleFormat('*', '*', 'italic text')}
-              >
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleFormat('*', '*', 'italic text')}>
                 <Italic className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              <p>Italic <kbd className="ml-1">Ctrl+I</kbd></p>
-            </TooltipContent>
+            <TooltipContent><p>Italic <kbd className="ml-1">Ctrl+I</kbd></p></TooltipContent>
           </Tooltip>
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={() => handleFormat('~~', '~~', 'strikethrough')}
-              >
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleFormat('~~', '~~', 'strikethrough')}>
                 <Strikethrough className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              <p>Strikethrough</p>
-            </TooltipContent>
+            <TooltipContent><p>Strikethrough</p></TooltipContent>
           </Tooltip>
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={() => handleFormat('`', '`', 'code')}
-              >
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleFormat('`', '`', 'code')}>
                 <Code className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              <p>Code</p>
-            </TooltipContent>
+            <TooltipContent><p>Code</p></TooltipContent>
           </Tooltip>
 
-          <div className="w-px h-6 bg-border mx-1" />
+          <div className="w-px h-6 bg-border mx-0.5" />
 
+          {/* Heading dropdown */}
+          <DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 px-1.5 gap-0.5">
+                    <Heading className="h-4 w-4" />
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent><p>Headings</p></TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align="start" className="bg-popover z-[60]">
+              <DropdownMenuItem onClick={() => handleFormat('# ', '', 'Heading 1')}>
+                <span className="text-lg font-bold mr-2">H1</span> Heading 1
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleFormat('## ', '', 'Heading 2')}>
+                <span className="text-base font-bold mr-2">H2</span> Heading 2
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleFormat('### ', '', 'Heading 3')}>
+                <span className="text-sm font-bold mr-2">H3</span> Heading 3
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* List dropdown */}
+          <DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 px-1.5 gap-0.5">
+                    <List className="h-4 w-4" />
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent><p>Lists</p></TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align="start" className="bg-popover z-[60]">
+              <DropdownMenuItem onClick={() => handleFormat('- ', '', 'List item')}>
+                <List className="h-4 w-4 mr-2" /> Bullet List
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleFormat('1. ', '', 'List item')}>
+                <ListOrdered className="h-4 w-4 mr-2" /> Numbered List
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleFormat('- [ ] ', '', 'Task')}>
+                <CheckSquare className="h-4 w-4 mr-2" /> Task List
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <div className="w-px h-6 bg-border mx-0.5" />
+
+          {/* Link */}
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={handleLinkInsert}
-              >
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setLinkDialogOpen(true)}>
                 <Link className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              <p>Link <kbd className="ml-1">Ctrl+K</kbd></p>
-            </TooltipContent>
+            <TooltipContent><p>Link <kbd className="ml-1">Ctrl+K</kbd></p></TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>

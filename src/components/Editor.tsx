@@ -11,7 +11,7 @@ import { EditorView, keymap } from '@codemirror/view';
 import { EditorSelection, Prec } from '@codemirror/state';
 import { SearchReplace } from '@/components/SearchReplace';
 import { debounce } from '@/lib/utils';
-import { CompactToolbar } from '@/components/CompactToolbar';
+
 import { SlashCommandMenu } from '@/components/SlashCommandMenu';
 import { CommandPalette } from '@/components/CommandPalette';
 import { FloatingToolbar } from '@/components/FloatingToolbar';
@@ -253,11 +253,6 @@ export const Editor = () => {
         ref={editorRef}
         className="h-full w-full overflow-hidden relative flex flex-col no-print bg-editor-bg"
       >
-        <div className="px-2 py-1.5 bg-muted/50 border-b border-border/60 flex-shrink-0 flex items-center justify-end">
-          <div className="hidden lg:block">
-            <CompactToolbar />
-          </div>
-        </div>
         <div className="flex-1 overflow-hidden relative">
           <SearchReplace />
           <CodeMirror
