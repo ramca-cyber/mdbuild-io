@@ -18,8 +18,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Settings, Monitor, FileEdit, Keyboard, RotateCcw, FileText, Code2 } from 'lucide-react';
-import { EditorSettingsDialog } from './EditorSettingsDialog';
-import { PreviewSettingsDialog } from './PreviewSettingsDialog';
+import { UnifiedSettingsDialog } from './UnifiedSettingsDialog';
 import { DocumentSettingsDialog } from './DocumentSettingsDialog';
 import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
 import { SnippetsDialog } from './SnippetsDialog';
@@ -27,11 +26,11 @@ import { useSettingsStore } from '@/store/settingsStore';
 import { toast } from 'sonner';
 
 export const SettingsMenu = () => {
-  const [showPreviewSettings, setShowPreviewSettings] = useState(false);
   const [showDocumentSettings, setShowDocumentSettings] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
   const [showSnippets, setShowSnippets] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [settingsTab, setSettingsTab] = useState('editor');
   
   const { resetToDefaults, showEditorSettings, setShowEditorSettings } = useSettingsStore();
 
@@ -39,6 +38,11 @@ export const SettingsMenu = () => {
     resetToDefaults();
     setShowResetConfirm(false);
     toast.success('All settings reset to defaults');
+  };
+
+  const openSettings = (tab: string) => {
+    setSettingsTab(tab);
+    setShowEditorSettings(true);
   };
 
   return (
@@ -49,11 +53,11 @@ export const SettingsMenu = () => {
             Settings
           </MenubarTrigger>
           <MenubarContent>
-            <MenubarItem onClick={() => setShowEditorSettings(true)}>
+            <MenubarItem onClick={() => openSettings('editor')}>
               <FileEdit className="h-4 w-4 mr-2" />
               Editor Settings...
             </MenubarItem>
-            <MenubarItem onClick={() => setShowPreviewSettings(true)}>
+            <MenubarItem onClick={() => openSettings('preview')}>
               <Monitor className="h-4 w-4 mr-2" />
               Preview Settings...
             </MenubarItem>
@@ -86,13 +90,10 @@ export const SettingsMenu = () => {
         </MenubarMenu>
       </Menubar>
 
-      <EditorSettingsDialog 
+      <UnifiedSettingsDialog 
         open={showEditorSettings} 
-        onOpenChange={setShowEditorSettings} 
-      />
-      <PreviewSettingsDialog 
-        open={showPreviewSettings} 
-        onOpenChange={setShowPreviewSettings} 
+        onOpenChange={setShowEditorSettings}
+        defaultTab={settingsTab}
       />
       <DocumentSettingsDialog
         open={showDocumentSettings}

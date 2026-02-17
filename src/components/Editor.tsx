@@ -16,11 +16,13 @@ import { SlashCommandMenu } from '@/components/SlashCommandMenu';
 import { CommandPalette } from '@/components/CommandPalette';
 import { FloatingToolbar } from '@/components/FloatingToolbar';
 import { LinkPreview } from '@/components/LinkPreview';
+import { EditorContextMenu } from '@/components/EditorContextMenu';
 import { useTableKeymap } from '@/hooks/useTableKeymap';
 import { useEditorKeyboardShortcuts } from '@/hooks/useEditorKeyboardShortcuts';
 import { useScrollSync } from '@/hooks/useScrollSync';
 import { useSmartPaste } from '@/hooks/useSmartPaste';
 import { useCursorTracking } from '@/hooks/useCursorTracking';
+import { toast } from 'sonner';
 
 export const Editor = () => {
   const { content, setContent } = useDocumentStore();
@@ -238,6 +240,32 @@ export const Editor = () => {
     }
   }, [currentSearchIndex, searchResults]);
 
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files);
+    const mdFile = files.find(f => f.name.endsWith('.md') || f.name.endsWith('.txt'));
+    if (mdFile) {
+      if (mdFile.size > 5 * 1024 * 1024) {
+        toast.error('File too large. Maximum size is 5MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const text = ev.target?.result as string;
+        if (text) {
+          setContent(text);
+          toast.success(`Imported "${mdFile.name}"`);
+        }
+      };
+      reader.readAsText(mdFile);
+    }
+  }, [setContent]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  }, []);
+
   return (
     <>
       <CommandPalette />
@@ -249,48 +277,52 @@ export const Editor = () => {
       <FloatingToolbar onFormat={handleFloatingFormat} />
       <LinkPreview />
 
-      <div
-        ref={editorRef}
-        className="h-full w-full overflow-hidden relative flex flex-col no-print bg-editor-bg"
-      >
-        <div className="flex-1 overflow-hidden relative">
-          <SearchReplace />
-          <CodeMirror
-            value={content}
-            height="100%"
-            theme={theme === 'dark' ? oneDark : 'light'}
-            extensions={[markdown(), snippetKeymap, syntaxHelpersKeymap, tableKeymap, ...typewriterExtension]}
-            onChange={onChange}
-            onCreateEditor={(view) => {
-              viewRef.current = view;
-              setView(view);
-            }}
-            className="h-full text-base"
-            basicSetup={{
-              lineNumbers: lineNumbers,
-              highlightActiveLineGutter: true,
-              highlightActiveLine: true,
-              foldGutter: true,
-              dropCursor: true,
-              indentOnInput: true,
-              bracketMatching: true,
-              closeBrackets: true,
-              autocompletion: true,
-              highlightSelectionMatches: true,
-              rectangularSelection: true,
-              crosshairCursor: true,
-            }}
-            style={{
-              fontSize: `${fontSize}px`,
-              height: '100%',
-              transform: `scale(${zoomLevel / 100})`,
-              transformOrigin: 'top left',
-              width: `${10000 / zoomLevel}%`,
-            }}
-            aria-label="Markdown editor text area"
-          />
+      <EditorContextMenu>
+        <div
+          ref={editorRef}
+          className="h-full w-full overflow-hidden relative flex flex-col no-print bg-editor-bg"
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+        >
+          <div className="flex-1 overflow-hidden relative">
+            <SearchReplace />
+            <CodeMirror
+              value={content}
+              height="100%"
+              theme={theme === 'dark' ? oneDark : 'light'}
+              extensions={[markdown(), snippetKeymap, syntaxHelpersKeymap, tableKeymap, ...typewriterExtension]}
+              onChange={onChange}
+              onCreateEditor={(view) => {
+                viewRef.current = view;
+                setView(view);
+              }}
+              className="h-full text-base"
+              basicSetup={{
+                lineNumbers: lineNumbers,
+                highlightActiveLineGutter: true,
+                highlightActiveLine: true,
+                foldGutter: true,
+                dropCursor: true,
+                indentOnInput: true,
+                bracketMatching: true,
+                closeBrackets: true,
+                autocompletion: true,
+                highlightSelectionMatches: true,
+                rectangularSelection: true,
+                crosshairCursor: true,
+              }}
+              style={{
+                fontSize: `${fontSize}px`,
+                height: '100%',
+                transform: `scale(${zoomLevel / 100})`,
+                transformOrigin: 'top left',
+                width: `${10000 / zoomLevel}%`,
+              }}
+              aria-label="Markdown editor text area"
+            />
+          </div>
         </div>
-      </div>
+      </EditorContextMenu>
     </>
   );
 };

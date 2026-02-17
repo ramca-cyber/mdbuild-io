@@ -1,5 +1,5 @@
 import { useMemo, useEffect, useState } from 'react';
-import { ChevronUp, ChevronDown, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react';
+import { ChevronUp, ChevronDown, CheckCircle2, Loader2, AlertTriangle, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { calculateStatistics, checkWordLimit, checkCharLimit } from '@/lib/statisticsUtils';
@@ -57,6 +57,28 @@ export const StatisticsPanel = () => {
 
   const stats = useMemo(() => calculateStatistics(content), [content]);
   const totalLines = content.split('\n').length;
+
+  // Cursor breadcrumb: find heading hierarchy at cursor position
+  const breadcrumb = useMemo(() => {
+    const lines = content.split('\n');
+    const lineIndex = cursorLine - 1;
+    const crumbs: string[] = [];
+    const headingStack: { level: number; text: string }[] = [];
+
+    for (let i = 0; i <= Math.min(lineIndex, lines.length - 1); i++) {
+      const match = lines[i].match(/^(#{1,6})\s+(.+)/);
+      if (match) {
+        const level = match[1].length;
+        const text = match[2].replace(/\s*#+\s*$/, '').trim();
+        // Pop headings of equal or greater level
+        while (headingStack.length > 0 && headingStack[headingStack.length - 1].level >= level) {
+          headingStack.pop();
+        }
+        headingStack.push({ level, text });
+      }
+    }
+    return headingStack.map(h => h.text);
+  }, [content, cursorLine]);
   
   const wordLimitStatus = useMemo(() => 
     wordLimitWarningsEnabled ? checkWordLimit(stats.words, customWordLimit) : null,
@@ -102,6 +124,17 @@ export const StatisticsPanel = () => {
                 </span>
               )}
             </button>
+
+            {breadcrumb.length > 0 && (
+              <span className="hidden md:flex items-center gap-0.5 text-muted-foreground text-xs max-w-[300px] truncate">
+                {breadcrumb.map((crumb, i) => (
+                  <span key={i} className="flex items-center gap-0.5">
+                    {i > 0 && <ChevronRight className="h-3 w-3 flex-shrink-0" />}
+                    <span className="truncate">{crumb}</span>
+                  </span>
+                ))}
+              </span>
+            )}
             
             {zoomLevel !== 100 && (
               <span className="text-muted-foreground">

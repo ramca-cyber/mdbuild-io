@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -7,7 +8,8 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { useMemo } from 'react';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 
 interface KeyboardShortcutsDialogProps {
   open: boolean;
@@ -27,6 +29,8 @@ function formatKey(key: string): string {
 }
 
 export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcutsDialogProps) {
+  const [search, setSearch] = useState('');
+
   const shortcuts = useMemo(() => [
     {
       category: 'File Operations',
@@ -75,6 +79,7 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
       items: [
         { keys: ['Ctrl', 'G'], description: 'Go To Line' },
         { keys: ['Ctrl', 'F'], description: 'Find & Replace' },
+        { keys: ['Ctrl', 'Shift', 'H'], description: 'Find & Replace (with replace visible)' },
       ],
     },
     {
@@ -120,8 +125,22 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
     },
   ], []);
 
+  const filteredShortcuts = useMemo(() => {
+    if (!search.trim()) return shortcuts;
+    const q = search.toLowerCase();
+    return shortcuts
+      .map(section => ({
+        ...section,
+        items: section.items.filter(item =>
+          item.description.toLowerCase().includes(q) ||
+          item.keys.some(k => k.toLowerCase().includes(q))
+        ),
+      }))
+      .filter(section => section.items.length > 0);
+  }, [shortcuts, search]);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) setSearch(''); }}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Keyboard Shortcuts</DialogTitle>
@@ -129,10 +148,24 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
             Boost your productivity with these keyboard shortcuts
           </DialogDescription>
         </DialogHeader>
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search shortcuts..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+            autoFocus
+          />
+        </div>
         
         <ScrollArea className="h-[400px] pr-4">
           <div className="space-y-6">
-            {shortcuts.map((section) => (
+            {filteredShortcuts.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-8">No shortcuts match "{search}"</p>
+            )}
+            {filteredShortcuts.map((section) => (
               <div key={section.category}>
                 <h3 className="text-sm font-semibold mb-3">{section.category}</h3>
                 <div className="space-y-2">
@@ -157,7 +190,7 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
                     </div>
                   ))}
                 </div>
-                {section !== shortcuts[shortcuts.length - 1] && (
+                {section !== filteredShortcuts[filteredShortcuts.length - 1] && (
                   <Separator className="mt-4" />
                 )}
               </div>
