@@ -8,7 +8,7 @@ import { useSearchStore } from '@/store/searchStore';
 import { useSnippetsStore } from '@/store/snippetsStore';
 import { EditorView, ViewUpdate, keymap } from '@codemirror/view';
 import { EditorSelection, Prec } from '@codemirror/state';
-import { undo, redo, deleteLine, copyLineDown, moveLineUp, moveLineDown, selectLine } from '@codemirror/commands';
+import { undo, redo, undoDepth, redoDepth, deleteLine, copyLineDown, moveLineUp, moveLineDown, selectLine } from '@codemirror/commands';
 import { SearchReplace } from '@/components/SearchReplace';
 import { debounce } from '@/lib/utils';
 import { CompactToolbar } from '@/components/CompactToolbar';
@@ -196,36 +196,28 @@ export const Editor = () => {
     ]);
   }, [wrapSelection]);
 
-  // Typewriter mode - keep cursor centered
-  useEffect(() => {
-    if (!typewriterMode || !viewRef.current) return;
-
-    const view = viewRef.current;
-    
-    const handleUpdate = () => {
-      const selection = view.state.selection.main;
-      const coords = view.coordsAtPos(selection.head);
-      
-      if (coords) {
-        const editorRect = view.dom.getBoundingClientRect();
-        const targetY = editorRect.height / 2;
-        const currentY = coords.top - editorRect.top;
-        const scrollOffset = currentY - targetY;
+  // Typewriter mode - keep cursor centered via EditorView.updateListener
+  const typewriterExtension = useMemo(() => {
+    if (!typewriterMode) return [];
+    return [
+      EditorView.updateListener.of((update) => {
+        if (!update.selectionSet) return;
+        const view = update.view;
+        const selection = view.state.selection.main;
+        const coords = view.coordsAtPos(selection.head);
         
-        if (Math.abs(scrollOffset) > 10) {
-          view.scrollDOM.scrollTop += scrollOffset;
+        if (coords) {
+          const editorRect = view.dom.getBoundingClientRect();
+          const targetY = editorRect.height / 2;
+          const currentY = coords.top - editorRect.top;
+          const scrollOffset = currentY - targetY;
+          
+          if (Math.abs(scrollOffset) > 10) {
+            view.scrollDOM.scrollTop += scrollOffset;
+          }
         }
-      }
-    };
-
-    // Add listener for selection changes
-    const interval = setInterval(() => {
-      if (document.activeElement?.closest('.cm-editor')) {
-        handleUpdate();
-      }
-    }, 100);
-
-    return () => clearInterval(interval);
+      }),
+    ];
   }, [typewriterMode]);
 
   // Table navigation and editing keymap
@@ -632,6 +624,15 @@ export const Editor = () => {
     [setContent]
   );
 
+  // Flush debounced content on export events
+  useEffect(() => {
+    const handleFlush = () => {
+      debouncedSetContent.flush();
+    };
+    window.addEventListener('editor-flush-content', handleFlush);
+    return () => window.removeEventListener('editor-flush-content', handleFlush);
+  }, [debouncedSetContent]);
+
   const onChange = useCallback(
     (value: string) => {
       debouncedSetContent(value);
@@ -1020,13 +1021,11 @@ export const Editor = () => {
   // Emit history state changes for Edit menu
   const emitHistoryState = () => {
     if (viewRef.current) {
-      // CodeMirror's history is always available with basicSetup
-      // We emit that undo/redo are available since they're always enabled
       window.dispatchEvent(
         new CustomEvent('editor-history-change', {
           detail: {
-            canUndo: true,
-            canRedo: true,
+            canUndo: undoDepth(viewRef.current.state) > 0,
+            canRedo: redoDepth(viewRef.current.state) > 0,
           },
         })
       );
@@ -1113,7 +1112,7 @@ export const Editor = () => {
           value={content}
           height="100%"
           theme={theme === 'dark' ? oneDark : 'light'}
-          extensions={[markdown(), snippetKeymap, syntaxHelpersKeymap, tableKeymap]}
+          extensions={[markdown(), snippetKeymap, syntaxHelpersKeymap, tableKeymap, ...typewriterExtension]}
           onChange={onChange}
           onCreateEditor={(view) => {
             viewRef.current = view;

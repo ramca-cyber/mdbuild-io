@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useMemo, useState } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -10,6 +10,7 @@ import { remarkFootnotes } from '@/lib/remarkFootnotes';
 import rehypeKatex from 'rehype-katex';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import { useDocumentStore } from '@/store/documentStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useErrorStore } from '@/store/errorStore';
@@ -62,57 +63,6 @@ export const Preview = () => {
   const anchorsRef = useRef<{ line: number; top: number }[]>([]);
   const lintTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Track rendered text statistics
-  const [renderedStats, setRenderedStats] = useState({ words: 0, characters: 0 });
-
-  // Calculate visible rendered text statistics and broadcast to footer
-  useEffect(() => {
-    const computeVisibleStats = () => {
-      if (!previewRef.current) return;
-      const container = previewRef.current;
-      const containerRect = container.getBoundingClientRect();
-      const article = container.querySelector('article');
-      if (!article) return;
-
-      const walker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT);
-      let text = '';
-      let node: Node | null;
-      // Aggregate text from elements intersecting the preview viewport
-      while ((node = walker.nextNode())) {
-        const parentEl = (node.parentElement || article) as Element;
-        const rects = parentEl.getClientRects();
-        let visible = false;
-        for (let i = 0; i < rects.length; i++) {
-          const r = rects[i];
-          if (r.bottom > containerRect.top && r.top < containerRect.bottom) {
-            visible = true;
-            break;
-          }
-        }
-        if (visible) text += (node.nodeValue || '') + ' ';
-      }
-
-      const words = text.trim().split(/\s+/).filter(Boolean).length;
-      const characters = text.trim().length;
-      setRenderedStats({ words, characters });
-      window.dispatchEvent(new CustomEvent('preview-visible-stats', { detail: { words, characters } }));
-    };
-
-    // Initial compute after render
-    const timer = setTimeout(computeVisibleStats, 100);
-
-    // Recompute on scroll and resize with rAF
-    const onScrollOrResize = () => requestAnimationFrame(computeVisibleStats);
-    const container = previewRef.current;
-    container?.addEventListener('scroll', onScrollOrResize, { passive: true });
-    window.addEventListener('resize', onScrollOrResize);
-
-    return () => {
-      clearTimeout(timer);
-      container?.removeEventListener('scroll', onScrollOrResize);
-      window.removeEventListener('resize', onScrollOrResize);
-    };
-  }, [content, previewSettings.previewZoom]);
 
   // Lint markdown content with debouncing
   useEffect(() => {
@@ -523,14 +473,29 @@ export const Preview = () => {
     return plugins;
   }, []);
   
+  const sanitizeSchema = useMemo(() => ({
+    ...defaultSchema,
+    tagNames: [
+      ...(defaultSchema.tagNames || []),
+      'details', 'summary', 'kbd', 'sup', 'sub', 'mark', 'abbr', 'ins', 'del',
+    ],
+    attributes: {
+      ...defaultSchema.attributes,
+      '*': [...(defaultSchema.attributes?.['*'] || []), 'className', 'class', 'id', 'dataLine', 'data-line', 'style'],
+      code: [...(defaultSchema.attributes?.code || []), 'className', 'class'],
+      img: [...(defaultSchema.attributes?.img || []), 'src', 'alt', 'title', 'loading', 'width', 'height'],
+      a: [...(defaultSchema.attributes?.a || []), 'href', 'title', 'target', 'rel'],
+    },
+  }), []);
+
   const rehypePlugins = useMemo(() => {
-    const plugins: any[] = [rehypeRaw, rehypeKatex, rehypeHeadingIds, rehypeAddLineNumbers];
+    const plugins: any[] = [rehypeRaw, [rehypeSanitize, sanitizeSchema], rehypeKatex, rehypeHeadingIds, rehypeAddLineNumbers];
     // Conditionally add syntax highlighting based on document settings
     if (documentSettings.syntaxHighlighting) {
       plugins.push(rehypeHighlight);
     }
     return plugins;
-  }, [documentSettings.syntaxHighlighting]);
+  }, [documentSettings.syntaxHighlighting, sanitizeSchema]);
 
   const markdownContent = useMemo(
     () => (
@@ -718,17 +683,6 @@ export const Preview = () => {
           >
             {markdownContent}
           </article>
-        </div>
-      </div>
-      {/* Preview footer with visible content stats */}
-      <div className="border-t bg-background px-4 py-2 flex-shrink-0 no-print">
-        <div className="flex items-center justify-end gap-4 text-sm">
-          <span className="text-muted-foreground">
-            Visible Words: <span className="font-medium text-foreground">{renderedStats.words.toLocaleString()}</span>
-          </span>
-          <span className="text-muted-foreground">
-            Visible Characters: <span className="font-medium text-foreground">{renderedStats.characters.toLocaleString()}</span>
-          </span>
         </div>
       </div>
     </div>
