@@ -32,7 +32,7 @@ const Help = () => {
     },
     {
       question: "What keyboard shortcuts are available?",
-      answer: "Use Ctrl+N for new document, Ctrl+S to save, Ctrl+B for bold, Ctrl+I for italic, Ctrl+E for editor view, and Ctrl+P for preview mode."
+      answer: "Use Ctrl+N for new document, Ctrl+S to save, Ctrl+B for bold, Ctrl+I for italic, Ctrl+E for editor view, and Ctrl+Shift+D for split view."
     },
     {
       question: "How do I export my documents?",
@@ -125,7 +125,7 @@ const Help = () => {
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold">2</div>
               <div>
                 <h4 className="font-semibold mb-1">See Live Preview</h4>
-                <p className="text-sm text-muted-foreground">Toggle between Editor, Split, or Preview modes using the view controls (Ctrl+E/P).</p>
+                <p className="text-sm text-muted-foreground">Toggle between Editor, Split, or Preview modes using the view controls (Ctrl+E, Ctrl+Shift+D).</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -360,8 +360,8 @@ flowchart TD
                     <kbd className="px-2 py-1 bg-muted rounded text-xs">Ctrl+E</kbd>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span>Preview</span>
-                    <kbd className="px-2 py-1 bg-muted rounded text-xs">Ctrl+P</kbd>
+                    <span>Split View</span>
+                    <kbd className="px-2 py-1 bg-muted rounded text-xs">Ctrl+Shift+D</kbd>
                   </div>
                 </div>
               </div>
