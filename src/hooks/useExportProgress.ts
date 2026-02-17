@@ -28,6 +28,8 @@ export const useExportProgress = () => {
       successMessage: string
     ): Promise<T | null> => {
       try {
+        // Flush any pending debounced content before export
+        window.dispatchEvent(new CustomEvent('editor-flush-content'));
         startExport();
         const result = await exportFn(updateProgress);
         finishExport();

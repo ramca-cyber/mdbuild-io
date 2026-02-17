@@ -8,12 +8,15 @@ export function cn(...inputs: ClassValue[]) {
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
-): (...args: Parameters<T>) => void {
+): ((...args: Parameters<T>) => void) & { flush: () => void } {
   let timeout: NodeJS.Timeout | null = null;
+  let lastArgs: Parameters<T> | null = null;
   
-  return function executedFunction(...args: Parameters<T>) {
+  const executedFunction = function(...args: Parameters<T>) {
+    lastArgs = args;
     const later = () => {
       timeout = null;
+      lastArgs = null;
       func(...args);
     };
     
@@ -22,6 +25,18 @@ export function debounce<T extends (...args: any[]) => any>(
     }
     timeout = setTimeout(later, wait);
   };
+
+  executedFunction.flush = () => {
+    if (timeout && lastArgs) {
+      clearTimeout(timeout);
+      timeout = null;
+      const args = lastArgs;
+      lastArgs = null;
+      func(...args);
+    }
+  };
+
+  return executedFunction;
 }
 
 // Linear interpolation for smooth scrolling

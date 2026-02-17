@@ -13,6 +13,7 @@ export interface TableRow {
 export interface TableInfo {
   rows: TableRow[];
   alignmentRow: number | null;
+  alignmentRowLineIndex: number | null;
   start: number;
   end: number;
 }
@@ -37,18 +38,17 @@ export function isInTable(text: string, cursorPos: number): boolean {
   
   const line = lines[currentLineIndex];
   
-  // Check if current line is a table row (contains |)
-  if (!line.includes('|')) {
-    return false;
-  }
-  
-  // Check if it's a valid table row (not just a random |)
+  // Require the line to start and end with | (trimmed)
   const trimmed = line.trim();
-  if (!trimmed.startsWith('|') && !trimmed.endsWith('|') && trimmed.split('|').length < 2) {
+  if (!trimmed.startsWith('|') || !trimmed.endsWith('|')) {
     return false;
   }
   
-  return true;
+  // Check that at least one adjacent line also looks like a table row
+  const hasPrevTableRow = currentLineIndex > 0 && isStrictTableRow(lines[currentLineIndex - 1]);
+  const hasNextTableRow = currentLineIndex < lines.length - 1 && isStrictTableRow(lines[currentLineIndex + 1]);
+  
+  return hasPrevTableRow || hasNextTableRow;
 }
 
 /**
@@ -99,6 +99,7 @@ export function findTableAtCursor(text: string, cursorPos: number): TableInfo | 
   // Parse table
   const rows: TableRow[] = [];
   let alignmentRow: number | null = null;
+  let alignmentRowLineIndex: number | null = null;
   let pos = lines.slice(0, startLine).join('\n').length + (startLine > 0 ? 1 : 0);
   
   for (let i = startLine; i <= endLine; i++) {
@@ -109,6 +110,7 @@ export function findTableAtCursor(text: string, cursorPos: number): TableInfo | 
     // Check if it's an alignment row
     if (isAlignmentRow(line)) {
       alignmentRow = i - startLine;
+      alignmentRowLineIndex = i;
       pos = rowEnd + 1;
       continue;
     }
@@ -124,6 +126,7 @@ export function findTableAtCursor(text: string, cursorPos: number): TableInfo | 
   return {
     rows,
     alignmentRow,
+    alignmentRowLineIndex,
     start: tableStart,
     end: tableEnd,
   };
@@ -132,9 +135,14 @@ export function findTableAtCursor(text: string, cursorPos: number): TableInfo | 
 /**
  * Checks if a line is a table row
  */
+function isStrictTableRow(line: string): boolean {
+  const trimmed = line.trim();
+  return trimmed.startsWith('|') && trimmed.endsWith('|') && trimmed.split('|').length >= 3;
+}
+
 function isTableRow(line: string): boolean {
   const trimmed = line.trim();
-  return trimmed.includes('|') && trimmed.split('|').length >= 2;
+  return trimmed.startsWith('|') && trimmed.endsWith('|') && trimmed.split('|').length >= 3;
 }
 
 /**
@@ -272,7 +280,7 @@ export function addRowBelow(text: string, table: TableInfo, rowIndex: number): {
   const numCells = currentRow.cells.length;
   
   // Create new row with empty cells
-  const newRow = '|' + ' '.repeat(10) + '|'.repeat(numCells);
+  const newRow = '| ' + Array(numCells).fill('     ').join(' | ') + ' |';
   
   // Find insertion point (after current row)
   const insertPos = currentRow.end + 1;
@@ -289,7 +297,7 @@ export function addRowAbove(text: string, table: TableInfo, rowIndex: number): {
   const numCells = currentRow.cells.length;
   
   // Create new row with empty cells
-  const newRow = '|' + ' '.repeat(10) + '|'.repeat(numCells);
+  const newRow = '| ' + Array(numCells).fill('     ').join(' | ') + ' |';
   
   // Find insertion point (before current row)
   const insertPos = currentRow.start;
@@ -324,10 +332,9 @@ export function addColumnAfter(text: string, table: TableInfo, colIndex: number)
   }
   
   // Add alignment separator if table has one
-  if (table.alignmentRow !== null) {
-    // Find and update alignment row
+  if (table.alignmentRow !== null && table.alignmentRowLineIndex !== null) {
     const alignmentLines = newText.split('\n');
-    const alignmentLineIndex = Math.floor((table.start + alignmentLines.slice(0, table.alignmentRow + 1).join('\n').length) / (text.length / lines.length));
+    const alignmentLineIndex = table.alignmentRowLineIndex;
     if (alignmentLineIndex < alignmentLines.length) {
       const alignLine = alignmentLines[alignmentLineIndex];
       const parts = alignLine.split('|');
