@@ -32,6 +32,7 @@ import { SettingsMenu } from './SettingsMenu';
 
 import { ViewModeSwitcher } from './ViewModeSwitcher';
 import { PWAInstallButton } from './PWAInstallButton';
+import { MobileMenuSheet } from './MobileMenuSheet';
 
 interface DocumentHeaderProps {
   setMobilePanel: (panel: 'documents' | 'templates' | 'outline' | null) => void;
@@ -55,12 +56,11 @@ export function DocumentHeader({ setMobilePanel }: DocumentHeaderProps) {
 
   const [storageInfo, setStorageInfo] = useState(calculateStorageUsage());
   const [storageDialogOpen, setStorageDialogOpen] = useState(false);
-  
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(() => setStorageInfo(calculateStorageUsage()), 5000);
-    return () => clearInterval(interval);
-  }, []);
+    if (storageDialogOpen) setStorageInfo(calculateStorageUsage());
+  }, [storageDialogOpen]);
 
   // Keyboard shortcuts (Ctrl+S, Ctrl+N)
   useEffect(() => {
@@ -115,7 +115,7 @@ export function DocumentHeader({ setMobilePanel }: DocumentHeaderProps) {
 
           {/* Mobile hamburger */}
           <div className="sm:hidden">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMobilePanel('documents')} aria-label="Open menu">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMobileMenuOpen(true)} aria-label="Open menu">
               <Menu className="h-4 w-4" />
             </Button>
           </div>
@@ -207,7 +207,7 @@ export function DocumentHeader({ setMobilePanel }: DocumentHeaderProps) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => {
-                  const nextTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'sepia' : 'light';
+                  const nextTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'sepia' : theme === 'sepia' ? 'system' : 'light';
                   setTheme(nextTheme);
                 }}>
                   {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
@@ -294,7 +294,7 @@ export function DocumentHeader({ setMobilePanel }: DocumentHeaderProps) {
 
       <StorageDialog open={storageDialogOpen} onOpenChange={setStorageDialogOpen} storageInfo={storageInfo} documentCount={actions.savedDocuments.length} />
 
-      
+      <MobileMenuSheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen} onOpenDocuments={() => setMobilePanel('documents')} />
     </>
   );
 }

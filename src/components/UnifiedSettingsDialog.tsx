@@ -31,6 +31,7 @@ export const UnifiedSettingsDialog = ({ open, onOpenChange, defaultTab = 'editor
     syncScroll, setSyncScroll,
     focusMode, setFocusMode,
     zenMode, setZenMode,
+    resetToDefaults,
   } = useSettingsStore();
 
   return (
@@ -66,9 +67,10 @@ export const UnifiedSettingsDialog = ({ open, onOpenChange, defaultTab = 'editor
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="s-theme">Theme</Label>
-                    <Select value={theme} onValueChange={(v: 'light' | 'dark' | 'sepia') => setTheme(v)}>
+                    <Select value={theme} onValueChange={(v: 'light' | 'dark' | 'sepia' | 'system') => setTheme(v)}>
                       <SelectTrigger id="s-theme"><SelectValue /></SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="system">System</SelectItem>
                         <SelectItem value="light">Light</SelectItem>
                         <SelectItem value="dark">Dark</SelectItem>
                         <SelectItem value="sepia">Sepia</SelectItem>
@@ -230,6 +232,15 @@ export const UnifiedSettingsDialog = ({ open, onOpenChange, defaultTab = 'editor
             </TabsContent>
           </ScrollArea>
         </Tabs>
+
+        <DialogFooter>
+          <Button variant="outline" size="sm" onClick={() => {
+            resetToDefaults();
+            onOpenChange(false);
+          }}>
+            Reset to Defaults
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
