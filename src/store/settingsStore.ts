@@ -18,6 +18,7 @@ interface SettingsState {
   zoomLevel: number;
   statisticsExpanded: boolean;
   previewRefreshKey: number;
+  showEditorSettings: boolean;
   
   // Word/Character Limit Warnings
   wordLimitWarningsEnabled: boolean;
@@ -75,6 +76,7 @@ interface SettingsState {
   setCustomCharLimit: (limit: number | null) => void;
   setDocumentSettings: (settings: Partial<SettingsState['documentSettings']>) => void;
   setPreviewSettings: (settings: Partial<SettingsState['previewSettings']>) => void;
+  setShowEditorSettings: (show: boolean) => void;
   resetToDefaults: () => void;
 }
 
@@ -95,6 +97,7 @@ export const useSettingsStore = create<SettingsState>()(
       zoomLevel: 100,
       statisticsExpanded: false,
       previewRefreshKey: 0,
+      showEditorSettings: false,
       wordLimitWarningsEnabled: false,
       customWordLimit: null,
       customCharLimit: null,
@@ -150,6 +153,7 @@ export const useSettingsStore = create<SettingsState>()(
         set({ documentSettings: { ...get().documentSettings, ...settings } }),
       setPreviewSettings: (settings) =>
         set({ previewSettings: { ...get().previewSettings, ...settings } }),
+      setShowEditorSettings: (showEditorSettings) => set({ showEditorSettings }),
       
       resetToDefaults: () => set({
         theme: 'light',

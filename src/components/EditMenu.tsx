@@ -48,21 +48,13 @@ export const EditMenu = () => {
   const { canUndo, canRedo, undo, redo, selectAll, deleteLine, duplicateLine, selectLine, moveLineUp, moveLineDown, insert } = useEditorViewStore();
   const [showClearDialog, setShowClearDialog] = useState(false);
 
-  const handleUndo = () => {
-    undo();
-    toast.success('Undone');
-  };
-
-  const handleRedo = () => {
-    redo();
-    toast.success('Redone');
-  };
+  const handleUndo = () => { undo(); };
+  const handleRedo = () => { redo(); };
 
   const handleCut = async () => {
     try {
       await navigator.clipboard.writeText(window.getSelection()?.toString() || '');
       document.execCommand('cut');
-      toast.success('Cut to clipboard');
     } catch (error) {
       toast.error('Failed to cut');
     }
@@ -71,7 +63,6 @@ export const EditMenu = () => {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(window.getSelection()?.toString() || '');
-      toast.success('Copied to clipboard');
     } catch (error) {
       toast.error('Failed to copy');
     }
@@ -81,16 +72,12 @@ export const EditMenu = () => {
     try {
       const text = await navigator.clipboard.readText();
       insert('text', { text });
-      toast.success('Pasted from clipboard');
     } catch (error) {
       toast.error('Failed to paste');
     }
   };
 
-  const handleSelectAll = () => {
-    selectAll();
-    toast.success('Selected all');
-  };
+  const handleSelectAll = () => { selectAll(); };
 
   const handleCopyAll = async () => {
     try {
@@ -109,7 +96,6 @@ export const EditMenu = () => {
     const now = new Date();
     const dateTime = now.toLocaleString();
     insert('text', { text: dateTime });
-    toast.success('Date/time inserted');
   };
 
   const handleWordCount = () => {
@@ -192,7 +178,7 @@ export const EditMenu = () => {
                 <MenubarItem onClick={() => deleteLine()}>
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete Line
-                  <MenubarShortcut>{modKey}+D</MenubarShortcut>
+                  <MenubarShortcut>{modKey}+Shift+K</MenubarShortcut>
                 </MenubarItem>
                 <MenubarItem onClick={() => duplicateLine()}>
                   <Copy className="h-4 w-4 mr-2" />

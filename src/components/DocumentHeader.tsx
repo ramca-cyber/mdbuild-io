@@ -28,7 +28,6 @@ import { EditMenu } from './EditMenu';
 import { FormatMenu } from './FormatMenu';
 import { ViewMenu } from './ViewMenu';
 import { SettingsMenu } from './SettingsMenu';
-import { SnippetsMenu } from './SnippetsMenu';
 import { DocumentSettingsDialog } from './DocumentSettingsDialog';
 import { ViewModeSwitcher } from './ViewModeSwitcher';
 import { PWAInstallButton } from './PWAInstallButton';
@@ -101,6 +100,7 @@ export function DocumentHeader({ showKeyboardShortcuts, setShowKeyboardShortcuts
               onExportMarkdown={actions.handleExportMarkdown}
               onExportHTML={actions.handleExportHTML}
               onExportPDF={actions.handleExportPDF}
+              onExportPNG={actions.handleExportPNG}
               onExportDOCX={actions.handleExportDOCX}
               onDeleteCurrent={() => actions.currentDoc && actions.setDeleteConfirm(actions.currentDoc.id)}
               loadDocument={actions.loadDocument}
@@ -109,7 +109,6 @@ export function DocumentHeader({ showKeyboardShortcuts, setShowKeyboardShortcuts
             <EditMenu />
             <FormatMenu />
             <ViewMenu />
-            <SnippetsMenu />
             <SettingsMenu />
           </div>
 
