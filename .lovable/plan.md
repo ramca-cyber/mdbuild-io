@@ -1,93 +1,137 @@
 
-# Controls Audit Implementation Plan
 
-## Current Status
+# Post-Refactor Controls Audit v2 -- Implementation Plan
 
-The audit identifies 20 prioritized fixes. Several items from Parts 1-2 were already addressed in the previous UI/UX review work (table commands in CommandPalette now work, panel labels removed, Toolbar/CompactToolbar removed, FloatingToolbar enhanced). Here's what remains.
+## Summary
 
-## Remaining Issues (Grouped by Priority)
+The v2 audit found 5 broken items, 5 polish items, and 4 enhancement items. This plan addresses all of them in priority order.
 
-### Group A: Dead Controls (Broken -- Fix Now)
+## Fix Now (Broken)
 
-**A1. CommandPalette "export-document" events are dead (4 items)**
-The export commands (PDF, DOCX, HTML, MD) dispatch `export-document` custom events that nothing listens for. The actual export functions live in `useDocumentActions`.
-- **Fix**: Import and call the export functions directly from `useDocumentActions` instead of dispatching events.
+### 1. ViewModeSwitcher Ctrl+D / Ctrl+P conflicts
+The handler at lines 13-24 binds `Ctrl+D` (split) and `Ctrl+P` (preview) without checking `shiftKey`. This breaks CodeMirror's "Select next occurrence" and browser Print.
 
-**A2. CommandPalette "Open Settings" is dead**
-Dispatches `show-settings` with no listener.
-- **Fix**: Add a `showEditorSettings` state to a shared store or toggle it via a new Zustand flag in `settingsStore`, so the command palette can open it directly.
+**Fix in `ViewModeSwitcher.tsx`:**
+- Change `Ctrl+D` to require `e.shiftKey` (so `Ctrl+Shift+D` triggers split view)
+- Remove `Ctrl+P` binding entirely (preview has no shortcut; print works natively)
+- Update tooltip strings to match: Split View shows `Ctrl+Shift+D`, Preview shows no shortcut
 
-**A3. FormatMenu "Text Cleanup" -- Already Fixed**
-The audit says these are dead, but they now call `textCleanup()` directly from `editorViewStore` (verified in current FormatMenu.tsx). No action needed.
+### 2. EditMenu Cut/Copy uses wrong selection API
+`window.getSelection()` returns DOM selection, which shifts to the menu item once clicked. Should use CodeMirror's selection via `editorViewStore`.
 
-### Group B: Shortcut Conflicts and Mismatches (Fix Now)
+**Fix in `EditMenu.tsx`:**
+- Import `useEditorViewStore` (already imported)
+- For Cut: get selected text from `view.state.sliceDoc(sel.from, sel.to)`, write to clipboard, then dispatch a replacement
+- For Copy: same read, just clipboard write
+- Matches how `EditorContextMenu` already does it
 
-**B1. Ctrl+D conflict (Select Next Occurrence vs Split View)**
-KeyboardShortcutsDialog lists Ctrl+D for both "Select next occurrence" and "Split View."
-- **Fix**: Change Split View shortcut display to Ctrl+Shift+D in KeyboardShortcutsDialog and ViewMenu. Update the actual binding in `useEditorKeyboardShortcuts`.
+### 3. Insert Date/Time format mismatch
+EditMenu uses bare `toLocaleString()`, keyboard shortcut uses explicit `en-US` format with options.
 
-**B2. Ctrl+P conflict (Print vs Preview Only)**
-- **Fix**: Remove Ctrl+P as Preview shortcut. Keep it for Print only. Update KeyboardShortcutsDialog and ViewMenu.
+**Fix in `EditMenu.tsx`:**
+- Standardize `handleInsertDateTime` to use the same format: `toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })`
 
-**B3. EditMenu Delete Line shortcut label wrong**
-Shows Ctrl+D but actual binding is Ctrl+Shift+K.
-- **Fix**: Change the MenubarShortcut in EditMenu from `{modKey}+D` to `{modKey}+Shift+K`.
+### 4. Mobile menu access gap
+The hamburger only opens Saved Documents. All 6 menus are hidden behind `hidden sm:flex`. Mobile users cannot save, format, export, or access settings.
 
-**B4. Outline toggle tooltip said "Ctrl+B"**
-- **Fix**: Already resolved in previous work (tooltip now just says "Toggle Outline"). Verify -- no action needed.
+**Fix: Create a mobile action sheet**
+- Create `MobileMenuSheet.tsx` -- a bottom sheet (using the existing Drawer/Sheet component) containing grouped action buttons for the most critical operations:
+  - **File**: Save, Export (MD), Import, New
+  - **Edit**: Undo, Redo, Find
+  - **Format**: Bold, Italic, Heading, List, Code
+  - **Insert**: Link, Image, Table
+  - **View**: Toggle outline, Theme
+  - **Settings**: Open unified settings
+- Update `DocumentHeader.tsx` hamburger to open this sheet instead of (or in addition to) the documents panel
+- Add a "Saved Documents" button inside the sheet to access the existing documents panel
 
-### Group C: Toast Spam (User Experience)
+### 5. Ctrl+Shift+W (Word Count) not bound
+EditMenu shows `Ctrl+Shift+W` for Word Count, but no keyboard handler exists.
 
-**C1. Remove unnecessary toasts**
-Remove toasts from: Undo, Redo, Cut, Copy, Paste, Select All, Insert Link/Image/Emoji, Insert Date/Time. Keep toasts for: Save, Export, Import, Delete, Template, Clear, and errors.
-- **Files**: `EditMenu.tsx` (remove from handleUndo, handleRedo, handleCut, handleCopy, handlePaste, handleSelectAll, handleInsertDateTime)
+**Fix in `useEditorKeyboardShortcuts.ts`:**
+- Add a handler for `Ctrl+Shift+W` that shows the word count toast (same logic as EditMenu's `handleWordCount`)
 
-### Group D: Missing PNG Export (Fix Now)
+## Fix Soon (Polish)
 
-**D1. Add PNG export to File menu and Command Palette**
-The `exportUtils.tsx` already has `toPng` from `html-to-image`. An export function exists but is not exposed in the File menu.
-- **Fix**: Add `handleExportPNG` to `useDocumentActions`, wire it into `FileMenu` and `CommandPalette`.
+### 6. FormatMenu missing keyboard shortcuts
+Bold, Italic show no shortcut hints.
 
-### Group E: Settings UX (Fix Soon)
+**Fix in `FormatMenu.tsx`:**
+- Add `MenubarShortcut` for Bold (`Ctrl+B`), Italic (`Ctrl+I`)
 
-**E1. Reset All Settings uses `confirm()` instead of AlertDialog**
-- **Fix**: Replace `confirm()` in `SettingsMenu.tsx` with an AlertDialog for consistency.
+### 7. FloatingToolbar Link tooltip says "Ctrl+K"
+`Ctrl+K` opens Command Palette, not link dialog.
 
-**E2. Snippets menu is a 1-item menu**
-- **Fix**: Merge "Manage Snippets..." into Settings menu. Remove SnippetsMenu from DocumentHeader.
+**Fix in `FloatingToolbar.tsx`:**
+- Remove the `Ctrl+K` kbd from the Link tooltip (line 213). Just show "Link".
 
-### Group F: Keyboard Shortcuts Dialog Improvements
+### 8. ViewModeSwitcher aria-current redundancy
+Uses both `aria-pressed` and `aria-current="page"`.
 
-**F1. Mac key labels**
-Always shows "Ctrl" even on Mac. Should show the Command symbol.
-- **Fix**: Detect Mac and replace "Ctrl" with the Command symbol in KeyboardShortcutsDialog.
+**Fix in `ViewModeSwitcher.tsx`:**
+- Remove `aria-current={isActive ? 'page' : undefined}` (line 76). Keep `aria-pressed` only.
 
-**F2. Fix documented conflicts**
-Remove duplicate Ctrl+D and Ctrl+P entries that list different actions.
+### 9. UnifiedSettingsDialog missing Reset buttons
+No per-tab reset to defaults.
+
+**Fix in `UnifiedSettingsDialog.tsx`:**
+- Add a "Reset to Defaults" button in the dialog footer
+- When on Editor tab, reset editor-related settings; when on Preview tab, reset preview settings
+
+### 10. Storage polling every 5 seconds
+`DocumentHeader.tsx` line 61 polls storage continuously.
+
+**Fix in `DocumentHeader.tsx`:**
+- Remove the `setInterval` polling
+- Instead, recalculate storage when the dialog opens (`storageDialogOpen` changes to true) and after save/delete actions
+- Listen for a lightweight event or recalculate in the `useDocumentActions` callbacks
+
+## Enhance Next
+
+### 11. Ctrl+/ for comment toggle
+Wrap/unwrap selection in `<!-- -->`.
+
+**Fix in `useEditorKeyboardShortcuts.ts`:**
+- Add handler for `Ctrl+/` that calls `insert('wrap', { before: '<!-- ', after: ' -->' })`
+
+### 12. Ctrl+] / Ctrl+[ for indent/outdent
+Standard editor shortcuts.
+
+**Fix in `useEditorKeyboardShortcuts.ts`:**
+- `Ctrl+]`: prepend selected lines with two spaces (or tab)
+- `Ctrl+[`: remove leading two spaces from selected lines
+
+### 13. System theme option
+Users can't explicitly select "follow system" after changing theme.
+
+**Fix:**
+- Add `'system'` to the Theme type in `settingsStore.ts`
+- Add "System" option in `UnifiedSettingsDialog` theme selector
+- In `Index.tsx`, when theme is `'system'`, use `window.matchMedia('(prefers-color-scheme: dark)')` to determine actual theme and listen for changes
+
+### 14. Searchable shortcuts -- already done
+Confirmed working. No action needed.
 
 ## Files to Change
 
 | File | Changes |
 |------|---------|
-| `src/components/CommandPalette.tsx` | Replace `handleExport` event dispatch with direct calls; replace `show-settings` with store toggle; add PNG export |
-| `src/components/EditMenu.tsx` | Remove toasts from undo/redo/cut/copy/paste/selectAll/insertDateTime; fix Delete Line shortcut label |
-| `src/components/ViewMenu.tsx` | Fix Ctrl+D to Ctrl+Shift+D for Split View; remove Ctrl+P from Preview |
-| `src/components/KeyboardShortcutsDialog.tsx` | Fix shortcut conflicts; add Mac key detection |
-| `src/components/SettingsMenu.tsx` | Replace `confirm()` with AlertDialog; absorb "Manage Snippets" item |
-| `src/components/DocumentHeader.tsx` | Remove SnippetsMenu from menu bar |
-| `src/hooks/useDocumentActions.ts` | Add handleExportPNG function |
-| `src/components/FileMenu.tsx` | Add PNG export option |
-| `src/store/settingsStore.ts` | Add `showEditorSettings` flag for command palette access |
-| `src/hooks/useEditorKeyboardShortcuts.ts` | Fix Ctrl+D to Ctrl+Shift+D for split view; remove Ctrl+P for preview |
+| `src/components/ViewModeSwitcher.tsx` | Fix Ctrl+D to require Shift; remove Ctrl+P; remove aria-current; update tooltips |
+| `src/components/EditMenu.tsx` | Fix Cut/Copy to use CM selection; fix date format |
+| `src/components/FormatMenu.tsx` | Add MenubarShortcut to Bold, Italic |
+| `src/components/FloatingToolbar.tsx` | Remove Ctrl+K from Link tooltip |
+| `src/components/DocumentHeader.tsx` | Replace storage polling with event-driven; update hamburger for mobile sheet |
+| `src/components/MobileMenuSheet.tsx` | **New** -- mobile action sheet with grouped controls |
+| `src/components/UnifiedSettingsDialog.tsx` | Add per-tab Reset buttons; add System theme option |
+| `src/hooks/useEditorKeyboardShortcuts.ts` | Add Ctrl+Shift+W, Ctrl+/, Ctrl+]/Ctrl+[ bindings |
+| `src/store/settingsStore.ts` | Add 'system' to Theme type |
 
 ## Implementation Order
 
-1. **Group A + D** -- Fix dead controls and add PNG export (highest impact, breaks trust)
-2. **Group B** -- Fix shortcut conflicts and mislabels
-3. **Group C** -- Remove toast spam
-4. **Group E** -- Settings UX improvements (AlertDialog, merge Snippets)
-5. **Group F** -- Keyboard shortcuts dialog Mac awareness and conflict cleanup
+1. Items 1-3 (ViewModeSwitcher shortcuts, EditMenu selection, date format) -- quick targeted fixes
+2. Item 5 (Ctrl+Shift+W binding)
+3. Items 6-8 (FormatMenu shortcuts, FloatingToolbar tooltip, aria fix)
+4. Item 4 (Mobile menu sheet -- largest new component)
+5. Items 9-10 (Reset buttons, storage polling)
+6. Items 11-13 (Comment toggle, indent/outdent, system theme)
 
-## Out of Scope (Future Iterations)
-
-The audit also recommends: right-click context menu, drag-and-drop file support, top-level Insert menu, cursor breadcrumb, share actions, presentation mode, and searchable shortcuts dialog. These are enhancements for a follow-up iteration, not broken controls.
